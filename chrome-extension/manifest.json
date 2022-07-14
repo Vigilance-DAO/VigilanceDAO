@@ -1,0 +1,19 @@
+{
+    "name": "Internet Police",
+    "description": "A extension to warn you about malicious sites. Built and maintained by a blockchain org 'Vigilance DAO'.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+      "service_worker": "src/background.js"
+    },
+    "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs"],
+    "action": {
+        "default_popup": "src/popup.html"
+    },
+    "content_scripts": [ 
+      {
+        "matches": ["<all_urls>"],
+        "js": ["src/psl.min.js", "src/content.js"]
+      }
+    ]
+}
