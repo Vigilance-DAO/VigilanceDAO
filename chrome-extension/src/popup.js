@@ -10,6 +10,10 @@ chrome.tabs.query({active: true, lastFocusedWindow: true}, async (tabs) => {
     let url = tabs[0].url;
     url = new URL(url);
 
+    // chrome.tabs.captureVisibleTab(null,{},function(dataUri){
+    //     console.log(dataUri);
+    // });
+
     console.log('current url', url)
     console.log('current tab', tabs[0])
 

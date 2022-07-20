@@ -8,6 +8,8 @@ app.use(json());
 app.use(helmet());
 
 app.post('/domain-info', async (req, res) => {
+  // await captureWebsite.file('https://cryptnesis.com/', 'screenshot.png');
+
   let domain = req.body.domain
   console.log('domain', domain)
   if(!domain) {
