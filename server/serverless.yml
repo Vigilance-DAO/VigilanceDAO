@@ -1,10 +1,10 @@
-service: serverless-boilerplate
+service: vigilancedao-prod
 
 custom:
   # Our stage is based on what is passed in when running serverless
   # commands. Or falls back to what we have set in the provider section.
   stage: ${opt:stage, 'offline'}
-  region: ${opt:region, 'us-east-1'}
+  region: 'ap-northeast-1'
   bundle:
     linting: false
     excludeFiles: "**/*.test.ts"
@@ -15,6 +15,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs14.x
+  region: ap-northeast-1
   memorySize: 512
   timeout: 10
   logRetentionInDays: 90

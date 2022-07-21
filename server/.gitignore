@@ -16,6 +16,8 @@ dist
 
 # Dotenv files
 .env*.local
+.env.production
+.env.development
 
 # Local folder
 local
