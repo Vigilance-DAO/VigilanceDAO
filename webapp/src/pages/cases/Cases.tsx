@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './Report.css';
+import './Cases.css';
 import { connect } from "@tableland/sdk";
 import { FileUploader } from "react-drag-drop-files";
 import { Paper, TextField, Grid, Button } from '@mui/material';

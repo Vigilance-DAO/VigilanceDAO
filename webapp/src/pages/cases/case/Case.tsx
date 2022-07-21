@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './Report.css';
 import { connect } from "@tableland/sdk";
 import { FileUploader } from "react-drag-drop-files";
 import { Paper, TextField, Grid, Button, Card, Box, Accordion, AccordionSummary, Typography, AccordionDetails } from '@mui/material';
@@ -17,9 +16,9 @@ function Case(props: any) {
     return (
         <div>
             <Card sx={{ display: 'flex' }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <h3>google.com</h3>
-                    <p>Claim: Scam</p>
+                <Box sx={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
+                    <Typography>Domain: google.com</Typography>
+                    <Typography><p>Claim: Scam</p></Typography>
                     <Typography>
                         Comments: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
                         malesuada lacus ex, sit amet blandit leo lobortis eget.
