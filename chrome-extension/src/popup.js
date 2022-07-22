@@ -27,6 +27,13 @@ chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
     element.textContent = parsed.domain
     url = parsed.domain
     let domainRegisteredOnEl = document.getElementById('domainRegisteredOn')
+    let reportLink = `https://vigilance-dao.vercel.app/report`
+    if(url) {
+        reportLink = `${reportLink}?domain=${url}`
+    }
+    var a = document.getElementById('report-link'); //or grab it by tagname etc
+    a.href = reportLink
+    
     chrome.storage.sync.get([url], async (items) => {   
         let createdOn = null
         if(items[url]) {
