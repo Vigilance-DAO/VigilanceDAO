@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import './Report.css';
-import { connect } from "@tableland/sdk";
 import { FileUploader } from "react-drag-drop-files";
 import { Paper, TextField, Grid, Button, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { create } from "ipfs-http-client";
 import { useChain, useMoralis, useMoralisFile } from "react-moralis";
 import { useLocation } from "react-router-dom";
+import Web3Service from '../../services/web3Service';
+import ReportSubmit from './ReportSubmit';
 
 function Report(props: any) {
     console.log('props', props, process.env)
     const { error, isUploading, moralisFile, saveFile } = useMoralisFile();
-    const { initialize, isInitialized, isAuthenticated } = useMoralis();
-    const { account } = useChain();
+    const { initialize, web3, isInitialized, isAuthenticated } = useMoralis();
+
     const { search } = useLocation();
     function useQuery(search: string) {
         return React.useMemo(() => new URLSearchParams(search), [search]);
@@ -20,6 +21,7 @@ function Report(props: any) {
     const [domain, setDomain] = useState('')
     const [comments, setComments] = useState('')
     const [isScam, setIsScam] = useState(true)
+    
     let _domain = query.get('domain')
 
     useEffect(()=>{
@@ -30,43 +32,11 @@ function Report(props: any) {
 
     const fileTypes = ["JPEG", "PNG"];
 
-    async function writeToTableLand(hashes: string[]) {
-        const tableland = await connect({ network: "testnet" });
-        const { name } = await tableland.create(
-            `domain text, id int, evidences text, comments text, status text, account text, createdon text, updatedon text, primary key (id)`, // Table schema definition
-            'vigiancedao_reports' // Optional `prefix` used to define a human-readable string
-        );
-        console.log({name})
-        let cmd = `INSERT INTO ${name} (id, domain, evidences, comments, status, account, createdon, updatedon) VALUES (0, '${domain}', '${JSON.stringify(hashes)}', '${comments}', 'open', '${account}', '${new Date()}', '${new Date()}');`
-        console.log(cmd)
-        const writeRes = await tableland.write(cmd);
-        console.log(writeRes)
-    }
-
     const [files, setFile] = useState<any[]>([]);
     const handleChange = (file: any): any => {
         setFile(file);
     };
-
-    useEffect(() => {
-        if(error) {
-            console.warn(error)
-            alert('Error uploading document to IPFS. Check logs.')
-        }
-    }, [error])
-
-    const [submitBtnTxt, setSubmitBtnTxt] = useState('Submit')
-    const [submitDisabled, setSubmitDisabled] = useState(false)
-
-    useEffect(()=>{
-        if(isUploading) {
-            setSubmitBtnTxt('uploading')
-            setSubmitDisabled(true)
-        } else {
-            setSubmitBtnTxt('Submit')
-            setSubmitDisabled(false)
-        }
-    }, [isUploading])
+    
 
     const selectedFiles = () => {
         let elements: any[] = []
@@ -81,34 +51,7 @@ function Report(props: any) {
         return elements
     }
 
-    const submit = async () => {
-        try {
-            let hashes: string[] = []
-            if(!isAuthenticated) {
-                return alert('Please connect metamask before submitting')
-            }
-            if(!files.length)
-                return alert('Upload at least one evidence file')   
-
-            if(!isInitialized) {
-                await initialize()
-            }
-            await writeToTableLand(['fsdfdf'])
-            // for(let i=0; i<files.length; ++i) {
-            //     const file: any = await saveFile(files[0].name, files[0], {
-            //         type: files[0].type,
-            //         metadata: {'createdBy': account || 'na'},
-            //         tags: {},
-            //         saveIPFS: true,
-            //     });
-            //     console.log('saved filed', i, file)
-            //     hashes.push(file._hash)
-            // }
-            // console.log(hashes)
-        } catch (error: any) {
-            console.log(error.message);
-        }
-    }
+    
 
     return (
         <div className="report">
@@ -155,11 +98,12 @@ function Report(props: any) {
                         }}
                         sx={{width: '100%'}}
                     />
-                    <Button 
-                        variant="contained" 
-                        sx={{marginTop: '10px'}} 
-                        disabled={submitDisabled}
-                        onClick={submit}>{submitBtnTxt}</Button>
+                    <ReportSubmit
+                        domain={domain}
+                        files={files}
+                        isScam={isScam}
+                        comments={comments}
+                    ></ReportSubmit>
                 </Paper>
             </Grid>
         </div>

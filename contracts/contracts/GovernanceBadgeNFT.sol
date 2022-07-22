@@ -10,7 +10,7 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
     string name;
     string symbol;
 
-    uint8 VALIDATOR_NFT;
+    uint8 public VALIDATOR_NFT;
 
     uint public stakingAmount;
 

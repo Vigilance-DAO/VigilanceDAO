@@ -10,7 +10,8 @@ contract Token is ERC20Upgradeable, OwnableUpgradeable {
     function initialize(string memory _name, 
         string memory _symbol) initializer public {
         __ERC20_init(_name, _symbol);
-        MAX_SUPPLY = 1 gwei; // 1B
+        __Ownable_init();
+        MAX_SUPPLY = 1000000000 ether; // 1B
     }
 
     function mint(address to, uint quantity) public onlyOwner {

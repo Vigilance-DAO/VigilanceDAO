@@ -5,7 +5,9 @@ try {
 }
 const env = {
     host: 'https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com',
-    alertPeriod: 4 * 30 * 86400 * 1000
+    alertPeriod: 4 * 30 * 86400 * 1000,
+    tableName: 'domainreports_80001_438',
+    tablelandHost: 'https://testnet.tableland.network/query?s='
 }
 
 function injectedFunction() {
@@ -24,6 +26,12 @@ function injectedFunction() {
         // document.getElementById('y').innerHTML= this.responseText;
     };
     xhr.send();
+}
+
+function searchColumnIndex(columns, column) {
+    return columns.findIndex((item, i)=>{
+        return item.name == column
+    })
 }
 
 function processTab(tab) {
@@ -51,6 +59,9 @@ function processTab(tab) {
         var parsed = psl.parse(_url.hostname);
         let url = parsed.domain
         console.log('bg url', url)
+        if(!url)
+            return;
+
         chrome.storage.sync.get([url], async (items) => {   
             let createdOn = null
             if(items[url]) {
@@ -88,18 +99,41 @@ function processTab(tab) {
                     console.warn('error fetching domain info', err)
                 }
             }
+            let tablelandURL = `${env.tablelandHost}SELECT%20*%20FROM%20${env.tableName}%20WHERE%20domain=%27${url}%27`
+            console.log({tablelandURL})
+            const tableData = await fetch(tablelandURL)
+            const tableDataContent = await tableData.json();
+            console.log({tableDataContent})
+            let isScamVerified = false
+            let isLegitVerified = false;
+            if(tableDataContent.rows && tableDataContent.columns)
+                tableDataContent.rows.forEach(row=>{
+                    let status = row[searchColumnIndex(tableDataContent.columns, 'status')]
+                    let isScam = row[searchColumnIndex(tableDataContent.columns, 'isScam')]
+                    if(isScam && status == 'ACCEPTED')
+                        isScamVerified = true
+                    if(!isScam && status == 'ACCEPTED')
+                        isLegitVerified = true
+                })
+            console.log({isScamVerified, isLegitVerified})
             let now = new Date()
-            if(createdOn && (now.getTime() - createdOn.getTime()) < env.alertPeriod) {
+            if(isScamVerified) {
+                chrome.action.setIcon({ path: {19: "/src/images/alerticon19-red.png", 38: "/src/images/alerticon38-red.png"}})
+                chrome.action.setBadgeText({text: "❌"});
+                chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
+            } else if(isLegitVerified) {
+                chrome.action.setIcon({ path: {16: "/src/images/icon16.png", 32: "/src/images/icon32.png"}})
+                chrome.action.setBadgeText({text: "✔️"});
+                chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
+            } else if(createdOn && (now.getTime() - createdOn.getTime()) < env.alertPeriod) {
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/src/images/alerticon19-red.png", 38: "/src/images/alerticon38-red.png"}})
                 chrome.action.setBadgeText({text: "1"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
-                // chrome.action.setBadgeTextColor({color: "white"});
             } else {
                 chrome.action.setIcon({ path: {16: "/src/images/icon16.png", 32: "/src/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "0"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
-                // chrome.action.setBadgeTextColor({color: "black"});
             }
         })
         

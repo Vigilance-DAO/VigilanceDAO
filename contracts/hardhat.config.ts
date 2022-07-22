@@ -4,7 +4,15 @@ import "@nomicfoundation/hardhat-toolbox";
 import '@openzeppelin/hardhat-upgrades';
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.12",
+  solidity: {
+    version: "0.8.12",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },  
   networks: {
     polygon: {
       url: process.env.POLYGON_URL || "",
@@ -18,7 +26,8 @@ const config: HardhatUserConfig = {
     },
     hardhat: {
       mining: {
-        auto: true
+        auto: false,
+        interval: 500
       },
       chainId: 200
     }

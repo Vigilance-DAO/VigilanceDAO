@@ -32,6 +32,7 @@
     "node-fetch": "^2.6.7"
   },
   "scripts": {
-    "hardhat-node": "npx hardhat node --fork https://matic-mumbai.chainstacklabs.com"
+    "hardhat-node": "npx hardhat node --fork https://polygon-mumbai.g.alchemy.com/v2/CWJxmg4F1VdfwAqeH4OOrI555feNcAe8",
+    "copy-artifacts": "cp -r artifacts/contracts/ ../webapp/src"
   }
 }

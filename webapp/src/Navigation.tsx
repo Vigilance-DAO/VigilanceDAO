@@ -6,7 +6,7 @@ import { useMoralis } from "react-moralis";
 import { useChain } from "react-moralis";
 
 function Navigation() {
-    const { initialize, web3, isAuthenticated, isAuthenticating, logout, authenticate } = useMoralis()
+    const { initialize, web3, isWeb3Enabled, enableWeb3, isAuthenticated, isAuthenticating, logout, authenticate } = useMoralis()
     const { switchNetwork, chainId, chain, account } = useChain();
 
     const darkTheme = createTheme({
@@ -28,7 +28,7 @@ function Navigation() {
 
     const manageMoralis = async () => {
         console.log('manageMoralis', {isAuthenticated})
-        if(isAuthenticated) {
+        if(isAuthenticated && account) {
             await logout()
         } else {
             await authenticate()
@@ -36,16 +36,27 @@ function Navigation() {
         }
     }
 
-    useEffect(() => {
-        // 0x13881
-        // 0x89
-        console.log('chainId', chainId)
-        console.log({account, isAuthenticated, isAuthenticating})
-        if(chainId!='0x13881') {
-            switchNetwork('0x13881')
+    // manageMoralis()
+
+    async function _switchNetwork() {
+        console.log('chainId', chainId, web3, isWeb3Enabled)
+        console.log({account, isAuthenticated, isAuthenticating, requiredChain: process.env.REACT_APP_CHAIN_ID})
+        if(!chainId || !isWeb3Enabled) {
+            await enableWeb3()
+        }
+        if(chainId!=process.env.REACT_APP_CHAIN_ID) {
+            switchNetwork(process.env.REACT_APP_CHAIN_ID || '0x89')
             // if(!isAuthenticated && !isAuthenticating)
             //     authenticate()
         }
+    }
+
+    useEffect(() => {
+        // 0x13881 -> polygon mumbai
+        // 0x89 - polygon mainnet
+        // 0xc8 - localhost - chain 200
+        _switchNetwork()
+        
     }, [chainId])
 
     return (
@@ -82,7 +93,7 @@ function Navigation() {
                                 variant="contained"
                                 onClick={()=>{manageMoralis()}}
                                 >
-                                {isAuthenticated ? `${account?.substring(0, 4)}...${account?.substring(account.length-4, account.length)}` : "Connect"}
+                                {isAuthenticated && account ? `${account?.substring(0, 4)}...${account?.substring(account.length-4, account.length)}` : "Connect"}
                             </Button>
                         </Stack>
                         {/* <div>
