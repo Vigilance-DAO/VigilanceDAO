@@ -26,7 +26,7 @@ function App() {
           powered by blockchain
         </Typography>
         <br/>
-        <Button variant="contained">Download Chrome extension</Button>
+        <Button variant="contained" href="https://github.com/VenkatTeja/VigilanceDAO/releases/tag/beta">Download Chrome extension</Button>
       </header>
     </div>
   );
