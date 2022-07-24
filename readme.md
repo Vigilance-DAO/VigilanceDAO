@@ -7,5 +7,7 @@ This is v1 and currently supports reporting websites.
 ### Download chrome extension at: [link](https://github.com/VenkatTeja/VigilanceDAO/releases/tag/beta)
 ### Website: [link](https://vigilance-dao.vercel.app/)
 
+Discord: [link](https://discord.gg/tnk5KyVzMX)
+
 ## Infrastructure
 The protocol uses IPFS, Polygon and Tableland to manage claims, store data and evidences. 
