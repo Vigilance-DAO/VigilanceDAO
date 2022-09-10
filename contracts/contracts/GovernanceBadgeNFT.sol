@@ -1,4 +1,5 @@
-pragma solidity 0.8.12;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
@@ -10,16 +11,13 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
     string name;
     string symbol;
 
+    uint8 public GOVERNANCE_NFT;
     uint8 public VALIDATOR_NFT;
 
     uint public stakingAmount;
 
-    // struct ValidationRequest {
-    //     address requester;
-    //     uint stake;
-    // }
-
     mapping(address => uint) public validationRequests; //address => stake mapping
+    mapping(address => bool) public governors;
 
     function initialize(string memory _name, 
         string memory _symbol, 
@@ -29,13 +27,17 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         __ERC1155Holder_init();
         name = _name;
         symbol = _symbol;
-        VALIDATOR_NFT = 0;
+        GOVERNANCE_NFT = 0;
+        VALIDATOR_NFT = 1;
         stakingAmount = 5 ether;
 
         _mint(address(this), VALIDATOR_NFT, 100000, "");
+        _mint(address(this), GOVERNANCE_NFT, 100, "");
         _setApprovalForAll(address(this), _msgSender(), true);
         safeTransferFrom(address(this), msg.sender, VALIDATOR_NFT, 1, "");
+        safeTransferFrom(address(this), msg.sender, GOVERNANCE_NFT, 1, "");
     }
+
 
     function requestValidatorRole() public payable returns(bool) {
         require(msg.value == stakingAmount, "Need required staking amount");
@@ -53,12 +55,25 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         payable(msg.sender).transfer(toTransfer);
     }
 
+    function setGovernor(address governor) public onlyOwner {
+        uint256 bal = balanceOf(governor,GOVERNANCE_NFT);
+        require(bal==0, "Already has NFT");
+        safeTransferFrom(address(this), governor, GOVERNANCE_NFT, 1, "");
+        governors[governor]=true;
+    }
+
     function setValidator(address validator) public onlyOwner {
         uint256 bal = balanceOf(validator, VALIDATOR_NFT);
         require(bal==0, "Already has NFT");
         require(validationRequests[validator] == stakingAmount, "Not exact stake for validator");
         validationRequests[validator] = 0;
         safeTransferFrom(address(this), validator, VALIDATOR_NFT, 1, "");
+    }
+
+    function removeGovernor(address governor) public onlyOwner {
+        uint256 bal = balanceOf(governor, GOVERNANCE_NFT);
+        require(bal!=0, "Has not NFT");
+        _safeTransferFrom(governor, address(this), GOVERNANCE_NFT, bal, "");
     }
 
     function removeValidator(address validator) public onlyOwner {
