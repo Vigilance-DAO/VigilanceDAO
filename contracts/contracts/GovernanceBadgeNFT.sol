@@ -13,11 +13,14 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
 
     uint8 public GOVERNANCE_NFT;
     uint8 public VALIDATOR_NFT;
-
+    uint public minVotes;
     uint public stakingAmount;
 
     mapping(address => uint) public validationRequests; //address => stake mapping
     mapping(address => bool) public governors;
+    mapping(address => mapping(address => bool)) public governorsVoted;
+    mapping(address => uint) public validationVotes;
+
 
     function initialize(string memory _name, 
         string memory _symbol, 
@@ -30,6 +33,7 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         GOVERNANCE_NFT = 0;
         VALIDATOR_NFT = 1;
         stakingAmount = 5 ether;
+        minVotes = 20;
 
         _mint(address(this), VALIDATOR_NFT, 100000, "");
         _mint(address(this), GOVERNANCE_NFT, 100, "");
@@ -55,20 +59,6 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         payable(msg.sender).transfer(toTransfer);
     }
 
-    function setGovernor(address governor) public onlyOwner {
-        uint256 bal = balanceOf(governor,GOVERNANCE_NFT);
-        require(bal==0, "Already has NFT");
-        safeTransferFrom(address(this), governor, GOVERNANCE_NFT, 1, "");
-        governors[governor]=true;
-    }
-
-    function setValidator(address validator) public onlyOwner {
-        uint256 bal = balanceOf(validator, VALIDATOR_NFT);
-        require(bal==0, "Already has NFT");
-        require(validationRequests[validator] == stakingAmount, "Not exact stake for validator");
-        validationRequests[validator] = 0;
-        safeTransferFrom(address(this), validator, VALIDATOR_NFT, 1, "");
-    }
 
     function removeGovernor(address governor) public onlyOwner {
         uint256 bal = balanceOf(governor, GOVERNANCE_NFT);
@@ -82,6 +72,23 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         _safeTransferFrom(validator, address(this), VALIDATOR_NFT, bal, "");
     }
 
+    function revokeVote(address validator) public{
+        require(governorsVoted[validator][msg.sender],"Not voted");
+        require(balanceOf(validator,VALIDATOR_NFT) > 0,"No use of Revoking");
+        validationVotes[validator] = validationVotes[validator]-1;
+    }
+
+    function setGovernor(address governor) public onlyOwner {
+        uint256 bal = balanceOf(governor,GOVERNANCE_NFT);
+        require(bal==0, "Already has NFT");
+        safeTransferFrom(address(this), governor, GOVERNANCE_NFT, 1, "");
+        governors[governor]=true;
+    }
+
+    function setMinVotes(uint _votes) public onlyOwner{
+        minVotes = _votes;
+    }
+
     function setStakingAmount(uint _stakingAmount) public onlyOwner {
         stakingAmount = _stakingAmount;
     }
@@ -89,4 +96,17 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155ReceiverUpgradeable, ERC1155Upgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
+
+    function voteValidator(address validator) public{
+        require(validationRequests[msg.sender]==stakingAmount, "You are not requested");
+        require(balanceOf(msg.sender,GOVERNANCE_NFT) > 0,"You are not governor to vote");
+        require(balanceOf(validator,VALIDATOR_NFT) == 0,"You are already Validator");
+        require(!governorsVoted[validator][msg.sender],"Already voted");
+        validationVotes[validator] = validationVotes[validator]+1;
+        if(validationVotes[validator] >= minVotes){
+            validationRequests[validator] = 0;
+            safeTransferFrom(address(this), validator, VALIDATOR_NFT, 1, "");
+        }
+    }
+
 }
