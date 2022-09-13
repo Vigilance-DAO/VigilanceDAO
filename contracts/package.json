@@ -28,7 +28,7 @@
     "@openzeppelin/hardhat-upgrades": "^1.19.0",
     "@tableland/evm": "^2.0.2",
     "@tableland/sdk": "^2.0.2",
-    "dotenv": "^16.0.1",
+    "dotenv": "^16.0.2",
     "node-fetch": "^2.6.7"
   },
   "scripts": {
