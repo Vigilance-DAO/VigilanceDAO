@@ -49,6 +49,9 @@ contract ReportDomain is OwnableUpgradeable {
     mapping(uint => ReportInfo) reportsByID;
     mapping(address => ReportInfo[]) reportsByReporter;
 
+    event Reported(uint id, string domain,bool isScam,address reporter, uint createdon);
+    event Validated(uint id, string domain,bool isScam,address reporter,address governor, uint updatedon);
+
 
     function initialize(address _governanceBadgeNFT, address _tokenContract,address _treasuryContract) initializer public {
         __Ownable_init();
@@ -143,6 +146,8 @@ contract ReportDomain is OwnableUpgradeable {
         );
 
         reportsByID[reportID] = reportInfo;
+
+        emit Reported(reportID, domain, isScam, msg.sender, timestamp);
         
         return reportID;
     }
@@ -176,6 +181,7 @@ contract ReportDomain is OwnableUpgradeable {
             payable(reportsByID[_reportId].reporter).transfer(reportsByID[_reportId].stake);
             Token token = Token(tokenContract);
             token.mint(reportsByID[_reportId].reporter, reward);
+            emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp);
         }
         else{
             payable(treasuryContract).transfer(reportsByID[_reportId].stake);
@@ -186,6 +192,7 @@ contract ReportDomain is OwnableUpgradeable {
         reportsByDomain[reportsByID[_reportId].domain].isLegitClaim = false;
         reportsByDomain[reportsByID[_reportId].domain].scamReporter = address(0);
         reportsByDomain[reportsByID[_reportId].domain].legitReporter = address(0);
+
     }
 
     function compareStrings(string memory a, string memory b) internal view returns (bool) {

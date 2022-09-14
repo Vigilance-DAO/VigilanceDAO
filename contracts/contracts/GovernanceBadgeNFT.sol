@@ -72,11 +72,11 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         _safeTransferFrom(validator, address(this), VALIDATOR_NFT, bal, "");
     }
 
-    function revokeVote(address validator) public{
-        require(governorsVoted[validator][msg.sender],"Not voted");
-        require(balanceOf(validator,VALIDATOR_NFT) > 0,"No use of Revoking");
-        validationVotes[validator] = validationVotes[validator]-1;
-    }
+    // function revokeVote(address validator) public{
+    //     require(governorsVoted[validator][msg.sender],"Not voted");
+    //     require(balanceOf(validator,VALIDATOR_NFT) > 0,"No use of Revoking");
+    //     validationVotes[validator] = validationVotes[validator]-1;
+    // }
 
     function setGovernor(address governor) public onlyOwner {
         uint256 bal = balanceOf(governor,GOVERNANCE_NFT);
@@ -98,11 +98,12 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
     }
 
     function voteValidator(address validator) public{
-        require(validationRequests[msg.sender]==stakingAmount, "You are not requested");
+        require(validationRequests[validator]==stakingAmount, "not enough stake by validator");
         require(balanceOf(msg.sender,GOVERNANCE_NFT) > 0,"You are not governor to vote");
-        require(balanceOf(validator,VALIDATOR_NFT) == 0,"You are already Validator");
+        require(balanceOf(validator,VALIDATOR_NFT) == 0,"already Validator");
         require(!governorsVoted[validator][msg.sender],"Already voted");
         validationVotes[validator] = validationVotes[validator]+1;
+        governorsVoted[validator][msg.sender]=true;
         if(validationVotes[validator] >= minVotes){
             validationRequests[validator] = 0;
             safeTransferFrom(address(this), validator, VALIDATOR_NFT, 1, "");
