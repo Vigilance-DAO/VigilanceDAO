@@ -17,7 +17,6 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
     uint public stakingAmount;
 
     mapping(address => uint) public validationRequests; //address => stake mapping
-    mapping(address => bool) public governors;
     mapping(address => mapping(address => bool)) public governorsVoted;
     mapping(address => uint) public validationVotes;
 
@@ -33,7 +32,7 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         GOVERNANCE_NFT = 0;
         VALIDATOR_NFT = 1;
         stakingAmount = 5 ether;
-        minVotes = 20;
+        minVotes = 2;
 
         _mint(address(this), VALIDATOR_NFT, 100000, "");
         _mint(address(this), GOVERNANCE_NFT, 100, "");
@@ -70,6 +69,7 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         uint256 bal = balanceOf(validator, VALIDATOR_NFT);
         require(bal!=0, "Has not NFT");
         _safeTransferFrom(validator, address(this), VALIDATOR_NFT, bal, "");
+        
     }
 
     // function revokeVote(address validator) public{
@@ -82,7 +82,7 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         uint256 bal = balanceOf(governor,GOVERNANCE_NFT);
         require(bal==0, "Already has NFT");
         safeTransferFrom(address(this), governor, GOVERNANCE_NFT, 1, "");
-        governors[governor]=true;
+        _setApprovalForAll(address(this), governor, true);
     }
 
     function setMinVotes(uint _votes) public onlyOwner{
@@ -104,9 +104,12 @@ contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC11
         require(!governorsVoted[validator][msg.sender],"Already voted");
         validationVotes[validator] = validationVotes[validator]+1;
         governorsVoted[validator][msg.sender]=true;
+        
         if(validationVotes[validator] >= minVotes){
             validationRequests[validator] = 0;
+            console.log("request: %s",balanceOf(validator,VALIDATOR_NFT));
             safeTransferFrom(address(this), validator, VALIDATOR_NFT, 1, "");
+            console.log("request: %s",balanceOf(validator,VALIDATOR_NFT));
         }
     }
 

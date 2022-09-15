@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { Contract } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import './fetch-polyfills'
-import { connect, Connection } from "@tableland/sdk";
 
 describe("ReportDomain", function () {
     let governanceBadgeNFT: Contract;
@@ -11,11 +10,9 @@ describe("ReportDomain", function () {
     let token: Contract;
     let superAdmin: SignerWithAddress;
     let secondAdmin: SignerWithAddress;
-    let tableland: Connection;
     let reportImplementationAddress: string;
 
     before(async () => {
-        // tableland = await connect({ network: "custom", host: 'http://localhost:8545', contract: '0x4b48841d4b32C4650E4ABc117A03FE8B51f38F68', chain: 'custom', chainId: 200});
     
         let result = await ethers.getSigners()
         superAdmin = result[0]
@@ -75,8 +72,7 @@ describe("ReportDomain", function () {
         let reportID = await reportDomain.callStatic.report(domain, isScam, evidences, comments, {value: stakingAmount.toString()})
         let tx = await reportDomain.connect(secondAdmin).report(domain, isScam, evidences, comments, {value: stakingAmount.toString()})
         await tx.wait()
-        let tableName = (await reportDomain.callStatic.metadataTable())
-        console.log(tableName)
+        
 
         let isReported = await reportDomain.callStatic.isReported(domain, isScam)
         expect(isReported, "is reported scam should be true").to.eq(true)
@@ -99,7 +95,7 @@ describe("ReportDomain", function () {
         await tx.wait()
 
         lockedAmount = await reportDomain.lockedAmount()
-        expect(lockedAmount.toString(), "incorrect lockek amount").to.eq('0')
+        expect(lockedAmount.toString(), "incorrect locked amount").to.eq('0')
 
         balance = await reportDomain.getBalance()
         expect(balance?.toString(), "Balance should be 0").to.eq('0');
