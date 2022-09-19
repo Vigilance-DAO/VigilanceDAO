@@ -162,9 +162,10 @@ contract ReportDomain is OwnableUpgradeable {
         require(bal > 0, "Only selected validators can validate");
         require(reportsByID[_reportId].exists, "Case doesnt exist");
         require(reportsByID[_reportId].isOpen, "Case already validated");
-        if(reportsByID[_reportId].isScam) {
+        if(reportsByID[_reportId].isScam && reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit > 0) {
             require(_reportId < reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit, "First close the legit file");
-        } else {
+        } 
+        else if(!reportsByID[_reportId].isScam && reportsByDomain[reportsByID[_reportId].domain].reportIDforScam > 0){
             require(_reportId < reportsByDomain[reportsByID[_reportId].domain].reportIDforScam, "First close the scam file");
         }
         string memory status = ACCEPTED;
@@ -192,7 +193,8 @@ contract ReportDomain is OwnableUpgradeable {
         reportsByDomain[reportsByID[_reportId].domain].isLegitClaim = false;
         reportsByDomain[reportsByID[_reportId].domain].scamReporter = address(0);
         reportsByDomain[reportsByID[_reportId].domain].legitReporter = address(0);
-
+        reportsByDomain[reportsByID[_reportId].domain].reportIDforScam = 0;
+        reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit = 0;
     }
 
     function compareStrings(string memory a, string memory b) internal view returns (bool) {
