@@ -181,7 +181,7 @@ contract ReportDomain is OwnableUpgradeable {
         if(compareStrings(status, ACCEPTED)) {
             payable(reportsByID[_reportId].reporter).transfer(reportsByID[_reportId].stake);
             Token token = Token(tokenContract);
-            token.mint(reportsByID[_reportId].reporter, reward);
+            token.reward(reportsByID[_reportId].reporter, reward);
             emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp);
         }
         else{
@@ -195,6 +195,10 @@ contract ReportDomain is OwnableUpgradeable {
         reportsByDomain[reportsByID[_reportId].domain].legitReporter = address(0);
         reportsByDomain[reportsByID[_reportId].domain].reportIDforScam = 0;
         reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit = 0;
+    }
+
+    function setReportReward(uint _reportReward) public onlyOwner {
+        reward = _reportReward;
     }
 
     function compareStrings(string memory a, string memory b) internal view returns (bool) {

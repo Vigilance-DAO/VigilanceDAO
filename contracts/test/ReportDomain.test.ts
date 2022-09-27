@@ -19,14 +19,6 @@ describe("ReportDomain", function () {
         secondAdmin = result[1]
         console.log(superAdmin.address)
 
-        let Token = await ethers.getContractFactory('Token')
-        token = await upgrades.deployProxy(Token, [
-            "Vigilance Token",
-            "VIGI"
-        ], {timeout: 180000});
-        await token.deployed()
-        console.log('token address: ', token.address)
-
         let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeERC1155')
         governanceBadgeNFT = await upgrades.deployProxy(GovernanceBadgeNFT, [
             "Vigilance DAO",
@@ -35,6 +27,16 @@ describe("ReportDomain", function () {
         ], {timeout: 180000});
         await governanceBadgeNFT.deployed()
         console.log('governanceBadgeNFT address: ', governanceBadgeNFT.address)
+
+        let Token = await ethers.getContractFactory('Token')
+        token = await upgrades.deployProxy(Token, [
+            "Vigilance Token",
+            "VIGI",
+            governanceBadgeNFT.address
+        ], {timeout: 180000});
+        await token.deployed()
+        console.log('token address: ', token.address)
+
 
         let polygonTestnetAddress = "0x4b48841d4b32C4650E4ABc117A03FE8B51f38F68"
         let ReportDomain = await ethers.getContractFactory('ReportDomain')
@@ -92,7 +94,7 @@ describe("ReportDomain", function () {
         expect(balance.toString(), "Balance should be 5ETH").to.eq(stakingAmount.toString());
         console.log({balance})
 
-        tx = await reportDomain.validate(reportID, true, "my comments")
+        tx = await reportDomain.connect(secondAdmin).validate(reportID, true, "my comments")
         await tx.wait()
         console.log("validated")
         lockedAmount = await reportDomain.lockedAmount()
