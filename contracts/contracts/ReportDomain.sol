@@ -197,6 +197,12 @@ contract ReportDomain is OwnableUpgradeable {
         reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit = 0;
     }
 
+    function rewardContributors(address _to, uint _amount) public onlyOwner {
+        Token token = Token(tokenContract);
+        token.rewardContributors(_to, _amount);
+    }
+
+
     function setReportReward(uint _reportReward) public onlyOwner {
         reward = _reportReward;
     }

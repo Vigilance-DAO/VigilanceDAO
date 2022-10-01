@@ -32,7 +32,6 @@ describe("ReportDomain", function () {
         token = await upgrades.deployProxy(Token, [
             "Vigilance Token",
             "VIGI",
-            governanceBadgeNFT.address
         ], {timeout: 180000});
         await token.deployed()
         console.log('token address: ', token.address)
@@ -94,7 +93,7 @@ describe("ReportDomain", function () {
         expect(balance.toString(), "Balance should be 5ETH").to.eq(stakingAmount.toString());
         console.log({balance})
 
-        tx = await reportDomain.connect(secondAdmin).validate(reportID, true, "my comments")
+        tx = await reportDomain.validate(reportID, true, "my comments")
         await tx.wait()
         console.log("validated")
         lockedAmount = await reportDomain.lockedAmount()
@@ -182,6 +181,25 @@ describe("ReportDomain", function () {
         console.log("reported again")
         await expect(reportDomain.callStatic.report(domain, !isScam, evidences, comments, {value: stakingAmount.toString()})).to.be.revertedWith("Is Scam report already filed");
         await expect(reportDomain.callStatic.report(domain, isScam, evidences, comments, {value: stakingAmount.toString()})).to.be.revertedWith("Is Legit report already filed");
+
+    })
+
+    it("change Reward", async () => {
+        let reward = await reportDomain.reward();
+        console.log({reward})
+        let tx = await reportDomain.setReportReward(reward.add(100))
+        await tx.wait()
+        let newReward = await reportDomain.reward();
+        console.log({newReward})
+        expect(newReward.toString(), "reward should be +1").to.eq(reward.add(100).toString())
+    })
+
+    it("reward contributors", async () => {
+        let tx = await reportDomain.rewardContributors(secondAdmin.address,ethers.BigNumber.from(""+10**18))
+        await tx.wait()
+        let tokenBal = await token.balanceOf(secondAdmin.address)
+        console.log({tokenBal})
+        expect(tokenBal.toString(), 'Should be rewarded').to.eq((11*(10**18)).toString())
 
     })
 
