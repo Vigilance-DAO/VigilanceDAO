@@ -21,7 +21,6 @@ contract Treasury {
     }
 
     function sendERC20(address token,address to,uint amount) public onlyOwner{
-        IERC20(token).approve(msg.sender,amount);
         IERC20(token).transfer(to,amount);
     }
 
