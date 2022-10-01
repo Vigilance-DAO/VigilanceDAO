@@ -185,7 +185,8 @@ contract ReportDomain is OwnableUpgradeable {
             emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp);
         }
         else{
-            payable(treasuryContract).transfer(reportsByID[_reportId].stake);
+            (bool sent,) = payable(treasuryContract).call{value:reportsByID[_reportId].stake}("");
+            require(sent, "Failed to send Ether");
         }
 
         lockedAmount -= reportsByID[_reportId].stake;

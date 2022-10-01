@@ -1,20 +1,12 @@
 pragma solidity 0.8.12;
 
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-contract Treasury {
+contract Treasury is OwnableUpgradeable{
     
-    address payable public owner;
-
-    constructor() {
-        owner = payable(msg.sender);
+    function initialize() initializer public {
+        __Ownable_init();
     }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function.");
-        _;
-    }
-
 
     function sendMatic(address to,uint amount) public onlyOwner{
         payable(to).transfer(amount);
@@ -24,7 +16,10 @@ contract Treasury {
         IERC20(token).transfer(to,amount);
     }
 
-    receive() external payable {}
+    function getBalance() public view returns(uint){
+        return address(this).balance;
+    }
 
+    receive() external payable {}
     fallback() external payable{}
 }
