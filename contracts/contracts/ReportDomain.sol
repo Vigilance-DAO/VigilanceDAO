@@ -49,8 +49,8 @@ contract ReportDomain is OwnableUpgradeable {
     mapping(uint => ReportInfo) reportsByID;
     
 
-    event Reported(uint id, string domain,bool isScam,address reporter, uint createdon);
-    event Validated(uint id, string domain,bool isScam,address reporter,address governor, uint updatedon);
+    event Reported(uint indexed id, string indexed domain,bool isScam,address indexed reporter, uint createdOn);
+    event Validated(uint indexed id, string indexed domain,bool isScam,address reporter,address indexed validator, uint updatedon);
 
 
     function initialize(address _governanceBadgeNFT, address _tokenContract,address _treasuryContract) initializer public {
@@ -157,7 +157,7 @@ contract ReportDomain is OwnableUpgradeable {
     * params: reportId, isAccepted, comments
     */
     function validate(uint _reportId, bool isAccepted, string calldata comments) public {
-        GovernanceBadgeERC1155 _gov = GovernanceBadgeERC1155(governanceBadgeNFT);
+        GovernanceBadgeNFT _gov = GovernanceBadgeNFT(governanceBadgeNFT);
         uint256 bal = _gov.balanceOf(msg.sender, _gov.VALIDATOR_NFT());
         require(bal > 0, "Only selected validators can validate");
         require(reportsByID[_reportId].exists, "Case doesnt exist");

@@ -1,18 +1,34 @@
-import { ethers } from "hardhat";
+import { ethers , upgrades} from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  const governanceBadgeNFT = await ethers.getContractFactory("GovernanceBadgeNFT");
+  const governanceBadgeNFTContract = await upgrades.deployProxy(governanceBadgeNFT, [ "Vigilance DAO","VIGI-NFT","uri"]);
+  await governanceBadgeNFTContract.deployed();
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  console.log("GovernanceBadgeNFT deployed to:", governanceBadgeNFTContract.address);
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const Token = await ethers.getContractFactory("Token");
+  const token = await upgrades.deployProxy(Token, ["Vigilance Token","VIGI",]);
+  await token.deployed();
 
-  await lock.deployed();
+  console.log("Token deployed to:", token.address);
 
-  console.log("Lock with 1 ETH deployed to:", lock.address);
+  const Treasury = await ethers.getContractFactory("Treasury");
+  const treasury = await upgrades.deployProxy(Treasury);
+  await treasury.deployed()
+  console.log('treasury address: ', treasury.address)
+
+  const ReportDomain = await ethers.getContractFactory('ReportDomain')
+  const reportDomain = await upgrades.deployProxy(ReportDomain, [
+            governanceBadgeNFTContract.address,
+            token.address,
+            treasury.address]);
+  await reportDomain.deployed()
+
+  console.log('reportDomain address: ', reportDomain.address)
+
+  const tx = await token.transferOwnership(reportDomain.address)
+  await tx.wait()
 }
 
 // We recommend this pattern to be able to use async/await everywhere
