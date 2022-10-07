@@ -27,6 +27,9 @@ async function main() {
 
   console.log('reportDomain address: ', reportDomain.address)
 
+  let reportImplementationAddress = await upgrades.erc1967.getImplementationAddress(reportDomain.address);
+  console.log('reportImplementationAddress: ', reportImplementationAddress)
+
   const tx = await token.transferOwnership(reportDomain.address)
   await tx.wait()
 }
