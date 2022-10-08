@@ -24,7 +24,7 @@ describe("Overall testing", function () {
         userAddress = result[3]
         console.log(superAdmin.address)
 
-        let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeERC1155')
+        let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeNFT')
         governanceBadgeNFT = await upgrades.deployProxy(GovernanceBadgeNFT, [
             "Vigilance DAO",
             "VIGI-NFT",

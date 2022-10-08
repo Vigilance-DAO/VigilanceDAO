@@ -49,8 +49,8 @@ contract ReportDomain is OwnableUpgradeable {
     mapping(uint => ReportInfo) reportsByID;
     
 
-    event Reported(uint indexed id, string indexed domain,bool isScam,address indexed reporter, uint createdOn);
-    event Validated(uint indexed id, string indexed domain,bool isScam,address reporter,address indexed validator, uint updatedon);
+    event Reported(uint indexed id, string indexed domain,bool isScam,address indexed reporter, uint createdOn,string evidences,string comments,uint stakeAmount);
+    event Validated(uint indexed id, string indexed domain,bool isScam,address reporter,address indexed validator, uint updatedon,string validatorComments,string status,uint rewardAmount);
 
 
     function initialize(address _governanceBadgeNFT, address _tokenContract,address _treasuryContract) initializer public {
@@ -147,7 +147,7 @@ contract ReportDomain is OwnableUpgradeable {
 
         reportsByID[reportID] = reportInfo;
 
-        emit Reported(reportID, domain, isScam, msg.sender, timestamp);
+        emit Reported(reportID, domain, isScam, msg.sender, timestamp,evidenceHashesSerialised,comments,stakingAmount);
         
         return reportID;
     }
@@ -162,6 +162,11 @@ contract ReportDomain is OwnableUpgradeable {
         require(bal > 0, "Only selected validators can validate");
         require(reportsByID[_reportId].exists, "Case doesnt exist");
         require(reportsByID[_reportId].isOpen, "Case already validated");
+        if(reportsByID[_reportId].isScam) {
+            require(reportsByDomain[reportsByID[_reportId].domain].scamReporter != msg.sender, "You cannot validate your own report");
+        } else {
+            require(reportsByDomain[reportsByID[_reportId].domain].legitReporter != msg.sender, "You cannot validate your own report");
+        }
         if(reportsByID[_reportId].isScam && reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit > 0) {
             require(_reportId < reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit, "First close the legit file");
         } 
@@ -182,11 +187,12 @@ contract ReportDomain is OwnableUpgradeable {
             payable(reportsByID[_reportId].reporter).transfer(reportsByID[_reportId].stake);
             Token token = Token(tokenContract);
             token.reward(reportsByID[_reportId].reporter, reward);
-            emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp);
+            emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp, comments,status,reward);
         }
         else{
             (bool sent,) = payable(treasuryContract).call{value:reportsByID[_reportId].stake}("");
             require(sent, "Failed to send Ether");
+            emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp, comments,status,0);
         }
 
         lockedAmount -= reportsByID[_reportId].stake;

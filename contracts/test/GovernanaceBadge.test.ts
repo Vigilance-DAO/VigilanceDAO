@@ -17,7 +17,7 @@
 //         secondAdmin = result[1]
 //         validatorAddress = result[2]
 
-//         let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeERC1155')
+//         let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeNFT')
 //         governanceBadgeNFT = await upgrades.deployProxy(GovernanceBadgeNFT, [
 //             "Vigilance DAO",
 //             "VIGI-NFT",
