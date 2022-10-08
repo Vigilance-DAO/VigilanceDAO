@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol";
 import "hardhat/console.sol";
 
-contract GovernanceBadgeERC1155 is ERC1155Upgradeable, OwnableUpgradeable, ERC1155HolderUpgradeable {
+contract GovernanceBadgeNFT is ERC1155Upgradeable, OwnableUpgradeable, ERC1155HolderUpgradeable {
 
     string name;
     string symbol;
