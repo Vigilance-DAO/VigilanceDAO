@@ -249,6 +249,46 @@
       "address": "0xb02BAa107CdbF7dC735293a315794c8Ac6679856",
       "txHash": "0x7004faa588107b97c9ea8370c893956460548e517715d9c4f30818ef71a5b888",
       "kind": "transparent"
+    },
+    {
+      "address": "0xF37A0475D5C4dE28115B99ee07C0A3F12550fBa4",
+      "txHash": "0x3ecd6c45e5de2394432bff55673f3166dca5f13afdaea4c3acd73ff6762ca289",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA4714251fEac5455f2acC53aAB09E50AcE0843b4",
+      "txHash": "0x73133a0fc77fd8f6ca48f8fc0aec2ac259c07ad07f3d61b932e27443c537a22e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2216EB9119C012f223043C28bb2f2424C486583a",
+      "txHash": "0x65afa87b60464b0ef9c55f537b8c4939ba1122677826c5628c939dfe77d32ea6",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6Ee5ddD555A5132F7eEd019249018999843B6fef",
+      "txHash": "0x3f7e1042c87702c313df4fd26ed48ed7272c8b0704fab6036232492d78123e62",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2dF06D7459371e61663072Cf50463f0542F5f0f1",
+      "txHash": "0x65d5b2db3425a315fcfc11ba91c6129be9c54c89f76a2be00000dbfff8c97370",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9204d96805C1d2Ac22Ac31605DAe1eB0CE6F87df",
+      "txHash": "0xe32d934393f5e539dd770fc975da2bd88ee34400a025ab9f341525c2c35c18ef",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA9a974c586A71514bd0295077f35130F264479EC",
+      "txHash": "0xdd26e5bd3cd99caa95ad886a439642e41fd91508ba8ac9ac7e8d0bf267528f25",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x84656a630e046904667c50cBF05eB1A79Dd44611",
+      "txHash": "0x24f37f54904f4b5839aba779ab71a8e0852e527cd9e0d8cf911a5cfc12232ca1",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -3269,6 +3309,857 @@
       "address": "0xe5D1C01D6D778A4FD1DFee989ae5C0672dA056aE",
       "txHash": "0xfa91326c68e112fbff580fcee7dadfbc461f8457a6924872b0e738d2a243cad8",
       "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "ACCEPTED",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_string_storage",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:10"
+          },
+          {
+            "label": "REJECTED",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_string_storage",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:11"
+          },
+          {
+            "label": "governanceBadgeNFT",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:13"
+          },
+          {
+            "label": "tokenContract",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:14"
+          },
+          {
+            "label": "treasuryContract",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:15"
+          },
+          {
+            "label": "stakingAmount",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:17"
+          },
+          {
+            "label": "reward",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:18"
+          },
+          {
+            "label": "lockedAmount",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:19"
+          },
+          {
+            "label": "reportID",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:20"
+          },
+          {
+            "label": "reportsByDomain",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_mapping(t_string_memory_ptr,t_struct(DomainClaim)3714_storage)",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:48"
+          },
+          {
+            "label": "reportsByID",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_uint256,t_struct(ReportInfo)3743_storage)",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:49"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_string_memory_ptr,t_struct(DomainClaim)3714_storage)": {
+            "label": "mapping(string => struct ReportDomain.DomainClaim)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(ReportInfo)3743_storage)": {
+            "label": "mapping(uint256 => struct ReportDomain.ReportInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_string_memory_ptr": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(DomainClaim)3714_storage": {
+            "label": "struct ReportDomain.DomainClaim",
+            "members": [
+              {
+                "label": "isScamClaim",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "isLegitClaim",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "scamReporter",
+                "type": "t_address",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "legitReporter",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "reportIDforScam",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "reportIDforLegit",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(ReportInfo)3743_storage": {
+            "label": "struct ReportDomain.ReportInfo",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "createdon",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "updatedon",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "exists",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isOpen",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "4"
+              },
+              {
+                "label": "isScam",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "4"
+              },
+              {
+                "label": "domain",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "evidences",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "comments",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "status",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "validatorComments",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "reporter",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "validator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "11"
+              }
+            ],
+            "numberOfBytes": "384"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "dae9ceed72854dec24b9e09d609a319faa60dd5655fd12794eb0eb367f40555c": {
+      "address": "0x4805f339AB497172CF84aD1e287A397Eb6740Da0",
+      "txHash": "0x379aaf18522abed16cc206de4caf0794d276b5f30b753fee4d9d4b4c7563176e",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "ACCEPTED",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_string_storage",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:10"
+          },
+          {
+            "label": "REJECTED",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_string_storage",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:11"
+          },
+          {
+            "label": "governanceBadgeNFT",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:13"
+          },
+          {
+            "label": "tokenContract",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:14"
+          },
+          {
+            "label": "treasuryContract",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:15"
+          },
+          {
+            "label": "stakingAmount",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:17"
+          },
+          {
+            "label": "reward",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:18"
+          },
+          {
+            "label": "lockedAmount",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:19"
+          },
+          {
+            "label": "reportID",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_uint256",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:20"
+          },
+          {
+            "label": "reportsByDomain",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_mapping(t_string_memory_ptr,t_struct(DomainClaim)3714_storage)",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:48"
+          },
+          {
+            "label": "reportsByID",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_uint256,t_struct(ReportInfo)3743_storage)",
+            "contract": "ReportDomain",
+            "src": "contracts/ReportDomain.sol:49"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_string_memory_ptr,t_struct(DomainClaim)3714_storage)": {
+            "label": "mapping(string => struct ReportDomain.DomainClaim)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(ReportInfo)3743_storage)": {
+            "label": "mapping(uint256 => struct ReportDomain.ReportInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_string_memory_ptr": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(DomainClaim)3714_storage": {
+            "label": "struct ReportDomain.DomainClaim",
+            "members": [
+              {
+                "label": "isScamClaim",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "isLegitClaim",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "scamReporter",
+                "type": "t_address",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "legitReporter",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "reportIDforScam",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "reportIDforLegit",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(ReportInfo)3743_storage": {
+            "label": "struct ReportDomain.ReportInfo",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stake",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "createdon",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "updatedon",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "exists",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isOpen",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "4"
+              },
+              {
+                "label": "isScam",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "4"
+              },
+              {
+                "label": "domain",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "evidences",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "comments",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "status",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "validatorComments",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "reporter",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "validator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "11"
+              }
+            ],
+            "numberOfBytes": "384"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "5389ff94d38c503c56e7918b1e3fd5fb3d2038e6743e71151563a8e87c05c889": {
+      "address": "0x8E3A22545e4220503636773EdEB6D79Eff826445",
+      "txHash": "0x8c52a4e29a3b9d664f61f96567cc26e57839fcaff12ecbe72b03f646bb1678b3",
+      "layout": {
+        "solcVersion": "0.8.12",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_balances",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "ERC1155Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:25"
+          },
+          {
+            "label": "_operatorApprovals",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "contract": "ERC1155Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:28"
+          },
+          {
+            "label": "_uri",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_string_storage",
+            "contract": "ERC1155Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:31"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_array(t_uint256)47_storage",
+            "contract": "ERC1155Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:528"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1155ReceiverUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155ReceiverUpgradeable.sol:31"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1155HolderUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/utils/ERC1155HolderUpgradeable.sol:48"
+          },
+          {
+            "label": "name",
+            "offset": 0,
+            "slot": "301",
+            "type": "t_string_storage",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:11"
+          },
+          {
+            "label": "symbol",
+            "offset": 0,
+            "slot": "302",
+            "type": "t_string_storage",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:12"
+          },
+          {
+            "label": "GOVERNANCE_NFT",
+            "offset": 0,
+            "slot": "303",
+            "type": "t_uint8",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:14"
+          },
+          {
+            "label": "VALIDATOR_NFT",
+            "offset": 1,
+            "slot": "303",
+            "type": "t_uint8",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:15"
+          },
+          {
+            "label": "minVotes",
+            "offset": 0,
+            "slot": "304",
+            "type": "t_uint256",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:16"
+          },
+          {
+            "label": "stakingAmount",
+            "offset": 0,
+            "slot": "305",
+            "type": "t_uint256",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:17"
+          },
+          {
+            "label": "validationRequests",
+            "offset": 0,
+            "slot": "306",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:19"
+          },
+          {
+            "label": "governorsVoted",
+            "offset": 0,
+            "slot": "307",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:20"
+          },
+          {
+            "label": "validationVotes",
+            "offset": 0,
+            "slot": "308",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "GovernanceBadgeNFT",
+            "src": "contracts/GovernanceBadgeNFT.sol:21"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)47_storage": {
+            "label": "uint256[47]",
+            "numberOfBytes": "1504"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "2c8e6b4f28affd4d95953c1ff1417cc3e5cf33d176ac73d8e0531732fc7733b0": {
+      "address": "0xf9b22D525aa3Adc9F1F1Af53f98506f2f33cD108",
+      "txHash": "0x8bcf922d1892a5882ae9727b6faf623d99c47184c1b4bc69e0101367be2aa759",
+      "layout": {
+        "solcVersion": "0.8.12",
         "storage": [
           {
             "label": "_initialized",

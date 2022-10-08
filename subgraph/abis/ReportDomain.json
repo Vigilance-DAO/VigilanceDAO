@@ -150,13 +150,7 @@
   {
     "inputs": [],
     "name": "getBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -185,51 +179,25 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "domain",
-        "type": "string"
-      },
-      {
-        "internalType": "bool",
-        "name": "isScam",
-        "type": "bool"
-      }
+      { "internalType": "string", "name": "domain", "type": "string" },
+      { "internalType": "bool", "name": "isScam", "type": "bool" }
     ],
     "name": "isReported",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "lockedAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -242,76 +210,38 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "domain",
-        "type": "string"
-      },
-      {
-        "internalType": "bool",
-        "name": "isScam",
-        "type": "bool"
-      },
+      { "internalType": "string", "name": "domain", "type": "string" },
+      { "internalType": "bool", "name": "isScam", "type": "bool" },
       {
         "internalType": "string[]",
         "name": "evidenceHashes",
         "type": "string[]"
       },
-      {
-        "internalType": "string",
-        "name": "comments",
-        "type": "string"
-      }
+      { "internalType": "string", "name": "comments", "type": "string" }
     ],
     "name": "report",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "reportID",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "reward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
+      { "internalType": "address", "name": "_to", "type": "address" },
+      { "internalType": "uint256", "name": "_amount", "type": "uint256" }
     ],
     "name": "rewardContributors",
     "outputs": [],
@@ -320,11 +250,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_reportReward",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "_reportReward", "type": "uint256" }
     ],
     "name": "setReportReward",
     "outputs": [],
@@ -333,11 +259,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_reward",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "_reward", "type": "uint256" }
     ],
     "name": "setReward",
     "outputs": [],
@@ -346,11 +268,7 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_stakingAmount",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "_stakingAmount", "type": "uint256" }
     ],
     "name": "setStakingAmount",
     "outputs": [],
@@ -360,23 +278,13 @@
   {
     "inputs": [],
     "name": "stakingAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
+      { "internalType": "address", "name": "newOwner", "type": "address" }
     ],
     "name": "transferOwnership",
     "outputs": [],
@@ -385,21 +293,9 @@
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_reportId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "isAccepted",
-        "type": "bool"
-      },
-      {
-        "internalType": "string",
-        "name": "comments",
-        "type": "string"
-      }
+      { "internalType": "uint256", "name": "_reportId", "type": "uint256" },
+      { "internalType": "bool", "name": "isAccepted", "type": "bool" },
+      { "internalType": "string", "name": "comments", "type": "string" }
     ],
     "name": "validate",
     "outputs": [],

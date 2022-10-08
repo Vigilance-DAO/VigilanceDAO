@@ -19,7 +19,7 @@
 //         secondAdmin = result[1]
 //         console.log(superAdmin.address)
 
-//         let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeERC1155')
+//         let GovernanceBadgeNFT = await ethers.getContractFactory('GovernanceBadgeNFT')
 //         governanceBadgeNFT = await upgrades.deployProxy(GovernanceBadgeNFT, [
 //             "Vigilance DAO",
 //             "VIGI-NFT",
