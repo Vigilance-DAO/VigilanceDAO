@@ -67,8 +67,8 @@ export class Reported__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get domain(): Bytes {
-    return this._event.parameters[1].value.toBytes();
+  get domain(): string {
+    return this._event.parameters[1].value.toString();
   }
 
   get isScam(): boolean {
@@ -113,8 +113,8 @@ export class Validated__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get domain(): Bytes {
-    return this._event.parameters[1].value.toBytes();
+  get domain(): string {
+    return this._event.parameters[1].value.toString();
   }
 
   get isScam(): boolean {

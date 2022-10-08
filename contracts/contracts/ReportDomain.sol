@@ -49,8 +49,8 @@ contract ReportDomain is OwnableUpgradeable {
     mapping(uint => ReportInfo) reportsByID;
     
 
-    event Reported(uint indexed id, string indexed domain,bool isScam,address indexed reporter, uint createdOn,string evidences,string comments,uint stakeAmount);
-    event Validated(uint indexed id, string indexed domain,bool isScam,address reporter,address indexed validator, uint updatedon,string validatorComments,string status,uint rewardAmount);
+    event Reported(uint indexed id, string domain,bool isScam,address indexed reporter, uint createdOn,string evidences,string comments,uint stakeAmount);
+    event Validated(uint indexed id, string  domain,bool isScam,address reporter,address indexed validator, uint updatedon,string validatorComments,string status,uint rewardAmount);
 
 
     function initialize(address _governanceBadgeNFT, address _tokenContract,address _treasuryContract) initializer public {

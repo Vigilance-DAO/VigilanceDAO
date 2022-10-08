@@ -41,7 +41,7 @@
         "type": "uint256"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "string",
         "name": "domain",
         "type": "string"
@@ -96,7 +96,7 @@
         "type": "uint256"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "string",
         "name": "domain",
         "type": "string"
