@@ -1,0 +1,15 @@
+type Report @entity {
+  id: ID!
+  domain: String!
+  isScam: Boolean!
+  reporter: Bytes!
+  evidences: String!
+  comments: String!
+  stakeAmount: BigInt!
+  createdon: BigInt!
+  validator: Bytes
+  updatedon: BigInt
+  validatorComments: String
+  rewardAmount: BigInt
+  status: String
+}

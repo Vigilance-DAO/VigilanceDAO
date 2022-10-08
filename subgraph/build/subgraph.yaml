@@ -1,0 +1,29 @@
+specVersion: 0.0.4
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ReportDomain
+    network: mumbai
+    source:
+      address: "0x6Ee5ddD555A5132F7eEd019249018999843B6fef"
+      abi: ReportDomain
+      startBlock: 28506435
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Reported
+        - Validated
+      abis:
+        - name: ReportDomain
+          file: ReportDomain/abis/ReportDomain.json
+      eventHandlers:
+        - event: Reported(indexed uint256,indexed string,bool,indexed
+            address,uint256,string,string,uint256)
+          handler: handleReported
+        - event: Validated(indexed uint256,indexed string,bool,address,indexed
+            address,uint256,string,string,uint256)
+          handler: handleValidated
+      file: ReportDomain/ReportDomain.wasm
