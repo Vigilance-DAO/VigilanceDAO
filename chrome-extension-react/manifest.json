@@ -1,5 +1,5 @@
 {
-    "name": "Internet Vigilance - Browser security",
+    "name": "2Internet Vigilance - Browser security",
     "description": "Protect yourself from new websites against potential scams, frauds & phishing sites. Maintained by a blockchain org 'Vigilance DAO'",
     "version": "1.0",
     "icons": {
@@ -14,7 +14,7 @@
     },
     "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs"],
     "action": {
-        "default_popup": "src/popup.html"
+        "default_popup": "build/index.html"
     },
     "content_scripts": [ 
       {
