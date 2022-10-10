@@ -3,7 +3,8 @@ declare global {
       interface ProcessEnv {
         NODE_ENV: 'development' | 'production';
         REACT_APP_SUPPORTED_NETWORKS: string,
-        REACT_APP_DEFAULT_NETWORK: string
+        REACT_APP_DEFAULT_NETWORK: string,
+        REACT_APP_THEGRAPH_URL: string
       }
     }
   }

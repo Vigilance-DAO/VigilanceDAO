@@ -18,11 +18,11 @@ dataSources:
         - Validated
       abis:
         - name: ReportDomain
-          file: ReportDomain/abis/ReportDomain.json
+          file: ReportDomain\abis\ReportDomain.json
       eventHandlers:
         - event: Reported(indexed uint256,string,bool,indexed address,uint256,string,string,uint256)
           handler: handleReported
         - event: Validated(indexed uint256,string,bool,address,indexed
             address,uint256,string,string,uint256)
           handler: handleValidated
-      file: ReportDomain/ReportDomain.wasm
+      file: ReportDomain\ReportDomain.wasm
