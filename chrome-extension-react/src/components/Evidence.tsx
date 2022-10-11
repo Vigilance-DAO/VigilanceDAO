@@ -5,6 +5,7 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import React, { useState } from 'react';
 import { UploadOutlined, ExpandOutlined } from '@ant-design/icons';
 import { UploadRequestOption } from 'rc-upload/lib/interface';
+import { Web3Storage } from "web3.storage";
 
 declare const chrome: any;
 
@@ -17,11 +18,14 @@ const getBase64 = (file: RcFile): Promise<string> =>
   });
 
 const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inputs) => {
+
     const {fileList, setFileList} = inputs
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
     const [previewTitle, setPreviewTitle] = useState('');
     const [emptyList, setEmptyList] = useState<UploadFile[]>([]);
+    const web3storage_key = process.env.WEB3_STORAGE_KEY;
+
 
     const handleCancel = () => setPreviewOpen(false);
 
@@ -36,7 +40,7 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
     };
 
     const handleChange: UploadProps['onChange'] = ({ file: newFile }) => {
-        console.log('new upload file', newFile)
+        // console.log('new upload file', newFile)
         let _fileList: UploadFile[] = [...fileList]
         let existingUIDs = _fileList.map(_file => _file.uid)
         if(existingUIDs.includes(newFile.uid)) {
@@ -60,9 +64,9 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
 
     if(chrome && chrome.runtime) {
         chrome.runtime.onMessage.addListener((msg: any, sender: any, sendResponse: any) => {
-            console.log('on message', msg, sender)
+            // console.log('on message', msg, sender)
             if(msg && msg.type == "screenshot"){
-                console.log('recieved screenshot')
+                // console.log('recieved screenshot')
                 if(msg.data.isSuccess) {
                     let _fileList: UploadFile[] = [...fileList]
                     _fileList.push({
@@ -81,14 +85,15 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
 
     const takeScreenshot = () => {
         if(chrome && chrome.runtime) {
-            console.log('runtime', chrome.runtime.sendMessage)
+            // console.log('runtime', chrome.runtime.sendMessage)
             chrome.runtime.sendMessage({type: "take-screenshot"});
         }
     }
-
-    const uploadToIPFS = (file: RcFile) => {
-        console.log('upload to IPFS', file)
-        return ''
+    // console.log(fileList)
+    const uploadToIPFS = async (file: RcFile) => {
+        const client = new Web3Storage({ token: web3storage_key === undefined ? "" : web3storage_key });
+        const cid = await client.put([file]);
+        console.log('cid', cid)
     }
 
     const getLabel = () => {
@@ -101,7 +106,7 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
                 
                     fileList={fileList} 
                     maxCount={5} 
-                    action={uploadToIPFS}
+                    // action={uploadToIPFS}
                     showUploadList={false}
                     multiple={true} 
                     onChange={handleChange}

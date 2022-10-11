@@ -6,8 +6,11 @@ import NetworkSelector from './Network';
 import type { RadioChangeEvent } from 'antd';
 import { MetaMask,  } from "@web3-react/metamask"
 import { initializeConnector } from '@web3-react/core'
-
+import { ethers } from 'ethers';
 import AlertMessageType from '../interfaces/AlertMessageType';
+import { Web3Storage } from "web3.storage";
+
+import { abi , address } from '../constants/index'
 
 
 export interface ReviewFormContext {
@@ -22,10 +25,11 @@ export const Context = React.createContext<ReviewFormContext>({
 });
 
 export default function ReviewForm() {
-    const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames } = hooks
+    const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
     const chainId = useChainId()
     const accounts = useAccounts()
     const isActivating = useIsActivating()
+    const provider = useProvider()
 
     const isActive = useIsActive()
     
@@ -34,10 +38,15 @@ export default function ReviewForm() {
         type: 'info',
         description: ''
     })
+    
     const [isFraud, setIsFraud] = useState(true);
     const [buttonTxt, setButtonTxt] = useState("Connect Wallet")
     const [buttonDisabled, setButtonDisabled] = useState(false)
     const [fileList, setFileList] = useState<UploadFile[]>([]);
+    
+    const [comments, setComments] = useState<string>();
+    const web3storage_key = process.env.REACT_APP_WEB3_STORAGE_KEY;
+    
 
     
     const { TextArea } = Input;
@@ -47,13 +56,48 @@ export default function ReviewForm() {
         setIsFraud(e.target.value);
     };
 
+    const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setComments(e.target.value);
+    }
+
     const [account, setAccount] = useState("")
+
+    const uploadToIPFS = async () => {
+        const client = new Web3Storage({ token: web3storage_key === undefined ? "" : web3storage_key });
+        let imageUrls : string[] = []
+        for(let i = 0; i < fileList.length; i++) {
+            const file = fileList[i].originFileObj;
+            if(file !== undefined) {
+                const cid = await client.put([file]);
+                const img_url = ("https://gateway.pinata.cloud/ipfs/"+cid+"/"+file.name);
+                if(!imageUrls.includes(img_url)) {
+                    imageUrls.push(img_url)
+                }
+            }
+        }
+        return imageUrls;
+    }
+    
+    const reportDomain = async () => {
+        try {
+            const signer = provider?.getSigner();
+            const imageUrls = await uploadToIPFS();
+            console.log(imageUrls)
+            const contract = new ethers.Contract(address, abi, signer);
+            const tx = await contract.report("https://www.amazon.com",isFraud, imageUrls,comments,{value : ethers.utils.parseEther("0.5")});
+            await tx.wait();
+            console.log(tx)
+        }
+        catch(e) {
+            alert(e)
+        }
+    }
     
     useEffect(() => {
         console.log('accounts', accounts)
         if(accounts?.length) {
             setAccount(accounts[0])
-            setButtonTxt(">")
+            setButtonTxt("Report")
         } else {
             setAccount("")
         }
@@ -75,11 +119,16 @@ export default function ReviewForm() {
         }
     })
 
-    function handleButtonClick() {
+    async function handleButtonClick() {
         if(!isActive) {
             metamaskConnector.activate(chainId)
         }
+        else{
+            
+            reportDomain()
+        }
     }
+
 
     return (
         <Context.Provider value={{account}}>
@@ -119,7 +168,7 @@ export default function ReviewForm() {
                     name="remarks"
                     rules={[{ required: true }]}
                     >
-                        <TextArea rows={2}/>
+                        <TextArea rows={2} id="remarks"  value={comments} onChange={handleCommentsChange}/>
                     </Form.Item>
                     
                     <Evidence fileList={fileList} setFileList={setFileList}></Evidence>
