@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { CaretRightOutlined } from '@ant-design/icons';
 import { Divider, Typography, Button, Input, Statistic, Form, Radio, Card, Alert, Collapse, Space } from 'antd';
@@ -6,6 +6,10 @@ import 'antd/dist/antd.css';
 import { Web3Provider } from "@ethersproject/providers";
 import ReviewForm from './components/ReviewForm';
 import AlertMessageType from './interfaces/AlertMessageType';
+import History from './components/History';
+import {subgraphQuery} from './utils/index';
+import {FETCH_REPORTS_BY_DOMAIN} from './queries/index';
+
 
 function getLibrary(provider: any) {
   return new Web3Provider(provider);
@@ -20,7 +24,13 @@ function App() {
   })
 
   const { Panel } = Collapse
-
+  const getStatus = async (domain: string) => {
+    const data = await subgraphQuery(FETCH_REPORTS_BY_DOMAIN(domain));
+    console.log(data.isScam);
+  }
+  useEffect(() => {
+    getStatus('https://www.amazon.com');
+  }, [])
  
 
   return (
@@ -80,6 +90,19 @@ function App() {
                 <b style={{fontSize: '15px'}}>Your rewards 🏆</b>
               </div>} key="1" className="site-collapse-custom-panel">
                 <Statistic title="Active Users" value={112893} style={{color: 'white'}} />
+              </Panel>
+            </Collapse>
+            <Collapse
+              bordered={true}
+              defaultActiveKey={['0']}
+              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              className="site-collapse-custom-collapse"
+              style={{ width: '100%' }}
+            >
+              <Panel header={<div>
+                <b style={{fontSize: '15px'}}>History</b>
+              </div>} key="1" className="site-collapse-custom-panel">
+                <History></History>
               </Panel>
             </Collapse>
 

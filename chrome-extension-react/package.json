@@ -16,6 +16,7 @@
     "@web3-react/metamask": "8.0.28-beta.0",
     "@web3-react/types": "8.0.20-beta.0",
     "antd": "^4.23.4",
+    "axios": "^1.1.2",
     "ethers": "^5.7.1",
     "graphql-request": "^5.0.0",
     "react": "^18.2.0",
