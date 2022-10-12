@@ -13,12 +13,10 @@ const count = 1;
 const History : React.FC = () => {
   const [initLoading, setInitLoading] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any[]>([]);
   const [list, setList] = useState<any[]>([]);
   const [reports, setReports] = useState([]);
     const getData = async (count :number) => {
         const data = await subgraphQuery(FETCH_REPORTS(count,"0x625B892f34ACA436e1525e5405A8fb81eC5cc04d"));
-        setData(data.reports);
         setList(data.reports);
     }
     useEffect(() => {

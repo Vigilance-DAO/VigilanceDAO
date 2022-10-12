@@ -1,7 +1,7 @@
 pragma solidity 0.8.12;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 contract Treasury is OwnableUpgradeable{
     
     function initialize() initializer public {
@@ -13,7 +13,7 @@ contract Treasury is OwnableUpgradeable{
     }
 
     function sendERC20(address token,address to,uint amount) public onlyOwner{
-        IERC20(token).transfer(to,amount);
+        IERC20Upgradeable(token).transfer(to,amount);
     }
 
     function getBalance() public view returns(uint){

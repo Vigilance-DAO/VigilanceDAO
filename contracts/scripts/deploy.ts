@@ -32,6 +32,7 @@ async function main() {
 
   const tx = await token.transferOwnership(reportDomain.address)
   await tx.wait()
+  console.log('Done')
 }
 
 // We recommend this pattern to be able to use async/await everywhere
