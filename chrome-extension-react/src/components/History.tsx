@@ -1,46 +1,36 @@
-import { Avatar, Button, List, Skeleton } from 'antd';
+import { Avatar, Button, List, Skeleton ,Collapse } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {subgraphQuery} from '../utils/index';
 import {FETCH_REPORTS} from '../queries/index';
+
 import {
-    CheckCircleOutlined
+    ClockCircleOutlined,
+    CheckCircleFilled,
+    CloseCircleFilled
   } from '@ant-design/icons';
 
-
+const count = 1;
 const History : React.FC = () => {
   const [initLoading, setInitLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [list, setList] = useState<any[]>([]);
   const [reports, setReports] = useState([]);
-    const getData = async () => {
-        const data = await subgraphQuery(FETCH_REPORTS());
+    const getData = async (count :number) => {
+        const data = await subgraphQuery(FETCH_REPORTS(count,"0x625B892f34ACA436e1525e5405A8fb81eC5cc04d"));
         setData(data.reports);
         setList(data.reports);
     }
     useEffect(() => {
-        getData();
+        getData(count);
         setInitLoading(false);
     }, [])
-    console.log(reports);
+  
 
-  const onLoadMore = () => {
+  const onLoadMore = async () => {
+    setLoading(true);
+    await getData(count+1);
     setLoading(false);
-    // setList(
-    //   data.concat([...new Array(count)].map(() => ({ loading: true, name: {}, picture: {} }))),
-    // );
-    // fetch(fakeDataUrl)
-    //   .then(res => res.json())
-    //   .then(res => {
-    //     const newData = data.concat(res.results);
-    //     setData(newData);
-    //     setList(newData);
-    //     setLoading(false);
-    //     // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
-    //     // In real scene, you can using public method of react-virtualized:
-    //     // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
-    //     window.dispatchEvent(new Event('resize'));
-    //   });
   };
 
   const loadMore =
@@ -56,6 +46,34 @@ const History : React.FC = () => {
         <Button onClick={onLoadMore}>loading more</Button>
       </div>
     ) : null;
+  const { Panel } = Collapse
+
+  const renderStatus = (status: string) => {
+    if (status === null) {
+      return <ClockCircleOutlined style={{color:"orange"}}/>
+    }
+    else if(status === 'ACCEPTED') {
+      return <CheckCircleFilled style={{color:"green"}}/>
+    }
+    else {
+      return <CloseCircleFilled style={{color:"red"}}/>
+    }
+  }
+
+  const statusText = (status: string,address: string) => {
+    if (status === null) {
+      return "Open"
+    }
+    else if(status === 'ACCEPTED') {
+      return "Aproved by "+address.slice(0,6)+"..."+address.slice(-4)
+    }
+    else {
+      return "Rejected by "+address.slice(0,6)+"..."+address.slice(-4)
+    }
+  }
+
+  
+
   return (
     <List
       className="demo-loadmore-list"
@@ -64,15 +82,49 @@ const History : React.FC = () => {
       loadMore={loadMore}
       dataSource={list}
       renderItem={item => (
-        <List.Item>
-          <Skeleton avatar title={false} loading={false} active>
-            <List.Item.Meta
-              avatar={<CheckCircleOutlined />}
-              title={item.domain}
-              description="Ant Design, a design language for background applications, is refined by Ant UED Team"
-            />
-          </Skeleton>
-        </List.Item>
+        <Collapse
+              bordered={true}
+              defaultActiveKey={['0']}
+              // expandIcon={({ isActive }) => < rotate={isActive ? 90 : 0} />}
+              className="site-collapse-custom-collapse"
+              
+              style={{ width: '100%' }}
+            >
+              <Panel header={<div>
+                <b style={{fontSize: '15px'}}>{renderStatus(item.status)} {item.domain} - {item.isScam ? "SCAM" : "LEGIT"}</b>
+                
+              </div>} key="1" className="site-collapse-custom-panel" showArrow={false}>
+                <div>
+                  <div>
+                    <b>Status : </b>
+                    {
+                      statusText(item.status,item.validator)
+                    }
+                  </div>
+                   
+                  <div style={{display:"flex", justifyContent: "space-between"}}>
+                    {
+                      item.status === null ? <div style={{color:"orange"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div> : item.status === 'ACCEPTED' ? <div style={{color:"green"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div> : <div style={{color:"red"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div>
+                    }
+                    {
+                      item.rewardAmount === null ? <div style={{color:"gray"}}>Reward 0 VIGI</div> : <div style={{color:"orange"}}>Reward : {Number(item.rewardAmount)/1e18} VIGI</div>
+                    }
+                  </div>
+                  <p>Comments : {item.validatorComments}</p>
+                  <b>My Report</b>
+                  <div>Comments : {item.comments}</div>
+                  <div>
+                    {
+                      item.evidences.split(",").map((evidence: string) => {
+                        return <img src={evidence} alt="evidence" style={{width:"100px",height:"100px"}}/>
+                      }
+                      )
+                    }
+                    
+                  </div>
+                </div>
+              </Panel>
+            </Collapse>
       )}
     />
   );
