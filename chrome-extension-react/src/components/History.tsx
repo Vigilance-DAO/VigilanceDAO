@@ -17,7 +17,7 @@ const History : React.FC = () => {
   const [list, setList] = useState<any[]>([]);
   const [reports, setReports] = useState([]);
     const getData = async (count :number) => {
-        const data = await subgraphQuery(FETCH_REPORTS(count,"0x04c755E1574F33B6C0747Be92DfE1f3277FCC0A9"));
+        const data = await subgraphQuery(FETCH_REPORTS(count,"0x625B892f34ACA436e1525e5405A8fb81eC5cc04d"));
         setData(data.reports);
         setList(data.reports);
     }
@@ -104,7 +104,7 @@ const History : React.FC = () => {
                    
                   <div style={{display:"flex", justifyContent: "space-between"}}>
                     {
-                      item.status === null ? <div style={{color:"orange"}}>Stake : 5 MATIC</div> : item.status === 'ACCEPTED' ? <div style={{color:"green"}}>Stake : 5 MATIC</div> : <div style={{color:"red"}}>Stake : 5 MATIC</div>
+                      item.status === null ? <div style={{color:"orange"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div> : item.status === 'ACCEPTED' ? <div style={{color:"green"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div> : <div style={{color:"red"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div>
                     }
                     {
                       item.rewardAmount === null ? <div style={{color:"gray"}}>Reward 0 VIGI</div> : <div style={{color:"orange"}}>Reward : {Number(item.rewardAmount)/1e18} VIGI</div>
