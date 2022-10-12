@@ -2,7 +2,7 @@ import { Button, Dropdown, Menu, Space } from "antd"
 import { DownOutlined } from '@ant-design/icons';
 import { useContext, useEffect, useState } from "react";
 import { Connector } from '@web3-react/types';
-import { Context, hooks, metamaskConnector } from "./ReviewForm";
+import { Context, hooks, metamaskConnector } from "../App";
 
 const chainInfo = [{
     chainId: 137,

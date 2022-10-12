@@ -9,6 +9,8 @@ import AlertMessageType from './interfaces/AlertMessageType';
 import History from './components/History';
 import {subgraphQuery} from './utils/index';
 import {FETCH_REPORTS_BY_DOMAIN} from './queries/index';
+import { MetaMask,  } from "@web3-react/metamask"
+import { initializeConnector } from '@web3-react/core'
 
 
 function getLibrary(provider: any) {
@@ -16,7 +18,27 @@ function getLibrary(provider: any) {
 }
 
 
-function App() {  
+export interface AppContext {
+  account: string,
+  domain: string
+}
+
+declare const chrome: any;
+
+// Web3 
+export const [metamaskConnector, hooks] = initializeConnector<MetaMask>((actions) => new MetaMask({ actions }))
+
+export const Context = React.createContext<AppContext>({
+  account: '',
+  domain: ''
+});
+
+function App() { 
+  const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
+  const accounts = useAccounts()
+  const [account, setAccount] = useState("")
+  const [domain, setDomain] = useState("")
+  const [domainRegisteredOn, setDomainRegisteredOn] = useState(0)
   const [domainStatus, setDomainStatus] = useState<AlertMessageType>({
     message: 'Loading...',
     type: 'warning',
@@ -32,8 +54,34 @@ function App() {
     getStatus('https://www.amazon.com');
   }, [])
  
+  useEffect(() => {
+    console.log('accounts', accounts)
+    if(accounts?.length) {
+        setAccount(accounts[0])
+    } else {
+        setAccount("")
+    }
+  }, [accounts])
+
+
+  if(chrome && chrome.runtime) {
+    chrome.runtime.onMessage.addListener((msg: any, sender: any, sendResponse: any) => {
+        // console.log('on message', msg, sender)
+        if(msg && msg.type == "domain"){
+          setDomain(msg.data.domain)
+          setDomainRegisteredOn(msg.data.createdOn)
+          setDomainStatus({
+            message: msg.data.msg,
+            type: msg.data.type,
+            description: msg.data.description
+          })
+        }
+    });
+}
 
   return (
+    <Context.Provider value={{account, domain}}>
+
       <div className="App">
         <div className='backdrop'></div>
         <header className="App-header">
@@ -44,9 +92,9 @@ function App() {
 
           <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
             <Card style={{ width: '100%', textAlign: 'left' }}>
-              <p><b>Domain:</b> www.google.com</p>
-              <p><b>Registered on: </b>12/12/2021</p>
-              <Alert message={domainStatus.message} 
+              <p><b>Domain:</b> {domain}</p>
+              <p><b>Registered on: </b>{domainRegisteredOn ? (new Date(domainRegisteredOn)).toLocaleDateString() : 'NA'}</p>
+              <Alert message={<b>domainStatus.message</b>} 
                     type={domainStatus.type}
                     description={domainStatus.description}
                     showIcon/>
@@ -79,7 +127,7 @@ function App() {
                 
               </Panel>
             </Collapse>
-            <Collapse
+            {/* <Collapse
               bordered={true}
               defaultActiveKey={['0']}
               expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
@@ -91,7 +139,7 @@ function App() {
               </div>} key="1" className="site-collapse-custom-panel">
                 <Statistic title="Active Users" value={112893} style={{color: 'white'}} />
               </Panel>
-            </Collapse>
+            </Collapse> */}
             <Collapse
               bordered={true}
               defaultActiveKey={['0']}
@@ -100,7 +148,7 @@ function App() {
               style={{ width: '100%' }}
             >
               <Panel header={<div>
-                <b style={{fontSize: '15px'}}>History</b>
+                <b style={{fontSize: '15px'}}>My History</b>
               </div>} key="1" className="site-collapse-custom-panel">
                 <History></History>
               </Panel>
@@ -109,6 +157,7 @@ function App() {
           </Space>
         </header>
       </div>
+      </Context.Provider>
   );
 }
 
