@@ -1,13 +1,19 @@
-export function FETCH_REPORTS() {
+export function FETCH_REPORTS(count,address) {
     return `query {
-        reports(first: 5) {
+        reports(first: ${count}, where: {reporter: "${address}"}) {
             id
-            domain
             isScam
             reporter
-            createdon
+            comments
             evidences
+            createdon
+            domain
+            rewardAmount
+            stakeAmount
             status
+            updatedon
+            validator
+            validatorComments
           }
       }`;
 }
