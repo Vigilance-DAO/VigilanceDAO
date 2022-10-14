@@ -6,14 +6,27 @@ import reportWebVitals from './reportWebVitals';
 import Navigation from './Navigation';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Report from './pages/report/Report';
-import { MoralisProvider } from "react-moralis";
 import Cases from './pages/cases/Cases';
+import { configureChains, createClient,chain,WagmiConfig } from 'wagmi'
+import { alchemyProvider } from 'wagmi/providers/alchemy'
+import { publicProvider } from 'wagmi/providers/public'
+import { InjectedConnector } from 'wagmi/connectors/injected'
 
+const { chains, provider } = configureChains([chain.polygonMumbai], [
+  alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_KEY }),
+  publicProvider(),
+])
+
+const client = createClient({
+  autoConnect: true,
+  connectors: [new InjectedConnector({ chains })],
+  provider,
+})
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <MoralisProvider appId={process.env.REACT_APP_MORALIS_APP_ID || ''} serverUrl={process.env.REACT_APP_MORALIS_SERVER_URL || ''}>
+  <WagmiConfig client={client}>
     <React.StrictMode>
       <Router>
         <Navigation />
@@ -24,7 +37,7 @@ root.render(
         </Routes>
       </Router>
     </React.StrictMode>
-  </MoralisProvider>
+  </WagmiConfig>
 );
 
 // If you want to start measuring performance in your app, pass a function

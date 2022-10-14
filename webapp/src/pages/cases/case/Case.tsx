@@ -2,35 +2,32 @@ import React, { useEffect, useState } from 'react';
 import { connect } from "@tableland/sdk";
 import { FileUploader } from "react-drag-drop-files";
 import { Paper, TextField, Grid, Button, Card, Box, Accordion, AccordionSummary, Typography, AccordionDetails, ImageList, ImageListItem, Link } from '@mui/material';
-import { create } from "ipfs-http-client";
-import { useChain, useMoralis, useMoralisFile } from "react-moralis";
-import { useLocation } from "react-router-dom";
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ethers } from "ethers";
 import CaseValidateButton from './CaseValidateButton';
-
+import { useAccount } from 'wagmi';
 export interface CaseInputs {
     id: number,
     domain: string,
     isScam: boolean,
-    stake: string,
-    evidenceHashes: string[],
+    stakeAmount: string,
+    evidences: string[],
     comments: string,
     status: string
 }
 
 const Case = (inputs: CaseInputs) => {
-    const {id, domain, isScam, stake, evidenceHashes, comments, status} = inputs;
-    const { error, isUploading, moralisFile, saveFile } = useMoralisFile();
-    const { initialize, isInitialized, isAuthenticated } = useMoralis();
-    const { account } = useChain();
+    const {id, domain, isScam, stakeAmount, evidences, comments, status} = inputs;
     const [validatorComments, setValidatorComments] = useState('')
+    const { address, isConnected } = useAccount()
 
     // const evidences: string[] = ['QmeHnVNb8XFggiX3Bs1GjPAZZfQET81bacX5i5KSmGLfSA']
 
     function getFormatedAmount() {
-        return (ethers.utils.formatEther(stake)).toString()
+        return (ethers.utils.formatEther(stakeAmount)).toString()
     }
+    console.log(typeof id)
 
     return (
         <div>
@@ -50,13 +47,13 @@ const Case = (inputs: CaseInputs) => {
                     </AccordionSummary>
                     <AccordionDetails>
                     <ImageList sx={{ width: '100%' }} cols={3} rowHeight={164}>
-                        {evidenceHashes.map((item) => (
-                            <Link href={`${process.env.REACT_APP_IPFS_HOST}${item}`} target="_blank" underline="hover">
+                        {evidences.map((item) => (
+                            <Link href={item} target="_blank" underline="hover">
                                 <ImageListItem key={item}>
                                     <img
-                                        src={`${process.env.REACT_APP_IPFS_HOST}${item}`}
-                                        srcSet={`${process.env.REACT_APP_IPFS_HOST}${item}`}
-                                        alt={item}
+                                        src={item}
+                                        srcSet={item}
+                                        
                                         loading="lazy"
                                     />
                             </ImageListItem>
@@ -66,7 +63,7 @@ const Case = (inputs: CaseInputs) => {
                     </AccordionDetails>
                 </Accordion>
                 
-                {status=='OPEN' && <div><TextField
+                {status==null && <div><TextField
                     id="outlined-multiline-static"
                     label="Validator Comments"
                     multiline
@@ -78,10 +75,16 @@ const Case = (inputs: CaseInputs) => {
                     }}
                     sx={{width: '100%', marginTop: '10px'}}
                 />
-                <Box sx={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
+                {
+                    isConnected ? <Box sx={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
                     <CaseValidateButton id={id} validatorComments={validatorComments} action={'ACCEPT'}></CaseValidateButton>
                     <CaseValidateButton id={id} validatorComments={validatorComments} action={'REJECT'}></CaseValidateButton>
-                </Box></div>}
+                    </Box>
+                    :
+                    <Typography sx={{marginTop: '10px'}}>Please connect your wallet to validate this case</Typography>
+                }
+                </div>
+                }
                 
             </Card>
         </div>
