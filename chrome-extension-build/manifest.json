@@ -12,7 +12,7 @@
     "background": {
       "service_worker": "src/background.js"
     },
-    "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs", "<all_urls>"],
+    "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs"],
     "action": {
     },
     "web_accessible_resources": [

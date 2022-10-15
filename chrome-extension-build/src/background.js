@@ -99,42 +99,54 @@ function processTab(tab) {
                     console.warn('error fetching domain info', err)
                 }
             }
-            let tablelandURL = `${env.tablelandHost}SELECT%20*%20FROM%20${env.tableName}%20WHERE%20domain=%27${url}%27`
-            console.log({tablelandURL})
-            const tableData = await fetch(tablelandURL)
-            const tableDataContent = await tableData.json();
-            console.log({tableDataContent})
+
+            // let tablelandURL = `${env.tablelandHost}SELECT%20*%20FROM%20${env.tableName}%20WHERE%20domain=%27${url}%27`
+            // console.log({tablelandURL})
+            // const tableData = await fetch(tablelandURL)
+            // const tableDataContent = await tableData.json();
+            // console.log({tableDataContent})
             let isScamVerified = false
             let isLegitVerified = false;
-            if(tableDataContent.rows && tableDataContent.columns)
-                tableDataContent.rows.forEach(row=>{
-                    let status = row[searchColumnIndex(tableDataContent.columns, 'status')]
-                    let isScam = row[searchColumnIndex(tableDataContent.columns, 'isScam')]
-                    if(isScam && status == 'ACCEPTED')
-                        isScamVerified = true
-                    if(!isScam && status == 'ACCEPTED')
-                        isLegitVerified = true
-                })
-            console.log({isScamVerified, isLegitVerified})
+            // if(tableDataContent.rows && tableDataContent.columns)
+            //     tableDataContent.rows.forEach(row=>{
+            //         let status = row[searchColumnIndex(tableDataContent.columns, 'status')]
+            //         let isScam = row[searchColumnIndex(tableDataContent.columns, 'isScam')]
+            //         if(isScam && status == 'ACCEPTED')
+            //             isScamVerified = true
+            //         if(!isScam && status == 'ACCEPTED')
+            //             isLegitVerified = true
+            //     })
+            // console.log({isScamVerified, isLegitVerified})
             let now = new Date()
+            let type = 'info'
+            let msg = 'No reports/reviews'
+            let description = ''
             if(isScamVerified) {
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 chrome.action.setBadgeText({text: "❌"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
+                type = 'error'
+                msg = 'Verified as fraudulent domain'
             } else if(isLegitVerified) {
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "✔️"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
+                type = 'success'
+                msg = 'Verified as legit'
             } else if(createdOn && (now.getTime() - createdOn.getTime()) < env.alertPeriod) {
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 chrome.action.setBadgeText({text: "1"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
+                type = 'warning'
+                msg = 'Domain registed recently'
+                description = 'Majority of new domains are legit but some could be too. Please maintain caution, especially while performing financial transactions.'
             } else {
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "0"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
             }
+            sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, type, msg, description})
         })
         
     }
@@ -196,6 +208,7 @@ function takeScreenshot(tab) {
         let capturing = chrome.tabs.captureVisibleTab();
         capturing.then((imageUri) => {
             console.log('imageUri', imageUri);
+            sendMessage(tab, 'screenshot', {isSuccess: true, imageUri})
             sendMessage(tab, 'screenshot', {isSuccess: true, imageUri})
             resolve()
         }, (error) => {

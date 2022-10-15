@@ -94,7 +94,7 @@ function App() {
             <Card style={{ width: '100%', textAlign: 'left' }}>
               <p><b>Domain:</b> {domain}</p>
               <p><b>Registered on: </b>{domainRegisteredOn ? (new Date(domainRegisteredOn)).toLocaleDateString() : 'NA'}</p>
-              <Alert message={<b>domainStatus.message</b>} 
+              <Alert message={<b>{domainStatus.message}</b>} 
                     type={domainStatus.type}
                     description={domainStatus.description}
                     showIcon/>
@@ -112,19 +112,6 @@ function App() {
                 <p>Earn rewards 💰 by keeping the web safe</p>
               </div>} key="1" className="site-collapse-custom-panel">
                 <ReviewForm></ReviewForm>
-              </Panel>
-            </Collapse>
-            <Collapse
-              bordered={true}
-              defaultActiveKey={['0']}
-              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-              className="site-collapse-custom-collapse"
-              style={{ width: '100%' }}
-            >
-              <Panel header={<div>
-                <b style={{fontSize: '15px'}}>How does it work? 🤔</b>
-              </div>} key="1" className="site-collapse-custom-panel">
-                
               </Panel>
             </Collapse>
             {/* <Collapse
@@ -151,6 +138,19 @@ function App() {
                 <b style={{fontSize: '15px'}}>My History</b>
               </div>} key="1" className="site-collapse-custom-panel">
                 <History></History>
+              </Panel>
+            </Collapse>
+            <Collapse
+              bordered={true}
+              defaultActiveKey={['0']}
+              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              className="site-collapse-custom-collapse"
+              style={{ width: '100%' }}
+            >
+              <Panel header={<div>
+                <b style={{fontSize: '15px'}}>How does it work? 🤔</b>
+              </div>} key="1" className="site-collapse-custom-panel">
+                
               </Panel>
             </Collapse>
 
