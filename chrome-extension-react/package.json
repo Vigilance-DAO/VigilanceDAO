@@ -32,7 +32,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "release": "npm run build && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build"
+    "postbuild": "react-snap",
+    "release": "npm run build && npm run postbuild && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build"
   },
   "eslintConfig": {
     "extends": [
@@ -54,5 +55,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "react-snap": "^1.23.0"
   }
 }

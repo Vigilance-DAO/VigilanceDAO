@@ -141,9 +141,6 @@ export default function ReviewForm() {
                                 </Radio.Group>
                             </Form.Item>
                         </td>
-                        <td style={{float: 'right'}}>
-                            <NetworkSelector/>
-                        </td>
                     </tr>
                 </tbody>
                 </table>

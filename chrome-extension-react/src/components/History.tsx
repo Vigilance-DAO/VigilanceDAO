@@ -1,5 +1,5 @@
 import { Avatar, Button, List, Skeleton ,Collapse } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {subgraphQuery} from '../utils/index';
 import {FETCH_REPORTS} from '../queries/index';
 
@@ -8,21 +8,29 @@ import {
     CheckCircleFilled,
     CloseCircleFilled
   } from '@ant-design/icons';
+import { Context, hooks } from '../App';
 
-const count = 1;
+const count = 5;
 const History : React.FC = () => {
+  const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
+  const { account, domain } = useContext(Context);
   const [initLoading, setInitLoading] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [allLoaded, setAllLoaded] = useState(false)
   const [list, setList] = useState<any[]>([]);
   const [reports, setReports] = useState([]);
     const getData = async (count :number) => {
-        const data = await subgraphQuery(FETCH_REPORTS(count,"0x625B892f34ACA436e1525e5405A8fb81eC5cc04d"));
+        setInitLoading(true)
+        const data = await subgraphQuery(FETCH_REPORTS(count, account));
+        setInitLoading(false);
         setList(data.reports);
+        if(data.reports.length == 0) {
+          setAllLoaded(true)
+        }
     }
     useEffect(() => {
         getData(count);
-        setInitLoading(false);
-    }, [])
+    }, [account])
   
 
   const onLoadMore = async () => {
@@ -32,7 +40,7 @@ const History : React.FC = () => {
   };
 
   const loadMore =
-    !initLoading && !loading ? (
+    !initLoading && !loading && !allLoaded ? (
       <div
         style={{
           textAlign: 'center',

@@ -11,6 +11,7 @@ import {subgraphQuery} from './utils/index';
 import {FETCH_REPORTS_BY_DOMAIN} from './queries/index';
 import { MetaMask,  } from "@web3-react/metamask"
 import { initializeConnector } from '@web3-react/core'
+import NetworkSelector from './components/Network';
 
 
 function getLibrary(provider: any) {
@@ -36,6 +37,8 @@ export const Context = React.createContext<AppContext>({
 function App() { 
   const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
   const accounts = useAccounts()
+  const isActive = useIsActive()
+  const chainId = useChainId()
   const [account, setAccount] = useState("")
   const [domain, setDomain] = useState("")
   const [domainRegisteredOn, setDomainRegisteredOn] = useState(0)
@@ -85,14 +88,24 @@ function App() {
       <div className="App">
         <div className='backdrop'></div>
         <header className="App-header">
-          <Typography.Title  className="title" level={1} style={{color: 'white', marginTop: '15px'}}>
+          <Typography.Title  className="title" level={1} style={{color: 'white', marginTop: '15px', marginBottom: '5px'}}>
             Internet Vigilance
           </Typography.Title>
+          <Typography.Paragraph style={{color: 'white', fontSize: '12px', textAlign: 'center'}}>Powered by Blockchain</Typography.Paragraph>
           <Divider style={{margin: '12px 0 24px', borderTop: '1px solid rgb(255 255 255 / 20%)'}} />
 
           <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
             <Card style={{ width: '100%', textAlign: 'left' }}>
-              <p><b>Domain:</b> {domain}</p>
+              <table style={{width: '100%'}}>
+                <tbody>
+                  <tr>
+                    <td style={{textAlign: 'right', paddingBottom: '10px'}}><NetworkSelector/></td>
+                  </tr>
+                  <tr>
+                    <td><p><b>Domain:</b> {domain}</p></td>
+                  </tr>
+                </tbody>
+              </table>
               <p><b>Registered on: </b>{domainRegisteredOn ? (new Date(domainRegisteredOn)).toLocaleDateString() : 'NA'}</p>
               <Alert message={<b>{domainStatus.message}</b>} 
                     type={domainStatus.type}
@@ -137,7 +150,7 @@ function App() {
               <Panel header={<div>
                 <b style={{fontSize: '15px'}}>My History</b>
               </div>} key="1" className="site-collapse-custom-panel">
-                <History></History>
+                {!isActive ? <Button onClick={() => metamaskConnector.activate(chainId)}>Connect Wallet</Button> : <History></History>}
               </Panel>
             </Collapse>
             <Collapse
