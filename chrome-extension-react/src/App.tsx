@@ -1,3 +1,4 @@
+/*global chrome*/
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { CaretRightOutlined } from '@ant-design/icons';
@@ -24,7 +25,6 @@ export interface AppContext {
   domain: string
 }
 
-declare const chrome: any;
 
 // Web3 
 export const [metamaskConnector, hooks] = initializeConnector<MetaMask>((actions) => new MetaMask({ actions }))
@@ -48,6 +48,7 @@ function App() {
     description: ''
   })
 
+  let chrome: any;
   const { Panel } = Collapse
   const getStatus = async (domain: string) => {
     const data = await subgraphQuery(FETCH_REPORTS_BY_DOMAIN(domain));

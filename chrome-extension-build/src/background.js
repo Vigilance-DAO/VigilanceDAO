@@ -140,7 +140,7 @@ function processTab(tab) {
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
                 type = 'warning'
                 msg = 'Domain registed recently'
-                description = 'Majority of new domains are legit but some could be too. Please maintain caution, especially while performing financial transactions.'
+                description = 'Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.'
             } else {
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "0"});

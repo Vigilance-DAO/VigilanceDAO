@@ -31,11 +31,21 @@ const Case = (inputs: CaseInputs) => {
 
     return (
         <div>
-            <Card sx={{ padding: '10px', marginBottom: '10px' }}>
-                <Typography><b>ID:</b> #{id} | <b>Domain:</b> {domain} | <b>Claim:</b> {isScam ? 'Scam' : 'Legit'} | <b>Stake:</b> {getFormatedAmount()} MATIC</Typography>
-                <Typography><b>Status:</b> {status}</Typography>
-                <Typography>
-                    <b>Comments:</b> {comments}
+            <Card sx={{ padding: '20px', marginBottom: '10px' }}>
+            <Grid container spacing={2}>
+                <Grid item xs={1}>
+                    <Typography variant='h3'>#{id}</Typography>
+                </Grid>
+                <Grid item xs={9}>
+                    <Typography variant='h6'><b>🌐 Domain:</b> {domain}</Typography>
+                    <Typography><b>Claim:</b> {isScam ? 'Scam' : 'Legit'} | <b>Stake:</b> {getFormatedAmount()} MATIC</Typography>
+                </Grid>
+                <Grid item xs={2}>
+                    <Typography sx={{textAlign: 'right'}}><b>Status:</b> {status}</Typography>    
+                </Grid>
+            </Grid>
+                <Typography sx={{margin: '20px 0'}}>
+                    <b>Case comments:</b> {comments}
                 </Typography>
                 <Accordion>
                     <AccordionSummary
@@ -43,7 +53,7 @@ const Case = (inputs: CaseInputs) => {
                     aria-controls="panel1a-content"
                     id="panel1a-header"
                     >
-                    <Typography>Evidences</Typography>
+                    <Typography>📜 Case evidences</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                     <ImageList sx={{ width: '100%' }} cols={3} rowHeight={164}>
@@ -65,7 +75,7 @@ const Case = (inputs: CaseInputs) => {
                 
                 {status==null && <div><TextField
                     id="outlined-multiline-static"
-                    label="Validator Comments"
+                    label="Your Comments"
                     multiline
                     rows={2}
                     defaultValue=""

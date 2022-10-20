@@ -29,11 +29,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "rm -rf build && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "postbuild": "react-snap",
-    "release": "npm run build && npm run postbuild && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build"
+    "release": "npm run build && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build"
   },
   "eslintConfig": {
     "extends": [
