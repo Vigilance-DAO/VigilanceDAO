@@ -7,44 +7,34 @@ import type { RadioChangeEvent } from 'antd';
 import { ethers } from 'ethers';
 import AlertMessageType from '../interfaces/AlertMessageType';
 import { Web3Storage } from "web3.storage";
+// const createMetaMaskProvider = require('metamask-extension-provider');
 
 import { abi , address } from '../constants/index'
 import { Context, hooks, metamaskConnector } from '../App';
+import { chainInfo } from '../services/web3.hook';
 
 
+declare const window: any;
+declare const chrome: any;
 
 export default function ReviewForm() {
-    const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
-    const { account, domain } = useContext(Context);
-    const chainId = useChainId()
-    const accounts = useAccounts()
-    const isActivating = useIsActivating()
-    const provider = useProvider()
+    const { web3Hooks } = useContext(Context);
+    const { connectWallet, submitReport, getStakeAmount, stakeETH, account, chainId, reportTxInfo } = web3Hooks
 
-    const isActive = useIsActive()
-    
-    const [domainStatus, setDomainStatus] = useState<AlertMessageType>({
-        message: '',
-        type: 'info',
-        description: ''
-    })
-    
     const [isFraud, setIsFraud] = useState(true);
     const [buttonTxt, setButtonTxt] = useState("Connect Wallet")
     const [buttonDisabled, setButtonDisabled] = useState(false)
     const [fileList, setFileList] = useState<UploadFile[]>([]);
     
-    const [comments, setComments] = useState<string>();
+    const [comments, setComments] = useState<string>("");
     const web3storage_key = process.env.REACT_APP_WEB3_STORAGE_KEY;
     
-    useEffect(() => {
-        console.log('account', account)
-        if(account) {
-            setButtonTxt("Report")
-        } else {
-        }
-    }, [account])
-    
+    const [txMessage, setTxMessage] = useState<AlertMessageType>({
+        message: '',
+        type: 'info',
+        description: ''
+    })
+
     const { TextArea } = Input;
     
     const onFraudChange = (e: RadioChangeEvent) => {
@@ -55,11 +45,14 @@ export default function ReviewForm() {
     const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setComments(e.target.value);
     }
-
+    
     const uploadToIPFS = async () => {
+        setButtonDisabled(true)
+        setButtonTxt("Uploading...")
         const client = new Web3Storage({ token: web3storage_key === undefined ? "" : web3storage_key });
         let imageUrls : string[] = []
         for(let i = 0; i < fileList.length; i++) {
+            console.log('file', i, fileList[i])
             const file = fileList[i].originFileObj;
             if(file !== undefined) {
                 const cid = await client.put([file]);
@@ -74,44 +67,66 @@ export default function ReviewForm() {
     
     const reportDomain = async () => {
         try {
-            const signer = provider?.getSigner();
+            setButtonDisabled(true)
             const imageUrls = await uploadToIPFS();
             console.log(imageUrls)
-            const contract = new ethers.Contract(address, abi, signer);
-            const tx = await contract.report("https://www.amazon.com",isFraud, imageUrls,comments,{value : ethers.utils.parseEther("0.5")});
-            await tx.wait();
-            console.log(tx)
-        }
-        catch(e) {
+            submitReport(isFraud, imageUrls, comments, stakeETH.stakeETH) 
+        } catch(e) {
             alert(e)
         }
     }
     
-
-
     useEffect(() => {
-        if(isActivating) {
+        console.log('connectingWallet triggered', account, stakeETH, account, stakeETH)
+        if(account.loading) {
             setButtonTxt("Connecting...")
+            setButtonDisabled(true)
+        } else if(stakeETH.loading){
+            setButtonTxt('loading...')
             setButtonDisabled(true)
         } else {
             setButtonDisabled(false)
+            if(account.account && stakeETH.stakeETH == 0) {
+                setButtonTxt('loading...')
+                setButtonDisabled(true)
+                getStakeAmount()
+            } else if(account.account && stakeETH.stakeETH != 0) {
+                setButtonTxt("Report")
+                setButtonDisabled(false)
+            }
         }
 
-    }, [isActivating])
+    }, [account, stakeETH])
 
     useEffect(() => {
-        if(!isActive) {
-            setButtonTxt("Connect Wallet")
+        console.log('reportTxInfo', reportTxInfo)
+        if(reportTxInfo.loading) {
+            setButtonTxt("Submitting...")
+            setButtonDisabled(true)
+        } else if(account.account) {
+            setButtonDisabled(false)
+            setButtonTxt("Report")
         }
-    })
+        function getSuccessMessage(txHash: string) {
+            let network = chainInfo.find(item => item.chainId == chainId.chainId)
+            let url = `${network?.explorer}/tx/${txHash}`
+            return <p>Successful <a href={url}>transaction</a></p>
+        }
+        
+        setTxMessage({
+            type: reportTxInfo.isSuccess ? 'success' : 'error',
+            message: reportTxInfo.isSuccess ? getSuccessMessage(reportTxInfo.txHash) : (reportTxInfo.error || ''),
+            description: ''
+        })
+    }, [reportTxInfo])
 
     async function handleButtonClick() {
-        if(!isActive) {
-            metamaskConnector.activate(chainId)
-        }
-        else{
-            
+        if(!account.account) {
+            connectWallet()
+        } else if(buttonTxt == 'Report') {
             reportDomain()
+        } else {
+            alert(`Setting not available: ${buttonTxt}`)
         }
     }
 
@@ -155,7 +170,7 @@ export default function ReviewForm() {
                 
                 <Evidence fileList={fileList} setFileList={setFileList}></Evidence>
                 <div style={{display: 'flex'}}>
-                    {isActive ? 
+                    {account.account ? 
                         <Tooltip 
                             title="This is required to create a report. If deemed correct, you get your stake back along with additional rewards. If incorrect, entire stake is slashed."
                             style={{cursor: 'pointer'}}
@@ -164,7 +179,7 @@ export default function ReviewForm() {
                                 disabled={true}
                                 style={{background: 'white', color: 'black', cursor: 'pointer !important'}}
                             >
-                                <b style={{paddingRight: '5px'}}>STAKE:</b> 5 MATIC
+                                <b style={{paddingRight: '5px'}}>STAKE:</b> {stakeETH.stakeETH} MATIC
                             </Button>
                         </Tooltip>
                         : <></>
@@ -175,9 +190,9 @@ export default function ReviewForm() {
                         disabled={buttonDisabled}
                     >{buttonTxt}</Button>
                 </div>
-                {domainStatus.message ? <Alert message={domainStatus.message} 
-                    type={domainStatus.type}
-                    description={domainStatus.description}
+                {txMessage.message ? <Alert message={txMessage.message} 
+                    type={txMessage.type}
+                    description={txMessage.description}
                     showIcon
                     style={{marginTop: '10px'}}/> : <></>}
             </Form>

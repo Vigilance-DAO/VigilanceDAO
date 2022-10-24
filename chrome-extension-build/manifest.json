@@ -17,14 +17,14 @@
     },
     "web_accessible_resources": [
       {
-        "resources": [ "index.html", "static/*" ],
+        "resources": [ "index.html", "static/*", "src/content.js" ],
         "matches": ["<all_urls>"]
       }
     ],
     "content_scripts": [ 
       {
         "matches": ["<all_urls>"],
-        "js": ["src/psl.min.js", "src/content.js"]
+        "js": ["src/psl.min.js", "src/ethers.umd.min.js", "src/detect-provider.min.js", "src/content.js"]
       }
     ]
 }

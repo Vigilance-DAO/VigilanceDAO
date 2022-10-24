@@ -1,4 +1,4 @@
-import { Avatar, Button, List, Skeleton ,Collapse } from 'antd';
+import { Avatar, Button, List, Skeleton ,Collapse, Divider } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import {subgraphQuery} from '../utils/index';
 import {FETCH_REPORTS} from '../queries/index';
@@ -13,7 +13,8 @@ import { Context, hooks } from '../App';
 const count = 5;
 const History : React.FC = () => {
   const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
-  const { account, domain } = useContext(Context);
+  const { web3Hooks } = useContext(Context);
+  const { account } = web3Hooks
   const [initLoading, setInitLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [allLoaded, setAllLoaded] = useState(false)
@@ -21,7 +22,7 @@ const History : React.FC = () => {
   const [reports, setReports] = useState([]);
     const getData = async (count :number) => {
         setInitLoading(true)
-        const data = await subgraphQuery(FETCH_REPORTS(count, account));
+        const data = await subgraphQuery(FETCH_REPORTS(count, account.account));
         setInitLoading(false);
         setList(data.reports);
         if(data.reports.length == 0) {
@@ -68,7 +69,7 @@ const History : React.FC = () => {
 
   const statusText = (status: string,address: string) => {
     if (status === null) {
-      return "Open"
+      return "OPEN"
     }
     else if(status === 'ACCEPTED') {
       return "Aproved by "+address.slice(0,6)+"..."+address.slice(-4)
@@ -97,7 +98,7 @@ const History : React.FC = () => {
               style={{ width: '100%' }}
             >
               <Panel header={<div>
-                <b style={{fontSize: '15px'}}>{renderStatus(item.status)} {item.domain} - {item.isScam ? "SCAM" : "LEGIT"}</b>
+                <b style={{fontSize: '15px'}}>{renderStatus(item.status)} {item.domain} - {item.isScam ? "scam" : "legit"}</b>
                 
               </div>} key="1" className="site-collapse-custom-panel" showArrow={false}>
                 <div>
@@ -116,7 +117,8 @@ const History : React.FC = () => {
                       item.rewardAmount === null ? <div style={{color:"gray"}}>Reward 0 VIGI</div> : <div style={{color:"orange"}}>Reward : {Number(item.rewardAmount)/1e18} VIGI</div>
                     }
                   </div>
-                  <p>Comments : {item.validatorComments}</p>
+                  {item.validatorComments ? <p>Comments : {item.validatorComments}</p> : <span></span>}
+                  <Divider style={{margin: '12px 0', borderTop: '1px solid rgb(94 94 94 / 20%)'}} />
                   <b>My Report</b>
                   <div>Comments : {item.comments}</div>
                   <div>

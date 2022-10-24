@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import ReportArtifact from '../../../contracts/ReportDomain.sol/ReportDomain.json';
-import Web3Service from 'services/web3Service';
 import {Button} from '@mui/material';
 import {abi,address} from "../../../constants/index"
 import { ethers } from 'ethers';

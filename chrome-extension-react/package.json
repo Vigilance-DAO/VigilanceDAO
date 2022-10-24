@@ -19,6 +19,7 @@
     "axios": "^1.1.2",
     "ethers": "^5.7.1",
     "graphql-request": "^5.0.0",
+    "metamask-extension-provider": "^3.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -32,7 +33,7 @@
     "build": "rm -rf build && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "postbuild": "react-snap",
+    "build:content": "browserify content.js -o ../chrome-extension-build/src/content.js",
     "release": "npm run build && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build"
   },
   "eslintConfig": {
@@ -58,5 +59,8 @@
   },
   "devDependencies": {
     "react-snap": "^1.23.0"
+  },
+  "reactSnap": {
+    "inlineCss": true
   }
 }

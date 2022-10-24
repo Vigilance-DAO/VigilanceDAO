@@ -1,5 +1,5 @@
 export default interface AlertMessageType {
-    message: string,
+    message: React.ReactNode,
     type: 'success' | 'warning' | 'error' | 'info',
     description: string
 }

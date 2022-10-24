@@ -23,8 +23,7 @@ export function FETCH_REPORTS_BY_DOMAIN(domain) {
         reports(
             orderBy: id
             orderDirection: desc
-            where: {domain: "${domain}", status: "ACCEPTED"}
-            first:1
+            where: {domain: "${domain}"}
         ){
             id
             createdon

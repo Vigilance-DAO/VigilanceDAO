@@ -3,32 +3,24 @@ import { DownOutlined } from '@ant-design/icons';
 import { useContext, useEffect, useState } from "react";
 import { Connector } from '@web3-react/types';
 import { Context, hooks, metamaskConnector } from "../App";
-
-const chainInfo = [{
-    chainId: 137,
-    fullName: 'Polygon Mainnet',
-    shortName: 'Mainnet'
-}, {
-    chainId: 80001,
-    fullName: 'Polygon Mumbai',
-    shortName: 'Mumbai'
-}]
+import { chainInfo } from "../services/web3.hook";
 
 function NetworkSelector() {
     
-    const { account } = useContext(Context);
-    const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames } = hooks
-    const chainId = useChainId()
+    const { web3Hooks } = useContext(Context);
+    const { account, chainId, switchNetwork } = web3Hooks
+    // const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames } = hooks
+    // const chainId = useChainId()
     const [network, setNetwork] = useState('Mumbai')
     let defaultChainId = parseInt(process.env.REACT_APP_DEFAULT_NETWORK)
-    const [selectedChainId, setSelectedChainId] = useState(chainId || defaultChainId)
+    const [selectedChainId, setSelectedChainId] = useState(chainId.chainId || defaultChainId)
 
     function onNetworkChange(_network: string) {
         let _chainInfo = chainInfo.find(item => {
             return item.fullName == _network
         })
         if(_chainInfo) {
-            metamaskConnector.activate(_chainInfo.chainId)
+            switchNetwork(_chainInfo.chainId)
             setSelectedChainId(_chainInfo.chainId)
         } else {
             alert("Chain not found")
@@ -56,10 +48,10 @@ function NetworkSelector() {
 
     useEffect(() => {
         console.log('network selector', account, chainId)
-        if(account) {
-            let len = account.length
-            let network = chainInfo.find(item => item.chainId == chainId)
-            setNetwork(`${account.substring(0, 3)}...${account.substring(len-3, len)} | ${network?.shortName}`)
+        if(account.account) {
+            let len = account.account.length
+            let network = chainInfo.find(item => item.chainId == chainId.chainId)
+            setNetwork(`${account.account.substring(0, 3)}...${account.account.substring(len-3, len)} | ${network?.shortName}`)
             if(items.length == 2) {
                 items.push({
                     type: 'divider',

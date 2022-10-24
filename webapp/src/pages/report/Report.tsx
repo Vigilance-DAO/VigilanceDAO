@@ -5,7 +5,6 @@ import { Paper, TextField, Grid, Button, RadioGroup, FormControlLabel, Radio } f
 import { create } from "ipfs-http-client";
 import { useChain, useMoralis, useMoralisFile } from "react-moralis";
 import { useLocation } from "react-router-dom";
-import Web3Service from '../../services/web3Service';
 import ReportSubmit from './ReportSubmit';
 
 function Report(props: any) {

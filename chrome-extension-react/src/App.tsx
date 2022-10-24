@@ -13,6 +13,9 @@ import {FETCH_REPORTS_BY_DOMAIN} from './queries/index';
 import { MetaMask,  } from "@web3-react/metamask"
 import { initializeConnector } from '@web3-react/core'
 import NetworkSelector from './components/Network';
+// import Web3Service from './services/web3.service';
+import { Web3Hook } from './services/web3.hook';
+import { DomainHistory } from './components/DomainHistory';
 
 
 function getLibrary(provider: any) {
@@ -21,8 +24,7 @@ function getLibrary(provider: any) {
 
 
 export interface AppContext {
-  account: string,
-  domain: string
+  web3Hooks: ReturnType<typeof Web3Hook>
 }
 
 
@@ -30,61 +32,52 @@ export interface AppContext {
 export const [metamaskConnector, hooks] = initializeConnector<MetaMask>((actions) => new MetaMask({ actions }))
 
 export const Context = React.createContext<AppContext>({
-  account: '',
-  domain: ''
+  web3Hooks: {
+    account: {account: '', loading: false},
+    chainId: {chainId: 0, loading: false},
+    reportTxInfo: {isSuccess: false, error: null, txHash: '', loading: false},
+    stakeETH: {stakeETH: 0, loading: false},
+    domainInfo: {
+      domain: '',
+      registeredOn: 0,
+      status: {
+          message: 'Loading...',
+          type: 'warning',
+          description: ''
+      },
+      loading: true
+    },
+
+    switchNetwork: () => {},
+    connectWallet: () => {},
+    getStakeAmount: () => {},
+    submitReport: () => {},
+    activateListeners: () => {}
+  }
 });
 
 function App() { 
-  const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
-  const accounts = useAccounts()
-  const isActive = useIsActive()
-  const chainId = useChainId()
-  const [account, setAccount] = useState("")
-  const [domain, setDomain] = useState("")
-  const [domainRegisteredOn, setDomainRegisteredOn] = useState(0)
-  const [domainStatus, setDomainStatus] = useState<AlertMessageType>({
-    message: 'Loading...',
-    type: 'warning',
-    description: ''
-  })
+  // const { useChainId, useAccounts, useIsActivating, useIsActive, useProvider, useENSNames} = hooks
+  // const accounts = useAccounts()
+  // const isActive = useIsActive()
+  const _web3hook = Web3Hook()
+  const { activateListeners, account: _account, chainId: _chainId, domainInfo, connectWallet } = _web3hook
+  useEffect(() => { activateListeners() })
 
-  let chrome: any;
   const { Panel } = Collapse
   const getStatus = async (domain: string) => {
     const data = await subgraphQuery(FETCH_REPORTS_BY_DOMAIN(domain));
-    console.log(data.isScam);
+    console.log('getStatus', data.isScam);
   }
+
   useEffect(() => {
-    getStatus('https://www.amazon.com');
-  }, [])
- 
-  useEffect(() => {
-    console.log('accounts', accounts)
-    if(accounts?.length) {
-        setAccount(accounts[0])
-    } else {
-        setAccount("")
+    if(domainInfo.domain) {
+      getStatus(domainInfo.domain);
     }
-  }, [accounts])
-
-
-  if(chrome && chrome.runtime) {
-    chrome.runtime.onMessage.addListener((msg: any, sender: any, sendResponse: any) => {
-        // console.log('on message', msg, sender)
-        if(msg && msg.type == "domain"){
-          setDomain(msg.data.domain)
-          setDomainRegisteredOn(msg.data.createdOn)
-          setDomainStatus({
-            message: msg.data.msg,
-            type: msg.data.type,
-            description: msg.data.description
-          })
-        }
-    });
-}
+  }, [domainInfo])
 
   return (
-    <Context.Provider value={{account, domain}}>
+    <Context.Provider value={{ web3Hooks: _web3hook }}>
 
       <div className="App">
         <div className='backdrop'></div>
@@ -103,17 +96,31 @@ function App() {
                     <td style={{textAlign: 'right', paddingBottom: '10px'}}><NetworkSelector/></td>
                   </tr>
                   <tr>
-                    <td><p><b>Domain:</b> {domain}</p></td>
+                    <td><p><b>Domain:</b> {domainInfo.domain}</p></td>
                   </tr>
                 </tbody>
               </table>
-              <p><b>Registered on: </b>{domainRegisteredOn ? (new Date(domainRegisteredOn)).toLocaleDateString() : 'NA'}</p>
-              <Alert message={<b>{domainStatus.message}</b>} 
-                    type={domainStatus.type}
-                    description={domainStatus.description}
+              <p><b>Registered on: </b>{domainInfo.registeredOn ? (new Date(domainInfo.registeredOn)).toLocaleDateString() : 'NA'}</p>
+              <Alert message={<b>{domainInfo.status.message}</b>} 
+                    type={domainInfo.status.type}
+                    description={domainInfo.status.description}
                     showIcon/>
             </Card>
-          
+
+            <Collapse
+              bordered={true}
+              defaultActiveKey={['0']}
+              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              className="site-collapse-custom-collapse"
+              style={{ width: '100%' }}
+            >
+              <Panel header={<div>
+                <b style={{fontSize: '15px'}}>Domain reports history</b>
+                </div>} key="1" className="site-collapse-custom-panel">
+                <DomainHistory/>
+              </Panel>
+            </Collapse>
+
             <Collapse
               bordered={true}
               defaultActiveKey={['0']}
@@ -151,7 +158,7 @@ function App() {
               <Panel header={<div>
                 <b style={{fontSize: '15px'}}>My History</b>
               </div>} key="1" className="site-collapse-custom-panel">
-                {!isActive ? <Button onClick={() => metamaskConnector.activate(chainId)}>Connect Wallet</Button> : <History></History>}
+                {!_account.account ? <Button onClick={() => connectWallet()}>Connect Wallet</Button> : <History></History>}
               </Panel>
             </Collapse>
             <Collapse
@@ -163,6 +170,19 @@ function App() {
             >
               <Panel header={<div>
                 <b style={{fontSize: '15px'}}>How does it work? 🤔</b>
+              </div>} key="1" className="site-collapse-custom-panel">
+                
+              </Panel>
+            </Collapse>
+            <Collapse
+              bordered={true}
+              defaultActiveKey={['0']}
+              expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
+              className="site-collapse-custom-collapse"
+              style={{ width: '100%' }}
+            >
+              <Panel header={<div>
+                <b style={{fontSize: '15px'}}>Contact us</b>
               </div>} key="1" className="site-collapse-custom-panel">
                 
               </Panel>

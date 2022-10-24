@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Modal, Upload, Form, Button, Space, Tooltip } from 'antd';
 import type { RcFile, UploadProps } from 'antd/es/upload';
-import type { UploadFile } from 'antd/es/upload/interface';
+import type { UploadFile, } from 'antd/es/upload/interface';
 import React, { useState } from 'react';
 import { UploadOutlined, ExpandOutlined } from '@ant-design/icons';
 import { UploadRequestOption } from 'rc-upload/lib/interface';
@@ -63,18 +63,26 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
     );
 
     if(chrome && chrome.runtime) {
-        chrome.runtime.onMessage.addListener((msg: any, sender: any, sendResponse: any) => {
+        chrome.runtime.onMessage.addListener(async (msg: any, sender: any, sendResponse: any) => {
             // console.log('on message', msg, sender)
             if(msg && msg.type == "screenshot"){
                 // console.log('recieved screenshot')
                 if(msg.data.isSuccess) {
-                    let _fileList: UploadFile[] = [...fileList]
+                    let _fileList: any[] = [...fileList]
+                    let lastModifiedDate = new Date()
+                    const blob = await (await fetch(msg.data.imageUri)).blob(); 
+                    const file = new File([blob], `evidence_${_fileList.length}.jpg`, 
+                        {type:"image/jpeg", lastModified: (lastModifiedDate).getTime()});
+                    let uid =  `screenshot_${_fileList.length}`
+                    console.log('uid', uid, file.stream)
                     _fileList.push({
-                        uid: `screenshot_${_fileList.length}`,
+                        uid,
                         name: `evidence_${_fileList.length}.jpg`,
                         status: 'done',
                         url: msg.data.imageUri,
+                        originFileObj: file
                     })
+                    console.log('_fileList', _fileList[0].originFileObj?.stream)
                     setFileList(_fileList)
                 } else {
                     alert(msg.data.error)
