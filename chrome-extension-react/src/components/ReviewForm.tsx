@@ -56,7 +56,7 @@ export default function ReviewForm() {
             const file = fileList[i].originFileObj;
             if(file !== undefined) {
                 const cid = await client.put([file]);
-                const img_url = ("https://gateway.pinata.cloud/ipfs/"+cid+"/"+file.name);
+                const img_url = ("ipfs://"+cid+"/"+file.name);
                 if(!imageUrls.includes(img_url)) {
                     imageUrls.push(img_url)
                 }

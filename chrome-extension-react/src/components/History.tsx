@@ -9,6 +9,7 @@ import {
     CloseCircleFilled
   } from '@ant-design/icons';
 import { Context, hooks } from '../App';
+import { IpfsImage } from 'react-ipfs-image';
 
 const count = 5;
 const History : React.FC = () => {
@@ -124,7 +125,7 @@ const History : React.FC = () => {
                   <div>
                     {
                       item.evidences.split(",").map((evidence: string) => {
-                        return <img src={evidence} alt="evidence" style={{width:"100px",height:"100px"}}/>
+                        return <IpfsImage hash={evidence} gatewayUrl='https://gateway.pinata.cloud/ipfs' style={{width:"100px",height:"100px"}}/>
                       }
                       )
                     }
