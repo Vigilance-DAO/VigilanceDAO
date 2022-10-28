@@ -4,7 +4,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ dinesh11515/reportdomain",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ venkatteja/vigilancedao",
     "create-local": "graph create --node http://localhost:8020/ dinesh11515/reportdomain",
     "remove-local": "graph remove --node http://localhost:8020/ dinesh11515/reportdomain",
     "deploy-local": "graph deploy --node http://0.0.0.0:8020/ --ipfs http://0.0.0.0:5001 dinesh11515/reportdomain",

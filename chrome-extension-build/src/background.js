@@ -7,7 +7,7 @@ try {
 const env = {
     host: 'https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com',
     alertPeriod: 4 * 30 * 86400 * 1000,
-    SUBGRAPH_URL: "https://api.thegraph.com/subgraphs/name/dinesh11515/reportdomain"
+    SUBGRAPH_URL: "https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao"
 }
 
 function injectedFunction() {

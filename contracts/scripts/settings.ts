@@ -16,8 +16,9 @@ async function run() {
         await tx.wait()
     }
 
-
-    setStakingAmount()
+    let 
+        let wallet = "0x625B892f34ACA436e1525e5405A8fb81eC5cc04d"
+    // await setStakingAmount()
 }
 
 run()

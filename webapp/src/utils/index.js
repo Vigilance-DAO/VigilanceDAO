@@ -2,7 +2,7 @@ import axios from "axios";
 
 export async function subgraphQuery(query) {
   try {
-    const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/dinesh11515/reportdomain";
+    const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao";
     const response = await axios.post(SUBGRAPH_URL, {
       query,
     });

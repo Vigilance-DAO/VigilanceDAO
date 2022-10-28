@@ -125,7 +125,7 @@ const History : React.FC = () => {
                   <div>
                     {
                       item.evidences.split(",").map((evidence: string) => {
-                        return <IpfsImage hash={evidence} gatewayUrl='https://gateway.pinata.cloud/ipfs' style={{width:"100px",height:"100px"}}/>
+                        return <IpfsImage hash={evidence} gatewayUrl='https://ipfs.io/ipfs' style={{width:"100px",height:"100px"}}/>
                       }
                       )
                     }

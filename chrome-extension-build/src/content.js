@@ -409,7 +409,7 @@ const abi = [
     }
   ]
 
-const address = "0x84656a630e046904667c50cBF05eB1A79Dd44611"
+const address = "0x68Db62ADCaADdb21cB000841f1F347A6d8bEED9b"
 
 module.exports = {
     abi, address
