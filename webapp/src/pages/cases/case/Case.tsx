@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { connect } from "@tableland/sdk";
 import { FileUploader } from "react-drag-drop-files";
 import { Paper, TextField, Grid, Button, Card, Box, Accordion, AccordionSummary, Typography, AccordionDetails, ImageList, ImageListItem, Link } from '@mui/material';
+import { IpfsImage } from 'react-ipfs-image';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { ethers } from "ethers";
@@ -15,10 +16,11 @@ export interface CaseInputs {
     evidences: string[],
     comments: string,
     status: string
+    validator: boolean
 }
 
 const Case = (inputs: CaseInputs) => {
-    const {id, domain, isScam, stakeAmount, evidences, comments, status} = inputs;
+    const {id, domain, isScam, stakeAmount, evidences, comments, status,validator} = inputs;
     const [validatorComments, setValidatorComments] = useState('')
     const { address, isConnected } = useAccount()
 
@@ -27,7 +29,6 @@ const Case = (inputs: CaseInputs) => {
     function getFormatedAmount() {
         return (ethers.utils.formatEther(stakeAmount)).toString()
     }
-    console.log(typeof id)
 
     return (
         <div>
@@ -36,12 +37,12 @@ const Case = (inputs: CaseInputs) => {
                 <Grid item xs={1}>
                     <Typography variant='h3'>#{id}</Typography>
                 </Grid>
-                <Grid item xs={9}>
+                <Grid item xs={8}>
                     <Typography variant='h6'><b>🌐 Domain:</b> {domain}</Typography>
                     <Typography><b>Claim:</b> {isScam ? 'Scam' : 'Legit'} | <b>Stake:</b> {getFormatedAmount()} MATIC</Typography>
                 </Grid>
-                <Grid item xs={2}>
-                    <Typography sx={{textAlign: 'right'}}><b>Status:</b> {status}</Typography>    
+                <Grid item xs={3}>
+                    <Typography sx={{textAlign: 'right'}}><b>Status:</b> {status===null ? "Open" : status}</Typography>    
                 </Grid>
             </Grid>
                 <Typography sx={{margin: '20px 0'}}>
@@ -60,13 +61,8 @@ const Case = (inputs: CaseInputs) => {
                         {evidences.map((item) => (
                             <Link href={item} target="_blank" underline="hover">
                                 <ImageListItem key={item}>
-                                    <img
-                                        src={item}
-                                        srcSet={item}
-                                        
-                                        loading="lazy"
-                                    />
-                            </ImageListItem>
+                                    <IpfsImage hash={item} gatewayUrl='https://infura-ipfs.io/ipfs'  style={{width:"200px",height:"200px"}}/>
+                                </ImageListItem>
                             </Link>
                         ))}
                     </ImageList>
@@ -86,10 +82,12 @@ const Case = (inputs: CaseInputs) => {
                     sx={{width: '100%', marginTop: '10px'}}
                 />
                 {
-                    isConnected ? <Box sx={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
+                    isConnected ? validator ? <Box sx={{ display: 'flex', flexDirection: 'row', marginTop: '10px' }}>
                     <CaseValidateButton id={id} validatorComments={validatorComments} action={'ACCEPT'}></CaseValidateButton>
                     <CaseValidateButton id={id} validatorComments={validatorComments} action={'REJECT'}></CaseValidateButton>
                     </Box>
+                    :
+                    <Typography sx={{marginTop: '10px'}}>You are not a validator</Typography>
                     :
                     <Typography sx={{marginTop: '10px'}}>Please connect your wallet to validate this case</Typography>
                 }

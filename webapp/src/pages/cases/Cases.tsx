@@ -6,7 +6,9 @@ import { SelectChangeEvent } from '@mui/material';
 import { FETCH_OPEN_REPORTS,FETCH_REPORTS} from '../../queries/index';
 import { subgraphQuery } from '../../utils/index';
 import {ethers} from "ethers";
-
+import {useSigner,useAccount} from 'wagmi'
+import { governanceBadgeAbi, governanceBadgeAddress } from '../../constants/index';
+import { ValidatorInfo } from '@solana/web3.js';
 interface CaseInputsTable extends Omit<CaseInputs, 'evidences'> {
     evidences: string
 }
@@ -14,6 +16,10 @@ interface CaseInputsTable extends Omit<CaseInputs, 'evidences'> {
 function Cases(props: any) {
     const [cases, setCases] = useState<CaseInputsTable[]>([])
     const [filterStatus, setFilterStatus] = useState<string>('OPEN')
+    const {address,isConnected} = useAccount()
+    const { data: signer, isError, isLoading } = useSigner()
+    const [ validator,setValidator] = useState<boolean>(false)
+    const [ validationRequest , setValidationRequest] = useState<boolean>(false)
 
     async function fetchCases() {
         let data;
@@ -31,22 +37,75 @@ function Cases(props: any) {
         }
         setCases(_cases)
     }
-    console.log(cases)
+
+    async function checkValidator() {
+        try{
+            const governanceBadgeContract = new ethers.Contract(governanceBadgeAddress, governanceBadgeAbi, signer as ethers.Signer);
+            const bal = await governanceBadgeContract.balanceOf(address,1);
+            console.log('bal', ethers.BigNumber.from(bal).toNumber())
+            if(ethers.BigNumber.from(bal).toNumber() > 0){
+                setValidator(true)
+            }
+            else{
+                const requests = await governanceBadgeContract.validationRequests(address);
+                if(!requests.isZero()){
+                    setValidationRequest(true)
+                }
+            }
+        }
+        catch(e){
+            alert(e)
+        }
+    }
+
+    async function requestValidatorRole() {
+        try{
+            const governanceBadgeContract = new ethers.Contract(governanceBadgeAddress, governanceBadgeAbi, signer as ethers.Signer);
+            const stakeAmount = await governanceBadgeContract.stakingAmount();
+            const tx = await governanceBadgeContract.requestValidatorRole({value: stakeAmount});
+            await tx.wait()
+            setValidationRequest(true)
+        }
+        catch(e){
+            alert(e)
+        }
+    }
+
+    async function revokeRequest() {
+        try{
+            const governanceBadgeContract = new ethers.Contract(governanceBadgeAddress, governanceBadgeAbi, signer as ethers.Signer);
+            const tx = await governanceBadgeContract.revokeValidationRequest();
+            await tx.wait()
+            setValidationRequest(false)
+        }
+        catch(e){
+            alert(e)
+        }
+    }
+
+
+        
+    
 
     useEffect(()=>{
         fetchCases()
     }, [filterStatus])
 
-    // console.log(typeof filterStatus)
+    useEffect(()=>{
+        if(isConnected && signer){
+            checkValidator()
+        }
+    }, [isConnected,signer])
+
+
+    console.log(validator,address)
 
     function loadCases() {
         let rows: any[] = []
         for(let i=0; i<cases.length; ++i) {
             let _case = cases[i]
-            console.log(_case)
             let _evidences = (_case.evidences as string).split(',')
-            console.log(typeof _case.id)
-            rows.push(<Case domain={_case.domain} isScam={_case.isScam} id={ethers.BigNumber.from(_case.id).toNumber()} stakeAmount={_case.stakeAmount} evidences={_evidences} comments={_case.comments} status={_case.status}></Case>)
+            rows.push(<Case domain={_case.domain} isScam={_case.isScam} id={ethers.BigNumber.from(_case.id).toNumber()} stakeAmount={_case.stakeAmount} evidences={_evidences} comments={_case.comments} status={_case.status} validator={validator}></Case>)
         }
         return rows;
     }
@@ -55,8 +114,16 @@ function Cases(props: any) {
             <Grid container md={3} key={'1'} sx={{float: 'left'}}>.</Grid>
             <Grid container md={6} key={'2'} sx={{float: 'left'}}>
                 <Paper sx={{padding: '20px', backgroundColor: '#f7f7f7', width: '100%', border: '1px solid #ebebeb'}}>
-                    <h1>Reported Domains</h1>
-                    <p>Only Governance members can validate</p>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                        <div>
+                            <h1>Reported Domains</h1>
+                            <p>Only Validators can validate</p>
+                        </div>
+                        {
+                            isConnected && !validator ? !validationRequest ?<button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={requestValidatorRole}>Request Validator Role</button> : <button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={revokeRequest}>Revoke Request</button> : null
+                        }
+                        
+                    </div>
                     <div style={{width: '100%', marginBottom: '10px'}}>
                         Filter Status: <Select
                             labelId="demo-simple-select-label"

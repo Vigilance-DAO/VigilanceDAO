@@ -33,7 +33,7 @@ const History : React.FC = () => {
     useEffect(() => {
         getData(count);
     }, [account])
-  
+  console.log(account)
 
   const onLoadMore = async () => {
     setLoading(true);
