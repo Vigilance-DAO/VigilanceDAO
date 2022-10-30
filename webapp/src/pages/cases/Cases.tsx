@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './Cases.css';
-import { Paper, TextField, Grid, Button, CircularProgress, Select, MenuItem } from '@mui/material';
+import { Paper, TextField, Grid, Button, CircularProgress, Select, MenuItem , Typography} from '@mui/material';
 import Case, { CaseInputs } from './case/Case';
 import { SelectChangeEvent } from '@mui/material';
 import { FETCH_OPEN_REPORTS,FETCH_REPORTS} from '../../queries/index';
@@ -20,6 +20,7 @@ function Cases(props: any) {
     const { data: signer, isError, isLoading } = useSigner()
     const [ validator,setValidator] = useState<boolean>(false)
     const [ validationRequest , setValidationRequest] = useState<boolean>(false)
+    const [stake,setStake] = useState<string>("0")
 
     async function fetchCases() {
         let data;
@@ -52,6 +53,17 @@ function Cases(props: any) {
                     setValidationRequest(true)
                 }
             }
+        }
+        catch(e){
+            alert(e)
+        }
+    }
+
+    async function getStake(){
+        try{
+            const governanceBadgeContract = new ethers.Contract(governanceBadgeAddress, governanceBadgeAbi, signer as ethers.Signer);
+            const stakeAmount = await governanceBadgeContract.stakingAmount();
+            setStake((ethers.utils.formatEther(stakeAmount)).toString())
         }
         catch(e){
             alert(e)
@@ -94,6 +106,7 @@ function Cases(props: any) {
     useEffect(()=>{
         if(isConnected && signer){
             checkValidator()
+            getStake()
         }
     }, [isConnected,signer])
 
@@ -120,8 +133,15 @@ function Cases(props: any) {
                             <p>Only Validators can validate</p>
                         </div>
                         {
-                            isConnected && !validator ? !validationRequest ?<button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={requestValidatorRole}>Request Validator Role</button> : <button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={revokeRequest}>Revoke Request</button> : null
+                            isConnected && !validator && 
+                            <div style={{display:"flex",alignItems:"center",gap:"1rem"}}>
+                                <Typography><b>Stake:</b> {stake} MATIC</Typography>
+                                {
+                                    !validationRequest ?<button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={requestValidatorRole}>Request Validator Role</button> : <button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={revokeRequest}>Revoke Request</button>
+                                }
+                            </div>
                         }
+                        
                         
                     </div>
                     <div style={{width: '100%', marginBottom: '10px'}}>

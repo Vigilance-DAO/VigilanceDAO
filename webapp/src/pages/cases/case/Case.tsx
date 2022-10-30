@@ -33,11 +33,11 @@ const Case = (inputs: CaseInputs) => {
     return (
         <div>
             <Card sx={{ padding: '20px', marginBottom: '10px' }}>
-            <Grid container spacing={2}>
-                <Grid item xs={1}>
+            <Grid container >
+                <Grid item xs={1.1}>
                     <Typography variant='h3'>#{id}</Typography>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid item xs={7.9}>
                     <Typography variant='h6'><b>🌐 Domain:</b> {domain}</Typography>
                     <Typography><b>Claim:</b> {isScam ? 'Scam' : 'Legit'} | <b>Stake:</b> {getFormatedAmount()} MATIC</Typography>
                 </Grid>
