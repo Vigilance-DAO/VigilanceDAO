@@ -5,7 +5,6 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Navigation from './Navigation';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Report from './pages/report/Report';
 import Cases from './pages/cases/Cases';
 import { configureChains, createClient,chain,WagmiConfig } from 'wagmi'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
@@ -34,7 +33,6 @@ root.render(
           <Navigation />
           <Routes>
             <Route path="/" element={<App />} />
-            <Route path="/report" element={<Report />} />
             <Route path="/cases" element={<Cases />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Routes>
