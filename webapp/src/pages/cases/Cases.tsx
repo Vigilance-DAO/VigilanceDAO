@@ -115,18 +115,21 @@ function Cases(props: any) {
 
     function loadCases() {
         let rows: any[] = []
-        for(let i=0; i<cases.length; ++i) {
-            let _case = cases[i]
-            let _evidences = (_case.evidences as string).split(',')
-            rows.push(<Case domain={_case.domain} isScam={_case.isScam} id={ethers.BigNumber.from(_case.id).toNumber()} stakeAmount={_case.stakeAmount} evidences={_evidences} comments={_case.comments} status={_case.status} validator={validator}></Case>)
-        }
+        if(cases.length)
+            for(let i=0; i<cases.length; ++i) {
+                let _case = cases[i]
+                let _evidences = (_case.evidences as string).split(',')
+                rows.push(<Grid item xs={12} md={6} lg={4} key={i} sx={{float: 'left', padding: '10px'}}>
+                    <Case domain={_case.domain} isScam={_case.isScam} id={ethers.BigNumber.from(_case.id).toNumber()} stakeAmount={_case.stakeAmount} evidences={_evidences} comments={_case.comments} status={_case.status} validator={validator}></Case>
+                </Grid>)
+            }
         return rows;
     }
     return (
         <div className="cases">
-            <Grid container md={3} key={'1'} sx={{float: 'left'}}>.</Grid>
-            <Grid container md={6} key={'2'} sx={{float: 'left'}}>
-                <Paper sx={{padding: '20px', backgroundColor: '#f7f7f7', width: '100%', border: '1px solid #ebebeb'}}>
+            <Grid container md={1} key={'1'} sx={{float: 'left'}}>.</Grid>
+            <Grid container md={10} key={'2'} sx={{float: 'left'}}>
+                <Paper sx={{padding: '20px', backgroundColor: '#f7f7f7', width: '100%', border: '1px solid #ebebeb'}} elevation={0}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                         <div>
                             <h1>Reported Domains</h1>
@@ -134,11 +137,12 @@ function Cases(props: any) {
                         </div>
                         {
                             isConnected && !validator && 
-                            <div style={{display:"flex",alignItems:"center",gap:"1rem"}}>
-                                <Typography><b>Stake:</b> {stake} MATIC</Typography>
+                            <div style={{}}>
                                 {
-                                    !validationRequest ?<button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={requestValidatorRole}>Request Validator Role</button> : <button style={{padding:"10px",borderWidth:"thin",borderRadius:"5px"}} onClick={revokeRequest}>Revoke Request</button>
+                                    !validationRequest ?<Button variant="outlined" onClick={requestValidatorRole}>Request Validator Role</Button> : <Button onClick={revokeRequest} variant="outlined">Revoke Request</Button>
                                 }
+                                <Typography sx={{textAlign: 'right', marginTop: '5px'}} variant='body2'><b>Stake:</b> {stake} MATIC</Typography>
+
                             </div>
                         }
                         

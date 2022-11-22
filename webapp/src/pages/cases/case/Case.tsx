@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from "@tableland/sdk";
 import { FileUploader } from "react-drag-drop-files";
-import { Paper, TextField, Grid, Button, Card, Box, Accordion, AccordionSummary, Typography, AccordionDetails, ImageList, ImageListItem, Link } from '@mui/material';
+import { Paper, TextField, Grid, Button, Card, Box, Accordion, AccordionSummary, Typography, AccordionDetails, ImageList, ImageListItem, Link, Stack, Chip } from '@mui/material';
 import { IpfsImage } from 'react-ipfs-image';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -32,27 +32,34 @@ const Case = (inputs: CaseInputs) => {
 
     return (
         <div>
-            <Card sx={{ padding: '20px', marginBottom: '10px' }}>
+            <Card sx={{ padding: '20px', marginBottom: '10px', border: '3px solid grey' }}>
             <Grid container >
-                <Grid item xs={1.1}>
+                {/* <Grid item xs={1.1}>
                     <Typography variant='h3'>#{id}</Typography>
-                </Grid>
-                <Grid item xs={7.9}>
+                </Grid> */}
+                <Grid item xs={12}>
                     <Typography variant='h6'><b>🌐 Domain:</b> {domain}</Typography>
-                    <Typography><b>Claim:</b> {isScam ? 'Scam' : 'Legit'} | <b>Stake:</b> {getFormatedAmount()} MATIC</Typography>
+                    <Stack direction="row" spacing={1} sx={{marginTop: '5px'}}>
+                        <Chip label={<span>ID: #{id}</span>} variant="outlined"/>
+                        <Chip label={<span><b>Claim:</b> {isScam ? 'Scam ❌' : 'Legit ✅'}</span>} variant="outlined"/>
+                        <Chip label={<span><b>Stake:</b> {getFormatedAmount()} MATIC</span>} variant="outlined"/>
+                    </Stack>
                 </Grid>
-                <Grid item xs={3}>
+                {/* <Grid item xs={3}>
                     <Typography sx={{textAlign: 'right'}}><b>Status:</b> {status===null ? "Open" : status}</Typography>    
-                </Grid>
+                </Grid> */}
             </Grid>
-                <Typography sx={{margin: '20px 0'}}>
-                    <b>Case comments:</b> {comments}
-                </Typography>
+                <Paper sx={{backgroundColor: '#40515c', padding: '10px', color: 'white', margin: '20px 0'}}>
+                    <Typography sx={{}}>
+                        <b>Case comments:</b> {comments}
+                    </Typography>
+                </Paper>
                 <Accordion>
                     <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                        sx={{backgroundColor: 'whitesmoke'}}
                     >
                     <Typography>📜 Case evidences</Typography>
                     </AccordionSummary>

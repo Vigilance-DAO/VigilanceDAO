@@ -41,7 +41,7 @@ contract GovernanceBadgeNFT is ERC1155Upgradeable, OwnableUpgradeable, ERC1155Ho
         safeTransferFrom(address(this), msg.sender, GOVERNANCE_NFT, 1, "");
     }
 
-
+    // TODO: check for validator NFT 
     function requestValidatorRole() public payable returns(bool) {
         require(msg.value == stakingAmount, "Need required staking amount");
         require(validationRequests[msg.sender]==0, "Already requested");
@@ -106,6 +106,7 @@ contract GovernanceBadgeNFT is ERC1155Upgradeable, OwnableUpgradeable, ERC1155Ho
         governorsVoted[validator][msg.sender]=true;
         
         if(validationVotes[validator] >= minVotes){
+            // TODO: Keep track of amount of stake the validator put
             validationRequests[validator] = 0;
             console.log("request: %s",balanceOf(validator,VALIDATOR_NFT));
             safeTransferFrom(address(this), validator, VALIDATOR_NFT, 1, "");

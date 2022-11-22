@@ -49,6 +49,8 @@ function Navigation() {
                                 paddingBottom: '20px'
                             }}
                         >
+                            <img src="./icon128.png" style={{height: '45px', verticalAlign: 'middle',
+                                marginRight: '10px', marginTop: '-5px'}}/>
                             {/* <NavLink className="navbar-brand" to="/"> */}
                                 Vigilance DAO
                             {/* </NavLink> */}

@@ -40,7 +40,7 @@ const CaseValidateButton = (inputs: ValidateInput) => {
 
     }
     return (
-        <Button onClick={submit} disabled={disabled} variant='outlined' sx={{marginRight: '10px'}}>{buttonText}</Button>
+        <Button color={action == 'ACCEPT' ? "success" : "error"} onClick={submit} disabled={disabled} sx={{marginRight: '10px'}}>{buttonText}</Button>
     );
 }
 
