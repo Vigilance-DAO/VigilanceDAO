@@ -1,7 +1,7 @@
 
 
 export default function PrivacyPolicy() {
-    return <div>
+    return <div style={{background: 'white', padding: '100px 10%'}}>
         <h1>Privacy Policy</h1>
         <p>Last updated: November 22, 2022</p>
         <p>This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.</p>
