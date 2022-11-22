@@ -28,11 +28,11 @@
     "@openzeppelin/hardhat-upgrades": "^1.19.0",
     "@tableland/evm": "^2.0.2",
     "@tableland/sdk": "^2.0.2",
-    "dotenv": "^16.0.1",
+    "dotenv": "^16.0.2",
     "node-fetch": "^2.6.7"
   },
   "scripts": {
-    "hardhat-node": "npx hardhat node --fork https://polygon-mumbai.g.alchemy.com/v2/CWJxmg4F1VdfwAqeH4OOrI555feNcAe8",
+    "hardhat-node": "npx hardhat node --fork https://polygon-mumbai.g.alchemy.com/v2/CWJxmg4F1VdfwAqeH4OOrI555feNcAe8 --hostname 0.0.0.0",
     "copy-artifacts": "cp -r artifacts/contracts/ ../webapp/src"
   }
 }

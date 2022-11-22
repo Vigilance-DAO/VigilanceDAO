@@ -3,11 +3,11 @@ A decentralised organisation to open source scammers information on the chain (w
 
 This is v1 and currently supports reporting websites. 
 
-# Live on Polygon testnet
-### Download chrome extension at: [link](https://github.com/VenkatTeja/VigilanceDAO/releases/tag/beta)
-### Website: [link](https://vigilance-dao.vercel.app/)
+## Docs - [here](https://vigilancedao.notion.site/Introduction-56c27e27bebd4f1999ae90412934c93e)
 
-Discord: [link](https://discord.gg/tnk5KyVzMX)
+# ETHGlobal HackFS prototypes
+### Download chrome extension at: [link](https://github.com/VenkatTeja/VigilanceDAO/releases/tag/beta) -> Hackathon version
+### Website: [link](https://vigilance-dao.vercel.app/) -> Hackathon version
 
-## Infrastructure
-The protocol uses IPFS, Polygon and Tableland to manage claims, store data and evidences. 
+Discord: [link](https://discord.truts.xyz/) - Move to #labs-discussions thread
+

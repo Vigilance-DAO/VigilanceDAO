@@ -2,12 +2,16 @@ import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { AppBar, Box, Typography, Toolbar, Button, Stack } from "@mui/material";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { useMoralis } from "react-moralis";
-import { useChain } from "react-moralis";
+
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { InjectedConnector } from 'wagmi/connectors/injected'
 
 function Navigation() {
-    const { initialize, web3, isWeb3Enabled, enableWeb3, isAuthenticated, isAuthenticating, logout, authenticate } = useMoralis()
-    const { switchNetwork, chainId, chain, account } = useChain();
+    const { address, isConnected } = useAccount()
+    const { connect } = useConnect({
+        connector: new InjectedConnector(),
+    })
+    const { disconnect } = useDisconnect()
 
     const darkTheme = createTheme({
         palette: {
@@ -21,43 +25,13 @@ function Navigation() {
         },
     });
     const navItems = [
-        {name: 'Home', link: '/'}, 
-        {name: 'Report', link: '/report'},
+        {name: 'Home', link: '/'},
         {name: 'Cases', link: '/cases'}
     ];
 
-    const manageMoralis = async () => {
-        console.log('manageMoralis', {isAuthenticated})
-        if(isAuthenticated && account) {
-            await logout()
-        } else {
-            await authenticate()
-            await initialize()
-        }
-    }
+    
 
-    // manageMoralis()
 
-    async function _switchNetwork() {
-        console.log('chainId', chainId, web3, isWeb3Enabled)
-        console.log({account, isAuthenticated, isAuthenticating, requiredChain: process.env.REACT_APP_CHAIN_ID})
-        if(!chainId || !isWeb3Enabled) {
-            await enableWeb3()
-        }
-        if(chainId!=process.env.REACT_APP_CHAIN_ID) {
-            switchNetwork(process.env.REACT_APP_CHAIN_ID || '0x89')
-            // if(!isAuthenticated && !isAuthenticating)
-            //     authenticate()
-        }
-    }
-
-    useEffect(() => {
-        // 0x13881 -> polygon mumbai
-        // 0x89 - polygon mainnet
-        // 0xc8 - localhost - chain 200
-        _switchNetwork()
-        
-    }, [chainId])
 
     return (
         <ThemeProvider theme={darkTheme}>
@@ -75,6 +49,8 @@ function Navigation() {
                                 paddingBottom: '20px'
                             }}
                         >
+                            <img src="./icon128.png" style={{height: '45px', verticalAlign: 'middle',
+                                marginRight: '10px', marginTop: '-5px'}}/>
                             {/* <NavLink className="navbar-brand" to="/"> */}
                                 Vigilance DAO
                             {/* </NavLink> */}
@@ -88,13 +64,19 @@ function Navigation() {
                                 {item.name}
                             </Button>
                             ))}
-                            
+                            {
+                                isConnected ? <Button variant="contained" onClick={()=>disconnect()}>disconnect</Button>
+                            :
                             <Button
-                                variant="contained"
-                                onClick={()=>{manageMoralis()}}
-                                >
-                                {isAuthenticated && account ? `${account?.substring(0, 4)}...${account?.substring(account.length-4, account.length)}` : "Connect"}
+                            variant="contained"
+                            onClick={()=>connect()}
+                            >
+                            Connect
                             </Button>
+
+                            }
+                            
+                            
                         </Stack>
                         {/* <div>
                             <ul className="navbar-nav ml-auto">
