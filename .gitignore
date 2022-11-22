@@ -8,3 +8,4 @@ jspm_packages
 _prisma
 *.zip
 package-lock.json
+yarn.lock
