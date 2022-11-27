@@ -53,6 +53,9 @@
       "last 1 safari version"
     ]
   },
+  "engines": {
+    "node": "14.17.6"
+  },
   "devDependencies": {
     "assert": "^2.0.0",
     "buffer": "^6.0.3",

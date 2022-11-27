@@ -34,6 +34,30 @@ function searchColumnIndex(columns, column) {
     })
 }
 
+
+
+async function getDomainValidationInfo(url) {
+    
+    let tablelandURL = `${env.tablelandHost}SELECT%20*%20FROM%20${env.tableName}%20WHERE%20domain=%27${url}%27`
+    console.log({tablelandURL})
+    const tableData = await fetch(tablelandURL)
+    const tableDataContent = await tableData.json();
+    console.log({tableDataContent})
+    let isScamVerified = false
+    let isLegitVerified = false;
+    if(tableDataContent.rows && tableDataContent.columns)
+        tableDataContent.rows.forEach(row=>{
+            let status = row[searchColumnIndex(tableDataContent.columns, 'status')]
+            let isScam = row[searchColumnIndex(tableDataContent.columns, 'isScam')]
+            if(isScam && status == 'ACCEPTED')
+                isScamVerified = true
+            if(!isScam && status == 'ACCEPTED')
+                isLegitVerified = true
+        })
+    console.log({isScamVerified, isLegitVerified})
+    return {isScamVerified, isLegitVerified}
+}
+
 function processTab(tab) {
     // if(tab.status=='complete') {
     //     chrome.tabs.query({
@@ -63,59 +87,9 @@ function processTab(tab) {
             return;
 
         chrome.storage.sync.get([url], async (items) => {   
-            let createdOn = null
-            if(items[url]) {
-                console.log('not requesting. saved in db', items[url], url)
-                createdOn = new Date(items[url].createdon)
-            } else {
-                try {
-                    const rawResponse = await fetch(`${env.host}/domain-info`, {
-                        method: 'POST',
-                        headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({domain: parsed.domain})
-                    });
-                    const content = await rawResponse.json();
-                    console.log('bg', {content})
-                    if(content.domain) {
-                        let createdon = new Date(content.createdon)
-                        createdOn = createdon
-                        let now = new Date()
-                        let data = {}
-                        data[parsed.domain] = content
-                        chrome.storage.sync.set(data, function() {
-                            console.log('Settings saved', url);
-                        });
-                        // if((now.getTime() - createdon.getTime()) < 4 * 30 * 86400 * 1000) {
-                        //     // chrome.scripting.executeScript({
-                        //     //     target: { tabId },
-                        //     //     function: injectedFunction
-                        //     // });
-                        // }
-                    }
-                } catch(err) {
-                    console.warn('error fetching domain info', err)
-                }
-            }
-            let tablelandURL = `${env.tablelandHost}SELECT%20*%20FROM%20${env.tableName}%20WHERE%20domain=%27${url}%27`
-            console.log({tablelandURL})
-            const tableData = await fetch(tablelandURL)
-            const tableDataContent = await tableData.json();
-            console.log({tableDataContent})
-            let isScamVerified = false
-            let isLegitVerified = false;
-            if(tableDataContent.rows && tableDataContent.columns)
-                tableDataContent.rows.forEach(row=>{
-                    let status = row[searchColumnIndex(tableDataContent.columns, 'status')]
-                    let isScam = row[searchColumnIndex(tableDataContent.columns, 'isScam')]
-                    if(isScam && status == 'ACCEPTED')
-                        isScamVerified = true
-                    if(!isScam && status == 'ACCEPTED')
-                        isLegitVerified = true
-                })
-            console.log({isScamVerified, isLegitVerified})
+            const createdOn = await getDomainRegistrationDate(items, url)
+            const {isScamVerified, isLegitVerified} = getDomainValidationInfo(url);
+            
             let now = new Date()
             if(isScamVerified) {
                 chrome.action.setIcon({ path: {19: "/src/images/alerticon19-red.png", 38: "/src/images/alerticon38-red.png"}})

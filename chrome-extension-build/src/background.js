@@ -34,6 +34,125 @@ function searchColumnIndex(columns, column) {
     })
 }
 
+function getStorageKey(url) {
+    return `vigil__${url}`
+}
+
+let inMemoryStorage = {}
+
+async function getDomainRegistrationDate(storageInfo, url) {
+    const key = getStorageKey(url)
+    if(storageInfo[key]) {
+        console.log('not requesting. saved in db', storageInfo[key], key)
+        return new Date(storageInfo[key].createdon)
+    } else {
+        try {
+            const rawResponse = await fetch(`${env.host}/domain-info`, {
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({domain: url})
+            });
+            const content = await rawResponse.json();
+            console.log('bg', {content})
+            if(content.domain) {
+                let createdon = new Date(content.createdon)
+                let data = {}
+                data[key] = content
+                chrome.storage.sync.set(data, function() {
+                    console.log('Settings saved', key);
+                    inMemoryStorage = data
+                });
+                return createdon
+            }
+        } catch(err) {
+            console.warn('error fetching domain reg date', err)
+        }
+    }
+    return null;
+}
+
+let counter = {}
+
+function getUrl(tab) {
+    if(!tab.url)
+        return;
+    let _url = tab.url;
+    _url = new URL(_url);
+
+    console.log('bg current url', _url)
+    console.log('bg current tab', tab)
+
+    var parsed = psl.parse(_url.hostname);
+    let url = parsed.domain
+    console.log('bg url', url)
+    return url
+}
+
+async function getDomainValidationInfo(url) {
+    let type = 'info'
+    let msg = 'No reports/reviews'
+    let description = ''
+    let isScamVerified = false
+    let isLegitVerified = false;
+    let openScamReports = 0
+    let query =  `query {
+        reports(
+            orderBy: id
+            orderDirection: desc
+            where: {domain: "${url}"}
+            first:1
+        ){
+            id
+            domain
+            isScam
+            status
+        }
+    }`
+    try {
+        const rawResponse = await fetch(env.SUBGRAPH_URL, {
+            method: 'POST',
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({query})
+        });
+        let data = await rawResponse.json()
+        console.log('response', data)
+        let reports = data.data.reports
+        for(let i=0; i<reports.length; ++i) {
+            let report = reports[i]
+            if(report.status == 'ACCEPTED' && (!isScamVerified && !isScamVerified)) {
+                isLegitVerified = report.isScam ? false : true
+                isScamVerified = report.isScam ? true : false
+            }
+            if(!report.status || report.status == 'OPEN') {
+                if(report.isScam) {
+                    openScamReports += 1
+                }
+            }
+        }
+    } catch(err) {
+        console.warn("Error fetching domain information", domain, err)
+        console.log('changing icon')
+        chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
+        chrome.action.setBadgeText({text: "⚠️"})
+        chrome.action.setBadgeBackgroundColor({color: "#000000"});
+        type = 'warning'
+        msg = "Error fetching domain information"
+        sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, type, msg, description})
+        return;
+    }
+    
+    return {
+        isLegitVerified, isScamVerified, openScamReports, type, msg, description
+    }
+}
+
+
 function processTab(tab) {
     // if(tab.status=='complete') {
     //     chrome.tabs.query({
@@ -45,172 +164,85 @@ function processTab(tab) {
     //         console.log('url', tabs)
     //     });
     // }
-    chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
-    chrome.action.setBadgeText({text: "..."});
-    chrome.action.setBadgeBackgroundColor({color: "yellow"});
+    const url = getUrl(tab)
+    if(!url) {
+        chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
+        chrome.action.setBadgeText({text: "..."});
+        chrome.action.setBadgeBackgroundColor({color: "yellow"});
+        return;
+    }
     // chrome.action.setBadgeTextColor({color: "black"});
     if(tab.url && tab.status=='complete') {
-        let _url = tab.url;
-        _url = new URL(_url);
-
-        console.log('bg current url', _url)
-        console.log('bg current tab', tab)
-
-        var parsed = psl.parse(_url.hostname);
-        let url = parsed.domain
-        console.log('bg url', url)
-        if(!url)
-            return;
-
-        chrome.storage.sync.get([url], async (items) => {   
-            let createdOn = null
-            if(items[url]) {
-                console.log('not requesting. saved in db', items[url], url)
-                createdOn = new Date(items[url].createdon)
-            } else {
-                try {
-                    const rawResponse = await fetch(`${env.host}/domain-info`, {
-                        method: 'POST',
-                        headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({domain: parsed.domain})
-                    });
-                    const content = await rawResponse.json();
-                    console.log('bg', {content})
-                    if(content.domain) {
-                        let createdon = new Date(content.createdon)
-                        createdOn = createdon
-                        let now = new Date()
-                        let data = {}
-                        data[parsed.domain] = content
-                        chrome.storage.sync.set(data, function() {
-                            console.log('Settings saved', url);
-                        });
-                        // if((now.getTime() - createdon.getTime()) < 4 * 30 * 86400 * 1000) {
-                        //     // chrome.scripting.executeScript({
-                        //     //     target: { tabId },
-                        //     //     function: injectedFunction
-                        //     // });
-                        // }
-                    }
-                } catch(err) {
-                    console.warn('error fetching domain info', err)
-                }
-            }
-
-            // let tablelandURL = `${env.tablelandHost}SELECT%20*%20FROM%20${env.tableName}%20WHERE%20domain=%27${url}%27`
-            // console.log({tablelandURL})
-            // const tableData = await fetch(tablelandURL)
-            // const tableDataContent = await tableData.json();
-            // console.log({tableDataContent})
-            let isScamVerified = false
-            let isLegitVerified = false;
-            let openScamReports = 0
+        const key = getStorageKey(url)
+        chrome.storage.sync.get([key], async (items) => {   
+            let createdOn = await getDomainRegistrationDate(items, url)
             let now = new Date()
-            let type = 'info'
-            let msg = 'No reports/reviews'
-            let description = ''
-
-            let query =  `query {
-                reports(
-                    orderBy: id
-                    orderDirection: desc
-                    where: {domain: "${url}"}
-                    first:1
-                ){
-                    id
-                    domain
-                    isScam
-                    status
-                }
-            }`
-            try {
-                const rawResponse = await fetch(env.SUBGRAPH_URL, {
-                    method: 'POST',
-                    headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({query})
-                });
-                let data = await rawResponse.json()
-                console.log('response', data)
-                let reports = data.data.reports
-                for(let i=0; i<reports.length; ++i) {
-                    let report = reports[i]
-                    if(report.status == 'ACCEPTED' && (!isScamVerified && !isScamVerified)) {
-                        isLegitVerified = report.isScam ? false : true
-                        isScamVerified = report.isScam ? true : false
-                    }
-                    if(!report.status || report.status == 'OPEN') {
-                        if(report.isScam) {
-                            openScamReports += 1
-                        }
-                    }
-                }
-            } catch(err) {
-                console.warn("Error fetching domain information", domain, err)
-                console.log('changing icon')
-                chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
-                chrome.action.setBadgeText({text: "⚠️"})
-                chrome.action.setBadgeBackgroundColor({color: "#000000"});
-                type = 'warning'
-                msg = "Error fetching domain information"
-                sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, type, msg, description})
-                return;
+            let validationInfo = {
+                type: 'info',
+                msg: 'No reports/reviews',
+                description: '',
+                isScamVerified: false,
+                isLegitVerified: false,
+                openScamReports: 0
             }
-            // if(tableDataContent.rows && tableDataContent.columns)
-            //     tableDataContent.rows.forEach(row=>{
-            //         let status = row[searchColumnIndex(tableDataContent.columns, 'status')]
-            //         let isScam = row[searchColumnIndex(tableDataContent.columns, 'isScam')]
-            //         if(isScam && status == 'ACCEPTED')
-            //             isScamVerified = true
-            //         if(!isScam && status == 'ACCEPTED')
-            //             isLegitVerified = true
-            //     })
-            // console.log({isScamVerified, isLegitVerified})
             
-            if(isScamVerified) {
+            
+            let lastValidationStateUpdatedOn = items[key]?.validationInfo?.updatedOn
+            if(lastValidationStateUpdatedOn && (now.getTime() - lastValidationStateUpdatedOn.getTime()) < 5 * 60 * 1000) { // 5min
+                validationInfo = items[key]?.validationInfo
+            } else {
+                validationInfo = await getDomainValidationInfo(url)
+                chrome.storage.sync.get([key], async (items) => { 
+                    if(!items[key])
+                        items[key] = {}
+                    items[key].validationInfo = validationInfo
+                    chrome.storage.sync.set(items, function() {
+                        console.log('validation info saved', key);
+                        inMemoryStorage = items
+                    });
+                })
+            }
+
+            if(validationInfo.isScamVerified) {
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 chrome.action.setBadgeText({text: "❌"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
-                type = 'error'
-                msg = 'Verified as fraudulent domain'
-            } else if(isLegitVerified) {
+                validationInfo.type = 'error'
+                validationInfo.msg = 'Verified as fraudulent domain'
+            } else if(validationInfo.isLegitVerified) {
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "✔️"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
-                type = 'success'
-                msg = 'Verified as legit'
+                validationInfo.type = 'success'
+                validationInfo.msg = 'Verified as legit'
             } else if(createdOn && (now.getTime() - createdOn.getTime()) < env.alertPeriod) {
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
-                openScamReports ? chrome.action.setBadgeText({text: openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
+                validationInfo.openScamReports ? chrome.action.setBadgeText({text: validationInfo.openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
-                type = 'warning'
-                if(openScamReports > 0) {
-                    msg = 'Domain registed recently and has `OPEN` fraud reports'
-                    description = 'The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.'
+                validationInfo.type = 'warning'
+                if(validationInfo.openScamReports > 0) {
+                    validationInfo.msg = 'Domain registed recently and has `OPEN` fraud reports'
+                    validationInfo.description = 'The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.'
                 } else {
-                    msg = 'Domain registed recently'
-                    description = 'Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.'
+                    validationInfo.msg = 'Domain registed recently'
+                    validationInfo.description = 'Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.'
                 }
-            } else if(openScamReports) {
+            } else if(validationInfo.openScamReports) {
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
-                openScamReports ? chrome.action.setBadgeText({text: openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
+                validationInfo.openScamReports ? chrome.action.setBadgeText({text: validationInfo.openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
-                type = 'warning'
-                msg = 'Has `OPEN` fraud reports'
-                description = 'The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.'
+                validationInfo.type = 'warning'
+                validationInfo.msg = 'Has `OPEN` fraud reports'
+                validationInfo.description = 'The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.'
             } else {
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "0"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
             }
-            sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, type, msg, description})
+            sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, 
+                type: validationInfo.type, msg: validationInfo.msg, description: validationInfo.description})
         })
         
     }
@@ -248,7 +280,6 @@ async function sendMessage(tab, type, data) {
         chrome.tabs.sendMessage(tab.id, {
             type, data
         }, undefined, (response) => {
-            console.log('recieved msg', response)
             resolve()
         });
     })

@@ -166,43 +166,6 @@ async function changeNetwork(chainID) {
     onUpdateChainID(chainId)
 }
 
-async function checkDomain() {
-    console.log(url)
-    var parsed = psl.parse(url);
-    console.log('parsed url', parsed)
-    url = parsed.domain;
-    domain = url
-    let count = 0
-    let interval = setInterval(() => {
-        chrome.storage.sync.get([url], function(items) {
-            console.debug(items, url, new Date())
-            if(items[url]) {
-                clearInterval(interval)
-                let dontShowAgain = items[url].dontShowAgain
-                let createdon = new Date(items[url].createdon)
-                let now = new Date()
-                if(dontShowAgain) {
-                    console.log('user opted to not show again')
-                    return;
-                }
-                if((now.getTime() - createdon.getTime()) < env.alertPeriod) {
-                    console.log('Vigilance DAO: domain is new. trigger.')
-                    injectedFunction(url, createdon)
-                } else {
-                    console.log('Vigilance DAO: domain is old enough')
-                }
-            }
-        })
-        if(count > 100) {
-            clearInterval(interval)
-        }
-        count += 1
-    }, 1000)
-}
-
-checkDomain()
-
-
 chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
     console.log('on message', msg, sender)
     if(msg && msg.type == "toggle"){
@@ -218,9 +181,6 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
         await getStakeAmount()
     }
 });
-
-
-
 
 var iframe = document.createElement('iframe'); 
 iframe.style.background = "none";
