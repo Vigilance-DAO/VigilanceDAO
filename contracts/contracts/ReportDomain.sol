@@ -4,14 +4,12 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "hardhat/console.sol";
 import "./GovernanceBadgeNFT.sol";
-import "./Token.sol";
 
 contract ReportDomain is OwnableUpgradeable {
     string ACCEPTED;
     string REJECTED;
 
     address governanceBadgeNFT;
-    address tokenContract;
     address treasuryContract;
 
     uint public stakingAmount;
@@ -47,18 +45,18 @@ contract ReportDomain is OwnableUpgradeable {
 
     mapping(string => DomainClaim) reportsByDomain;
     mapping(uint => ReportInfo) reportsByID;
+    mapping (address => uint) public points;
     
 
     event Reported(uint indexed id, string domain,bool isScam,address indexed reporter, uint createdOn,string evidences,string comments,uint stakeAmount);
     event Validated(uint indexed id, string  domain,bool isScam,address reporter,address indexed validator, uint updatedon,string validatorComments,string status,uint rewardAmount);
 
 
-    function initialize(address _governanceBadgeNFT, address _tokenContract,address _treasuryContract) initializer public {
+    function initialize(address _governanceBadgeNFT,address _treasuryContract) initializer public {
         __Ownable_init();
         governanceBadgeNFT = _governanceBadgeNFT;
-        tokenContract = _tokenContract;
         treasuryContract = _treasuryContract;
-        reward = 10 ether;
+        reward = 10;
         stakingAmount = 0.5 ether;
         reportID = 0;
 
@@ -66,7 +64,7 @@ contract ReportDomain is OwnableUpgradeable {
         REJECTED = "REJECTED";
     }
 
-    function setReward(uint _reward) public onlyOwner {
+    function setreward(uint _reward) public onlyOwner {
         reward = _reward;
     }
 
@@ -185,8 +183,7 @@ contract ReportDomain is OwnableUpgradeable {
         reportsByID[_reportId].isOpen = false;
         if(compareStrings(status, ACCEPTED)) {
             payable(reportsByID[_reportId].reporter).transfer(reportsByID[_reportId].stake);
-            Token token = Token(tokenContract);
-            token.reward(reportsByID[_reportId].reporter, reward);
+            points[reportsByID[_reportId].reporter] += reward;
             emit Validated(_reportId, reportsByID[_reportId].domain, reportsByID[_reportId].isScam, reportsByID[_reportId].reporter,msg.sender, timestamp, comments,status,reward);
         }
         else{
@@ -204,15 +201,8 @@ contract ReportDomain is OwnableUpgradeable {
         reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit = 0;
     }
 
-    function rewardContributors(address _to, uint _amount) public onlyOwner {
-        Token token = Token(tokenContract);
-        token.rewardContributors(_to, _amount);
-    }
+    
 
-
-    function setReportReward(uint _reportReward) public onlyOwner {
-        reward = _reportReward;
-    }
 
     function compareStrings(string memory a, string memory b) internal view returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
