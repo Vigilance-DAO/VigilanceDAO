@@ -184,7 +184,21 @@ function App() {
               <Panel header={<div>
                 <b style={{fontSize: '15px'}}>Contact us</b>
               </div>} key="1" className="site-collapse-custom-panel">
-                
+                <a href='https://discord.truts.xyz/' 
+                  target={'_blank'}
+                  style={{marginRight: '10px'}}>
+                  <img src={'./assets/discord.png'} width='25px'/>
+                </a>
+                <a href='https://vigilancedao.org' 
+                  target={'_blank'}
+                  style={{marginRight: '10px'}}>
+                  <img src={'./assets/website.png'} width='25px'/>
+                </a>
+                <a href='mailto:hello@vigilancedao.org' 
+                  target={'_blank'}
+                  style={{marginRight: '10px'}}>
+                  <img src={'./assets/email.png'} width='25px'/>
+                </a>
               </Panel>
             </Collapse>
 
