@@ -1,45 +1,55 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import Navigation from './Navigation';
+import React from "react";
+import ReactDOM from "react-dom/client";
+// import "./index.css";
+import reportWebVitals from "./reportWebVitals";
+// import Navigation from './Navigation';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Cases from './pages/cases/Cases';
-import { configureChains, createClient,chain,WagmiConfig } from 'wagmi'
-import { alchemyProvider } from 'wagmi/providers/alchemy'
-import { publicProvider } from 'wagmi/providers/public'
-import { InjectedConnector } from 'wagmi/connectors/injected'
-import PrivacyPolicy from 'pages/privacyPolicy';
+import { configureChains, createClient, chain, WagmiConfig } from "wagmi";
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
+import { InjectedConnector } from "wagmi/connectors/injected";
+import PrivacyPolicy from "pages/privacyPolicy";
+import { Box, ChakraProvider } from "@chakra-ui/react";
+import App from "App";
+import Cases from "pages/cases/Cases";
+import Navbar from "Navbar";
+import { theme } from "./theme/theme";
+import Fonts from "theme/Fonts";
 
-const { chains, provider } = configureChains([chain.polygonMumbai], [
-  alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_KEY }),
-  publicProvider(),
-])
+const { chains, provider } = configureChains(
+  [chain.polygonMumbai],
+  [
+    alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_KEY }),
+    publicProvider(),
+  ]
+);
 
 const client = createClient({
   autoConnect: true,
   connectors: [new InjectedConnector({ chains })],
   provider,
-})
+});
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
-  <div style={{background: '#c1d7d0'}}>
-    <WagmiConfig client={client}>
-      <React.StrictMode>
-        <Router>
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/cases" element={<Cases />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          </Routes>
-        </Router>
-      </React.StrictMode>
-    </WagmiConfig>
-  </div>
+  <WagmiConfig client={client}>
+    <React.StrictMode>
+      <Router>
+        <ChakraProvider theme={theme}>
+          <Fonts />
+          <Box bgColor="#04051C" fontFamily="Jost" position="relative">
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<App />} />
+              <Route path="/cases" element={<Cases />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            </Routes>
+          </Box>
+        </ChakraProvider>
+      </Router>
+    </React.StrictMode>
+  </WagmiConfig>
 );
 
 // If you want to start measuring performance in your app, pass a function
