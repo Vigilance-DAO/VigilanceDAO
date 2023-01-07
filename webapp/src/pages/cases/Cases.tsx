@@ -167,7 +167,7 @@ function Cases(props: any) {
         justifyContent="center"
         //   alignItems="center"
         width={"100%"}
-        minHeight="100vh"
+        minHeight="90vh"
       >
         <VStack
           backgroundColor=""
