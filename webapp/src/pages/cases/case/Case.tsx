@@ -158,7 +158,7 @@ const Case = (inputs: CaseInputs) => {
                 <AccordionButton
                   aria-controls="panel1a-content"
                   id="panel1a-header"
-                  paddingInline="1rem"
+                  padding="1rem"
                 >
                   <Text
                     as="span"
@@ -173,15 +173,20 @@ const Case = (inputs: CaseInputs) => {
                   </Text>
                   <AccordionIcon />
                 </AccordionButton>
-                <AccordionPanel pb={4}>
-                  <Grid width="100%" templateColumns="repeat(3,1fr)">
+                <AccordionPanel>
+                  <Grid
+                    padding={{ base: "0.25rem", md: "0.5rem", lg: "1rem" }}
+                    width="100%"
+                    gap={{ base: "1.5rem", md: "1rem", lg: "1rem", xl: "1rem" }}
+                    templateColumns="repeat(1,1fr)"
+                  >
                     {evidences.map((item) => (
                       <GridItem colSpan={1} key={item}>
                         <Link href={item} target="_blank">
                           <IpfsImage
                             hash={item}
                             gatewayUrl="https://infura-ipfs.io/ipfs"
-                            style={{ width: "200px", height: "200px" }}
+                            // style={{ width: "200px", height: "200px" }}
                           />
                         </Link>
                       </GridItem>
