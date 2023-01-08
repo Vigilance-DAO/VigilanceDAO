@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/psl/1.9.0/psl.min.js" integrity="sha512-YFdOE8bP/RIePsH38M35+7w1rSePTkneMePyR2FWrdecVbBeHw6bQp8WVxuDJiKjig9PTWDjFMGM4w0Z87tpFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    </head>
+    <body>
+        <script>
+            function getStorageKey(url) {
+                return `vigil__${url}`
+            }
+
+            let hostname = window.location.hostname
+            var parsed = psl.parse(_url.hostname);
+            let url = parsed.domain
+            if(!url) {
+                console.log('no url to show in alert iframe')
+            }
+            const key = getStorageKey(url)
+            chrome.storage.sync.get([key], async (items) => {  
+                document.getElementById('domainName').innerHTML = domain
+            })
+        </script>
+        <div style="background-color: rgb(0 0 0 / 45%); width: 100%; min-height: 100vh; position: absolute; top: 0; left: 0; font-family: sans-serif; line-height: 20px;z-index: 1000000000000000;"
+            id="internetVigilanceBackdrop">
+            <div
+                style="width: 350px; border: 10px solid #0b182c;padding: 10px; border-radius: 10px; background-color: #f3f6fb; font-weight: bold; position: fixed; top: 10px; right: 10px; color: black; font-size: 16px;">
+                <h1 style="margin: 10px 0; font-size: 20px;">Internet Vigilance</h1>
+                <hr />
+                <p>Domain: <span id="domainName">Loading...</span></p>
+                <p>Registered on: <span id="domainRegDate">Loading...</span></p>
+                <p>Warning: This is a newly registered domain. While most newly built websites are safe, a few may be
+                    created for fraudulent purposes.</p>
+                <p>Please do necessary research before perfoming any financial transactions or entering your passwords.</p>
+                <button id="closeInternetVigilance"
+                    style="background: #5e542d; border: none; padding: 5px 20px; margin-bottom: 10px; color: white; font-size: 13px;">Close</button>
+                <button id="closeInternetVigilanceWithNoMoreShow"
+                    style="background: #5e542d; border: none; padding: 5px 20px; margin-bottom: 10px; color: white; font-size: 13px;">Do
+                    not show for this website again.</button>
+            </div>
+        </div>
+    </body>
+</html>

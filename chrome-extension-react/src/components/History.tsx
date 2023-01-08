@@ -115,7 +115,7 @@ const History : React.FC = () => {
                       item.status === null ? <div style={{color:"orange"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div> : item.status === 'ACCEPTED' ? <div style={{color:"green"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div> : <div style={{color:"red"}}>Stake : {Number(item.stakeAmount)/1e18} MATIC</div>
                     }
                     {
-                      item.rewardAmount === null ? <div style={{color:"gray"}}>Reward 0 VIGI</div> : <div style={{color:"orange"}}>Reward : {Number(item.rewardAmount)/1e18} VIGI</div>
+                      item.rewardAmount === null ? <div style={{color:"gray"}}>Reward 0 VIGI</div> : <div style={{color:"orange"}}>Reward : {Number(item.rewardAmount)/1e18} points</div>
                     }
                   </div>
                   {item.validatorComments ? <p>Comments : {item.validatorComments}</p> : <span></span>}

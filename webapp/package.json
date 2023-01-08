@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@chakra-ui/react": "^2.4.4",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.9.3",
     "@magic-sdk/provider": "^10.0.0",
-    "@mui/icons-material": "^5.8.4",
-    "@mui/material": "^5.9.0",
+    "@mui/icons-material": "^5.11.0",
+    "@mui/material": "^5.11.0",
     "@tableland/sdk": "^2.0.2",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
@@ -17,6 +18,7 @@
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "ethers": "^5.7.1",
+    "framer-motion": "^8.2.4",
     "ipfs-http-client": "^57.0.3",
     "moralis": "^1.9.0",
     "react": "^18.2.0",
@@ -52,6 +54,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": "14.17.6"
   },
   "devDependencies": {
     "assert": "^2.0.0",

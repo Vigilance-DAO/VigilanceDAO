@@ -38,7 +38,7 @@ async function getDomainFromDb(client: any, domain: string) {
   let values = [domain]
   try {
     let data = await client.query(query, values)
-    if(data.rows.length) {
+    if(data.rows.length && data.rows[0].isValid) {
       return data.rows[0]
     } else {
       return null;
@@ -55,11 +55,16 @@ async function getDomainInfo(client: any, domain: string) {
     return fromDb
   }
   var results = await whois(domain);
-  let createdon = new Date(results.creationDate)
-  let updatedon = new Date(results.updatedDate)
+  let createdon: any = new Date(results.creationDate)
+  let updatedon: any = new Date(results.updatedDate)
   console.log(domain, createdon, updatedon)
-  const text = 'INSERT INTO domains(domain, createdon, updatedon) VALUES($1, $2, $3)'
-  let values = [domain, createdon, updatedon]
+
+  let text = 'INSERT INTO domains(domain, createdon, updatedon) VALUES($1, $2, $3)'
+  let values: any = [domain, createdon, updatedon]
+  if(isNaN(createdon) || isNaN(updatedon)) {
+    text = 'INSERT INTO domains(domain, "isValid") VALUES($1, $2)'
+    values = [domain, false]
+  }
   try {
     await client.query(text, values)
   } catch(err) {
@@ -75,3 +80,9 @@ async function getDomainInfo(client: any, domain: string) {
 
 
 export { app };
+
+if(process.env.SERVER_TYPE='express') {
+  app.listen(4000, () => {
+    console.log('server listening on 4000')
+  })
+}
