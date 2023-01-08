@@ -128,6 +128,7 @@ function Cases(props: any) {
   }, [filterStatus]);
 
   useEffect(() => {
+    console.log('isconnected', isConnected, signer)
     if (isConnected && signer) {
       checkValidator();
       getStake();
@@ -217,9 +218,15 @@ function Cases(props: any) {
                 )}
               </>
             )}
-            <Text fontSize={{ base: "1rem", md: "1.5rem" }} opacity="60%">
+            {validationRequest && !validator && <Text fontSize={{ base: "1rem", md: "1.5rem" }} opacity="60%">
+              Pending validation request
+            </Text>}
+            {!validationRequest && !validator && <Text fontSize={{ base: "1rem", md: "1.5rem" }} opacity="60%">
               Only Validators can validate
-            </Text>
+            </Text>}
+            {!validationRequest && validator && <Text fontSize={{ base: "1rem", md: "1.5rem" }} color="#9b9ba4">
+              You are a validator ✅
+            </Text>}
           </Stack>
           <Stack
             direction={{ base: "column", md: "row" }}

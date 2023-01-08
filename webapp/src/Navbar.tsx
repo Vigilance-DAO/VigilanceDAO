@@ -14,6 +14,9 @@ function Navbar() {
   });
   const { disconnect } = useDisconnect();
 
+  function getAddressShortString() {
+    return `${address?.slice(0, 4)}...${address?.slice(-4)}`
+  }
   return (
     <HStack
       height="10vh"
@@ -52,6 +55,15 @@ function Navbar() {
         >
           Cases
         </Button>
+        <Text
+          colorScheme="white"
+          fontWeight={300}
+          style={{marginRight: '1.5rem'}}
+          // colorScheme="red"
+          size={{ base: "xs", md: "md", lg: "lg" }}
+        >
+          Polygon Mumbai
+        </Text>
         <Button
           variant="solid"
           // size="lg"
@@ -67,7 +79,7 @@ function Navbar() {
             if (isConnected) {
               disconnect();
             } else {
-              connect();
+              connect({chainId: parseInt(process.env.REACT_APP_CHAIN_ID || '80001')});
             }
           }}
           _hover={{
@@ -75,7 +87,7 @@ function Navbar() {
           }}
           size={{ base: "xs", md: "md", lg: "lg" }}
         >
-          {isConnected ? "Disconnect" : "Connect"}
+          {isConnected ? `${getAddressShortString()} | Disconnect` : "Connect"}
         </Button>
       </HStack>
     </HStack>

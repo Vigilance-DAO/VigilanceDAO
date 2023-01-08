@@ -2,9 +2,11 @@ import React from "react";
 // import "./App.css";
 // import AppBar from '@mui/material/AppBar';
 import { Button, Flex, HStack, Image, Stack, Text } from "@chakra-ui/react";
-import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
-import ellipse from "./assets/ellipse1.svg";
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+// import ellipse from "./assets/ellipse1.svg";
+import ellipse from "./assets/ellipse-bottom-left.svg";
 import gradient from "./assets/gradient.png";
+import polygon_blockchain_logo from "./assets/polygon_blockchain_logo.svg";
 
 function App() {
   return (
@@ -15,38 +17,78 @@ function App() {
       textAlign="center"
       minHeight="100vh"
       position="relative"
-    >
+    > 
+      <Stack
+        direction={{ base: "column", md: "row" }}
+        // gap={{ base: "1rem", md: "0rem" }}
+        justifyContent="center"
+        alignItems="center"
+        spacing={{ base: "1rem", md: "0.75rem" }}
+        marginTop="5rem"
+        zIndex="3"
+      ></Stack>
       <Text
         lineHeight="120%"
         width={{ base: "90%", md: "80%", lg: "80%", xl: "65%" }}
         color="white"
         // fontSize={"6.5rem"}
         fontSize={{
-          base: "2rem",
-          md: "3.8rem",
-          lg: "4rem",
-          xl: "5rem",
-          "2xl": "6.5rem",
+          base: "1.5rem",
+          md: "3.0rem",
+          lg: "3.5rem",
+          xl: "4rem",
+          "2xl": "5.0rem",
         }}
         zIndex="3"
       >
-        We are here to make web3 safe for everyone
+        We are here to make
+      </Text>
+      <Text
+        lineHeight="120%"
+        width={{ base: "90%", md: "80%", lg: "80%", xl: "65%" }}
+        color="white"
+        // fontSize={"6.5rem"}
+        fontSize={{
+          base: "1.5rem",
+          md: "3.0rem",
+          lg: "3.5rem",
+          xl: "4rem",
+          "2xl": "5.0rem",
+        }}
+        zIndex="3"
+      >
+        web safe for everyone
       </Text>
       <Text
         zIndex="3"
         color="white"
-        width={{ base: "60%", md: "50%", lg: "40%", xl: "25%", "2xl": "24%" }}
+        width={{ base: "60%", md: "50%", lg: "60%", xl: "60%", "2xl": "50%" }}
         fontWeight={300}
         fontSize={{
-          md: "1.4rem",
-          lg: "1.5rem",
-          xl: "1.5rem",
-          "2xl": "1.75rem",
+          md: "1.1rem",
+          lg: "1.2rem",
+          xl: "1.2rem",
+          "2xl": "1.45rem",
         }}
         marginTop="1.5rem"
       >
-        Find something phishy? Report it and we will take it down
+        Decentralised Internet organisation
       </Text>
+      <Text
+        zIndex="3"
+        color="white"
+        width={{ base: "60%", md: "50%", lg: "60%", xl: "60%", "2xl": "50%" }}
+        fontWeight={300}
+        fontSize={{
+          md: "1.1rem",
+          lg: "1.2rem",
+          xl: "1.2rem",
+          "2xl": "1.45rem",
+        }}
+      >
+        that protects you online
+      </Text>
+      
       <Stack
         direction={{ base: "column", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
@@ -70,7 +112,7 @@ function App() {
           lineHeight="120%"
           fontWeight={600}
           fontSize="1.125rem"
-          rightIcon={<ArrowOutwardIcon />}
+          rightIcon={<ArrowUpwardIcon />}
           _hover={{
             bgColor: "#3c0191",
           }}
@@ -101,12 +143,66 @@ function App() {
           See how it works
         </Button>
       </Stack>
-      <Image
-        src={ellipse}
-        width={{ base: "40%", md: "40%", lg: "40%", xl: "40%", "2xl": "30%" }}
+      <Stack
+        direction={{ base: "column", md: "row" }}
+        // gap={{ base: "1rem", md: "0rem" }}
+        justifyContent="top"
+        alignItems="top"
+        spacing={{ base: "1rem", md: "0.75rem" }}
+        marginTop="5rem"
         zIndex="3"
-        opacity="0%"
-      />
+      >
+        <Text
+          zIndex="3"
+          color="#b89fdf"
+          width={{ base: "50%" }}
+          fontWeight={300}
+          fontSize={{
+            md: "0.65rem",
+            lg: "0.7rem",
+            xl: "0.7rem",
+            "2xl": "1.0rem",
+          }}
+          marginRight="1.5rem"
+        >
+          Powered by 
+          <Image 
+            src={polygon_blockchain_logo}
+            height="50px"
+          />
+        </Text>
+        <Text
+          zIndex="3"
+          color="#b89fdf"
+          width={{ base: "50%" }}
+          fontWeight={300}
+          fontSize={{
+            md: "0.65rem",
+            lg: "0.7rem",
+            xl: "0.7rem",
+            "2xl": "1.0rem",
+          }}
+          marginLeft="1.5rem"
+        >
+          Backed by
+          <Image 
+            src="https://grants.filecoin.io/vintage/images/filecoin-logo.png"
+            height="35px"
+            marginTop="7px"
+          />
+        </Text>
+      </Stack>
+      <Stack
+        direction={{ base: "column", md: "row" }}
+        // gap={{ base: "1rem", md: "0rem" }}
+        justifyContent="center"
+        alignItems="center"
+        spacing={{ base: "1rem", md: "0.75rem" }}
+        marginTop="3rem"
+        zIndex="3"
+      ></Stack>
+      
+     
       <Image
         position="absolute"
         bottom="0"
@@ -116,11 +212,12 @@ function App() {
         zIndex="1"
       />
       <Image
-        position="absolute"
+        position="fixed"
         bottom="0"
+        // left="0"
         marginTop="auto"
         src={ellipse}
-        width={{ base: "100%", xl: "80%", "2xl": "60%" }}
+        width={{ base: "100%"}}
         zIndex="2"
       />
     </Flex>
