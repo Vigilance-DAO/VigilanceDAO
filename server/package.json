@@ -11,7 +11,8 @@
     "lint": "eslint --ext .js,.ts .",
     "build-types": "tsc --noEmit --pretty",
     "test": "jest --watch",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "tsc"
   },
   "dependencies": {
     "capture-website": "^2.4.0",

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { CaretRightOutlined } from '@ant-design/icons';
-import { Divider, Typography, Button, Input, Statistic, Form, Radio, Card, Alert, Collapse, Space } from 'antd';
+import { Divider, Typography, Button, Input, Statistic, Form, Radio, Card, Alert, Collapse, Space, List } from 'antd';
 import 'antd/dist/antd.css';
 import { Web3Provider } from "@ethersproject/providers";
 import ReviewForm from './components/ReviewForm';
@@ -76,6 +76,13 @@ function App() {
     }
   }, [domainInfo])
 
+  const links = [{
+    heading: 'How does it work?',
+    link: 'https://vigilancedao.notion.site/Introduction-56c27e27bebd4f1999ae90412934c93e'
+  }, {
+    heading: 'How to report websites?',
+    link: 'https://vigilancedao.notion.site/Report-domains-2bbc4b4fc530452287187e3948b90c80'
+  }]
   return (
     <Context.Provider value={{ web3Hooks: _web3hook }}>
 
@@ -171,7 +178,22 @@ function App() {
               <Panel header={<div>
                 <b style={{fontSize: '15px'}}>How does it work? 🤔</b>
               </div>} key="1" className="site-collapse-custom-panel">
-                
+              <List
+                bordered
+                dataSource={links}
+                renderItem={(item) => (
+                  <List.Item>
+                    <a href={item.link} target={'_blank'}>
+                      <img src="./assets/new_tab_link.png" 
+                        style={{
+                          width: '15px',
+                          'marginRight': '10px',
+                          marginTop: '-3px'
+                        }}/> {item.heading}
+                    </a>
+                  </List.Item>
+                )}
+              />
               </Panel>
             </Collapse>
             <Collapse

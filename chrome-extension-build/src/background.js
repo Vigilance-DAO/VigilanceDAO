@@ -39,6 +39,7 @@ function getStorageKey(url) {
 }
 
 let inMemoryStorage = {}
+let lastUrl = null
 
 async function getDomainRegistrationDate(storageInfo, url) {
     const key = getStorageKey(url)
@@ -152,6 +153,10 @@ async function getDomainValidationInfo(url) {
     }
 }
 
+function isSoftWarning(createdOn) {
+    let now = new Date()
+    return (now.getTime() - createdOn.getTime()) < env.alertPeriod
+}
 
 function processTab(tab) {
     // if(tab.status=='complete') {
@@ -165,10 +170,12 @@ function processTab(tab) {
     //     });
     // }
     const url = getUrl(tab)
-    if(!url) {
+    console.log('processTab', JSON.stringify({url, lastUrl}))
+    if(!url || url!=lastUrl) {
         chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
         chrome.action.setBadgeText({text: "..."});
         chrome.action.setBadgeBackgroundColor({color: "yellow"});
+        lastUrl = url || lastUrl
         return;
     }
     // chrome.action.setBadgeTextColor({color: "black"});
@@ -176,6 +183,7 @@ function processTab(tab) {
         const key = getStorageKey(url)
         chrome.storage.sync.get([key], async (items) => {   
             let createdOn = await getDomainRegistrationDate(items, url)
+            
             let now = new Date()
             let validationInfo = {
                 type: 'info',
@@ -203,6 +211,11 @@ function processTab(tab) {
                 })
             }
 
+            if(createdOn && (isSoftWarning(createdOn) || validationInfo.isScamVerified)) {
+                sendMessage(tab, 'show-warning', {domain: url, createdOn: createdOn ? createdOn.getTime() : 0, 
+                    type: validationInfo.type, msg: validationInfo.msg, description: validationInfo.description})
+            }
+
             if(validationInfo.isScamVerified) {
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 chrome.action.setBadgeText({text: "❌"});
@@ -215,7 +228,7 @@ function processTab(tab) {
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
                 validationInfo.type = 'success'
                 validationInfo.msg = 'Verified as legit'
-            } else if(createdOn && (now.getTime() - createdOn.getTime()) < env.alertPeriod) {
+            } else if(createdOn && isSoftWarning(createdOn)) {
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 validationInfo.openScamReports ? chrome.action.setBadgeText({text: validationInfo.openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
