@@ -2,7 +2,7 @@ import React from "react";
 // import "./App.css";
 // import AppBar from '@mui/material/AppBar';
 import { Button, Flex, HStack, Image, Stack, Text } from "@chakra-ui/react";
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 // import ellipse from "./assets/ellipse1.svg";
 import ellipse from "./assets/ellipse-bottom-left.svg";
 import gradient from "./assets/gradient.png";
@@ -112,7 +112,7 @@ function App() {
           lineHeight="120%"
           fontWeight={600}
           fontSize="1.125rem"
-          rightIcon={<ArrowUpwardIcon />}
+          rightIcon={<ArrowOutwardIcon />}
           _hover={{
             bgColor: "#3c0191",
           }}
@@ -125,7 +125,9 @@ function App() {
         <Button
           variant="outline"
           size={{ base: "md", md: "lg" }}
-          color="white"
+          as="a"
+          target="_blank"
+          href="https://vigilancedao.notion.site/vigilancedao/Introduction-56c27e27bebd4f1999ae90412934c93e"
           borderColor="#5400CD"
           borderStyle="solid"
           borderWidth="0.1rem"
@@ -135,9 +137,11 @@ function App() {
           borderRadius="0.125rem"
           _hover={{
             color: "whiteAlpha.600",
+            bgColor: "#3c0191",
           }}
           style={{
             boxShadow: "0px 4px 156px rgba(140, 0, 251, 0.25)",
+            color: 'white'
           }}
         >
           See how it works

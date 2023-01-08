@@ -7,7 +7,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.9.3",
     "@magic-sdk/provider": "^10.0.0",
-    "@mui/icons-material": "^5.8.4",
+    "@mui/icons-material": "^5.11.0",
     "@mui/material": "^5.11.0",
     "@tableland/sdk": "^2.0.2",
     "@testing-library/jest-dom": "^5.16.4",
