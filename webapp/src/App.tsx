@@ -2,7 +2,7 @@ import React from "react";
 // import "./App.css";
 // import AppBar from '@mui/material/AppBar';
 import { Button, Flex, HStack, Image, Stack, Text } from "@chakra-ui/react";
-import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
+import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 // import ellipse from "./assets/ellipse1.svg";
 import ellipse from "./assets/ellipse-bottom-left.svg";
 import gradient from "./assets/gradient.png";
@@ -17,7 +17,7 @@ function App() {
       textAlign="center"
       minHeight="100vh"
       position="relative"
-    > 
+    >
       <Stack
         direction={{ base: "column", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
@@ -33,7 +33,7 @@ function App() {
         color="white"
         // fontSize={"6.5rem"}
         fontSize={{
-          base: "1.5rem",
+          base: "1.8rem",
           md: "3.0rem",
           lg: "3.5rem",
           xl: "4rem",
@@ -49,7 +49,7 @@ function App() {
         color="white"
         // fontSize={"6.5rem"}
         fontSize={{
-          base: "1.5rem",
+          base: "1.8rem",
           md: "3.0rem",
           lg: "3.5rem",
           xl: "4rem",
@@ -62,7 +62,7 @@ function App() {
       <Text
         zIndex="3"
         color="white"
-        width={{ base: "60%", md: "50%", lg: "60%", xl: "60%", "2xl": "50%" }}
+        width={{ base: "100%", md: "50%", lg: "60%", xl: "60%", "2xl": "50%" }}
         fontWeight={300}
         fontSize={{
           md: "1.1rem",
@@ -88,7 +88,7 @@ function App() {
       >
         that protects you online
       </Text>
-      
+
       <Stack
         direction={{ base: "column", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
@@ -141,14 +141,14 @@ function App() {
           }}
           style={{
             boxShadow: "0px 4px 156px rgba(140, 0, 251, 0.25)",
-            color: 'white'
+            color: "white",
           }}
         >
           See how it works
         </Button>
       </Stack>
       <Stack
-        direction={{ base: "column", md: "row" }}
+        direction={{ base: "row", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
         justifyContent="top"
         alignItems="top"
@@ -169,11 +169,8 @@ function App() {
           }}
           marginRight="1.5rem"
         >
-          Powered by 
-          <Image 
-            src={polygon_blockchain_logo}
-            height="50px"
-          />
+          Powered by
+          <Image src={polygon_blockchain_logo} height="50px" />
         </Text>
         <Text
           zIndex="3"
@@ -189,7 +186,7 @@ function App() {
           marginLeft="1.5rem"
         >
           Backed by
-          <Image 
+          <Image
             src="https://grants.filecoin.io/vintage/images/filecoin-logo.png"
             height="35px"
             marginTop="7px"
@@ -205,8 +202,7 @@ function App() {
         marginTop="3rem"
         zIndex="3"
       ></Stack>
-      
-     
+
       <Image
         position="absolute"
         bottom="0"
@@ -216,12 +212,12 @@ function App() {
         zIndex="1"
       />
       <Image
-        position="fixed"
+        position="absolute"
         bottom="0"
         // left="0"
         marginTop="auto"
         src={ellipse}
-        width={{ base: "100%"}}
+        width={{ base: "100%" }}
         zIndex="2"
       />
     </Flex>
