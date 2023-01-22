@@ -1,4 +1,5 @@
-pragma solidity 0.8.12;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
@@ -50,6 +51,7 @@ contract ReportDomain is OwnableUpgradeable {
 
     event Reported(uint indexed id, string domain,bool isScam,address indexed reporter, uint createdOn,string evidences,string comments,uint stakeAmount);
     event Validated(uint indexed id, string  domain,bool isScam,address reporter,address indexed validator, uint updatedon,string validatorComments,string status,uint rewardAmount);
+    event defaultValidated(string domain,bool isScam,address reporter,string validatorComments);
 
 
     function initialize(address _governanceBadgeNFT,address _treasuryContract) initializer public {
@@ -214,6 +216,10 @@ contract ReportDomain is OwnableUpgradeable {
 
     function getBalance() public view returns (uint256) {
         return address(this).balance;
+    }
+
+    function defaultDomain(string memory domain) public onlyOwner {
+        emit defaultValidated(domain, false, msg.sender,"Auto-verified: top 10k domain by traffic");  
     }
 
     // function payDividends(uint amount) // todo
