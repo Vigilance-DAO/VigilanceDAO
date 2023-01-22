@@ -119,13 +119,13 @@ const Case = (inputs: CaseInputs) => {
             paddingY="0.25rem"
             borderRadius="0.25rem"
             size={{ base: "sm", md: "md" }}
-            colorScheme={!isScam ? "red" : "green"}
-            bgColor={!isScam ? "rgba(255,0,0,10%)" : "rgba(0,255,0,10%)"}
+            colorScheme={isScam ? "red" : "green"}
+            bgColor={isScam ? "rgba(255,0,0,10%)" : "rgba(0,255,0,10%)"}
           >
             <TagLabel>
-              <b>Claim:</b> {!isScam ? "Scam" : "Legit"}{" "}
+              <b>Claim:</b> {isScam ? "Scam" : "Legit"}{" "}
             </TagLabel>
-            <TagRightIcon as={!isScam ? GppMaybeIcon : CheckIcon} />
+            <TagRightIcon as={isScam ? GppMaybeIcon : CheckIcon} />
           </Tag>
         </Stack>
       </CardHeader>
