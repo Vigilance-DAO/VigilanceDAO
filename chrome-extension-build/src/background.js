@@ -83,12 +83,12 @@ function getUrl(tab) {
     let _url = tab.url;
     _url = new URL(_url);
 
-    console.log('bg current url', _url)
-    console.log('bg current tab', tab)
+    console.debug('bg current url', _url)
+    console.debug('bg current tab', tab)
 
     var parsed = psl.parse(_url.hostname);
     let url = parsed.domain
-    console.log('bg url', url)
+    console.debug('bg url', url)
     return url
 }
 

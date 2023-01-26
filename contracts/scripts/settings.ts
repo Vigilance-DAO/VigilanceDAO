@@ -26,7 +26,7 @@ async function run() {
     }
 
     async function voteValidator() {
-        let wallet = "0x625B892f34ACA436e1525e5405A8fb81eC5cc04d"
+        let wallet = "0x6426114c0C3531D90Ed8B9f7c09A0dc115F4aaee"
         let contract = await ethers.getContractAt('GovernanceBadgeNFT', governanceAddress, result[0])
         const tx = await contract.voteValidator(wallet)
         console.log(tx.hash)
@@ -47,8 +47,8 @@ async function run() {
 
     // await setStakingAmount()
     // await setMinVotes()
-    // await voteValidator()
-    setValidatorStakingAmount()
+    await voteValidator()
+    // setValidatorStakingAmount()
 }
 
 run()

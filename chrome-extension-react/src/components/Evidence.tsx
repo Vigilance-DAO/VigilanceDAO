@@ -62,10 +62,10 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
         </div>  
     );
 
-    if(chrome && chrome.runtime) {
+    if(chrome && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener(async (msg: any, sender: any, sendResponse: any) => {
             // console.log('on message', msg, sender)
-            if(msg && msg.type == "screenshot"){
+            if(msg && msg.type == "screenshot") {
                 // console.log('recieved screenshot')
                 if(msg.data.isSuccess) {
                     let _fileList: any[] = [...fileList]

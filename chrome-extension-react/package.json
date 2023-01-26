@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
@@ -35,7 +35,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:content": "browserify content.js -o ../chrome-extension-build/src/content.js",
-    "release": "npm run build && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build"
+    "release:assets": "cp -r public/assets ../chrome-extension-build",
+    "release": "npm run build && rm -rf ../chrome-extension-build/static && cp -r build/static ../chrome-extension-build && cp build/index.html ../chrome-extension-build && npm run build:content && npm run release:assets"
   },
   "eslintConfig": {
     "extends": [

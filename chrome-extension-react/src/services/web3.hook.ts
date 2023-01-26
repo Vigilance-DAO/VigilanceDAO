@@ -54,35 +54,35 @@ export function Web3Hook() {
                     let account = msg.data.account
                     setAccount({account, loading: false})
                 } else if(msg && msg.type == 'chainID') {
-                    let chainId = msg.data.chainId
-                    setChainId({
-                        chainId,
-                        loading: false
-                    })
-                } else if(msg && msg.type == 'transaction-update') {
-                    setReportTxInfo({
-                        txHash: msg.data.txHash,
-                        isSuccess: msg.data.isSuccess,
-                        error: msg.data.error,
-                        loading: false
-                    })
-                } else if(msg && msg.type == 'stake-amount') {
-                    setStakeETH({
-                        stakeETH: msg.data.stakeAmount,
-                        loading: false
-                    })
-                } else if(msg && msg.type == "domain"){
-                    setDomainInfo({
-                        domain: msg.data.domain,
-                        registeredOn: msg.data.createdOn,
-                        status: {
-                            message: msg.data.msg,
-                            type: msg.data.type,
-                            description: msg.data.description
-                        },
-                        loading: false
-                    })
-                }
+            let chainId = msg.data.chainId
+            setChainId({
+                chainId,
+                loading: false
+            })
+        } else if(msg && msg.type == 'transaction-update') {
+            setReportTxInfo({
+                txHash: msg.data.txHash,
+                isSuccess: msg.data.isSuccess,
+                error: msg.data.error,
+                loading: false
+            })
+        } else if(msg && msg.type == 'stake-amount') {
+            setStakeETH({
+                stakeETH: msg.data.stakeAmount,
+                loading: false
+            })
+        } else if(msg && msg.type == "domain"){
+            setDomainInfo({
+                domain: msg.data.domain,
+                registeredOn: msg.data.createdOn,
+                status: {
+                    message: msg.data.msg,
+                    type: msg.data.type,
+                    description: msg.data.description
+                },
+                loading: false
+            })
+        }
             });
         }
     }
@@ -158,12 +158,14 @@ export function Web3Hook() {
     }
 }
 
-export const chainInfo = [{
-    chainId: 137,
-    fullName: 'Polygon Mainnet',
-    shortName: 'Mainnet',
-    explorer: 'https://polygonscan.com'
-}, {
+export const chainInfo = [
+//     {
+//     chainId: 137,
+//     fullName: 'Polygon Mainnet',
+//     shortName: 'Mainnet',
+//     explorer: 'https://polygonscan.com'
+// }, 
+{
     chainId: 80001,
     fullName: 'Polygon Mumbai',
     shortName: 'Mumbai',

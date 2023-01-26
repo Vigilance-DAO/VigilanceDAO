@@ -17,7 +17,7 @@
     },
     "web_accessible_resources": [
       {
-        "resources": [ "index.html", "static/*", "src/content.js" ],
+        "resources": [ "*.html", "static/*", "assets/*", "src/content.js" ],
         "matches": ["<all_urls>"]
       }
     ],
