@@ -43,7 +43,7 @@ async function main() {
   const tx = await token.transferOwnership(reportDomain.address);
   await tx.wait();
   console.log(domains.length);
-  const validate = await reportDomain.defaultDomain(domains[0]);
+  const validate = await reportDomain.defaultDomain(domains);
   await validate.wait();
   console.log("validated");
 }
