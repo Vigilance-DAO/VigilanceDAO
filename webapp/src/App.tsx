@@ -101,7 +101,7 @@ function App() {
         <Button
           variant="solid"
           as="a"
-          href="https://github.com/VenkatTeja/VigilanceDAO/releases/tag/beta"
+          href="https://github.com/VenkatTeja/VigilanceDAO/releases/"
           target="_blank"
           size={{ base: "md", md: "lg" }}
           bgColor="#5400CD"
