@@ -293,19 +293,17 @@ contract ReportDomain is OwnableUpgradeable {
                 status,
                 0
             );
+            reportsByDomain[reportsByID[_reportId].domain].isScamClaim = false;
+            reportsByDomain[reportsByID[_reportId].domain].isLegitClaim = false;
+            reportsByDomain[reportsByID[_reportId].domain]
+                .scamReporter = address(0);
+            reportsByDomain[reportsByID[_reportId].domain]
+                .legitReporter = address(0);
+            reportsByDomain[reportsByID[_reportId].domain].reportIDforScam = 0;
+            reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit = 0;
         }
 
         lockedAmount -= reportsByID[_reportId].stake;
-        reportsByDomain[reportsByID[_reportId].domain].isScamClaim = false;
-        reportsByDomain[reportsByID[_reportId].domain].isLegitClaim = false;
-        reportsByDomain[reportsByID[_reportId].domain].scamReporter = address(
-            0
-        );
-        reportsByDomain[reportsByID[_reportId].domain].legitReporter = address(
-            0
-        );
-        reportsByDomain[reportsByID[_reportId].domain].reportIDforScam = 0;
-        reportsByDomain[reportsByID[_reportId].domain].reportIDforLegit = 0;
     }
 
     function compareStrings(string memory a, string memory b)
@@ -327,6 +325,8 @@ contract ReportDomain is OwnableUpgradeable {
 
     function defaultDomain(string[] memory domain) public onlyOwner {
         for (uint256 i = 0; i < domain.length; i++) {
+            reportsByDomain[domain[i]].isLegitClaim = true;
+            reportsByDomain[domain[i]].legitReporter = msg.sender;
             emit defaultValidated(
                 domain[i],
                 true,
