@@ -3,31 +3,31 @@
   "version": "0.1.1",
   "private": true,
   "dependencies": {
-    "@ant-design/icons": "^4.7.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.11.62",
-    "@types/react": "^18.0.21",
-    "@types/react-dom": "^18.0.6",
+    "@ant-design/icons": "4.7.0",
+    "@testing-library/jest-dom": "5.16.5",
+    "@testing-library/react": "13.4.0",
+    "@testing-library/user-event": "13.5.0",
+    "@types/jest": "27.5.2",
+    "@types/node": "16.11.62",
+    "@types/react": "18.0.21",
+    "@types/react-dom": "18.0.6",
     "@web3-react/core": "8.0.35-beta.0",
-    "@web3-react/injected-connector": "^6.0.7",
+    "@web3-react/injected-connector": "6.0.7",
     "@web3-react/metamask": "8.0.28-beta.0",
     "@web3-react/types": "8.0.20-beta.0",
-    "antd": "^4.23.4",
-    "axios": "^1.1.2",
-    "ethers": "^5.7.1",
-    "graphql-request": "^5.0.0",
-    "metamask-extension-provider": "^3.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-ipfs-image": "^0.6.0",
+    "antd": "4.23.4",
+    "axios": "1.1.2",
+    "ethers": "5.7.1",
+    "graphql-request": "5.0.0",
+    "metamask-extension-provider": "3.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-ipfs-image": "0.6.0",
     "react-scripts": "5.0.1",
-    "stream": "^0.0.2",
-    "typescript": "^4.8.4",
-    "web-vitals": "^2.1.4",
-    "web3.storage": "^4.4.0"
+    "stream": "0.0.2",
+    "typescript": "4.8.4",
+    "web-vitals": "2.1.4",
+    "web3.storage": "4.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -60,7 +60,7 @@
     ]
   },
   "devDependencies": {
-    "react-snap": "^1.23.0"
+    "react-snap": "1.23.0"
   },
   "reactSnap": {
     "inlineCss": true
