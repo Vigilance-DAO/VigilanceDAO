@@ -1,7 +1,7 @@
-require('dotenv').config()
+require("dotenv").config();
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import '@openzeppelin/hardhat-upgrades';
+import "@openzeppelin/hardhat-upgrades";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -9,10 +9,10 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
-  },  
+        runs: 200,
+      },
+    },
+  },
   networks: {
     polygon: {
       url: process.env.POLYGON_URL || "",
@@ -22,18 +22,23 @@ const config: HardhatUserConfig = {
     mumbai: {
       url: process.env.POLYGON_MUMBAI_RPC || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"] : [],
+        process.env.PRIVATE_KEY !== undefined
+          ? [
+              process.env.PRIVATE_KEY,
+              "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+            ]
+          : [],
     },
     hardhat: {
       mining: {
         auto: false,
-        interval: 500
+        interval: 500,
       },
-      chainId: 200
-    }
+      chainId: 200,
+    },
   },
   mocha: {
-    timeout: 480000
+    timeout: 480000,
   },
   etherscan: {
     apiKey: {
