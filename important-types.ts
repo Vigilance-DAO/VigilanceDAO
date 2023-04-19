@@ -1,12 +1,20 @@
 // Includes types used by two or more projects above.
 
-/**
- * Body structure of the response returned by /domain-info endpoint
- */
-export interface DomainInfo {
+export interface BasicDomainInfo {
 	domain: string;
-	createdon: string,
-	updatedon: string,
+	createdon: Date,
+	updatedon: Date,
 	recordCreatedOn?: string,
 	isValid?: boolean
+}
+
+export interface DomainScamInfo {
+	isScam: boolean;
+	source: string;
+	attackType?: string;
+	updatedOn: string;
+}
+
+export interface DomainInfo extends BasicDomainInfo {
+	scamInfo?: DomainScamInfo;
 }

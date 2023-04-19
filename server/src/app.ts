@@ -2,7 +2,7 @@ import express, { json } from 'express';
 import helmet from 'helmet';
 import { PoolClient } from 'pg';
 import pool from './db';
-import { DomainInfo } from "../../important-types";
+import { BasicDomainInfo, DomainInfo, DomainScamInfo } from "../../important-types";
 const whois = require('whois-json');
 
 const app = express();
@@ -32,59 +32,87 @@ app.post('/domain-info', async (req, res) => {
 });
 
 app.use((_, res, _2) => {
-  res.status(404).json({ error: 'NOT FOUND' });
+	res.status(404).json({ error: 'NOT FOUND' });
 });
 
-async function getDomainFromDb(client: PoolClient, domain: string): Promise<DomainInfo | null> {
-  let query = 'SELECT * from domains where domain=$1'
-  let values = [domain]
-  try {
-    let data = await client.query(query, values)
-    if(data.rows.length && data.rows[0].isValid) {
-      return data.rows[0]
-    } else {
-      return null;
-    }
-  } catch(err) {
-    console.log('error', err)
-  }
+async function getDomainCreatedInfoFromDb(client: PoolClient, domain: string): Promise<BasicDomainInfo | null> {
+	const query = 'SELECT * from domains where domain=$1'
+
+	try {
+		const data = await client.query(query, [domain])
+		if (data.rows.length && data.rows[0].isValid) {
+			return data.rows[0] as BasicDomainInfo;
+		} else {
+			return null;
+		}
+	} catch (err) {
+		console.log('error', err)
+	}
+	return null
+}
+
+async function getDomainScamInfoFromDb(client: PoolClient, domain: string): Promise<DomainScamInfo | null> {
+	const query = 'SELECT "isScam", "fromSourceId", "attackType", "updatedOn" FROM "Edge" WHERE "destinationAddress"=$1';
+
+	try {
+		const data = await client.query(query, [domain]);
+		if (data.rowCount > 0) {
+			return data.rows[0] as DomainScamInfo;
+		} else {
+			return null;
+		}
+	} catch (err) {
+		console.log("error", err);
+	}
+
 	return null;
 }
 
 async function getDomainInfo(client: PoolClient, domain: string): Promise<DomainInfo> {
-  let fromDb = await getDomainFromDb(client, domain)
-  if(fromDb) {
-    return fromDb
-  }
-  var results = await whois(domain);
-  let createdon: any = new Date(results.creationDate)
-  let updatedon: any = new Date(results.updatedDate)
-  console.log(domain, createdon, updatedon)
+	const domainInfo: DomainInfo = {
+		domain,
+	} as DomainInfo;
 
-  let text = 'INSERT INTO domains(domain, createdon, updatedon) VALUES($1, $2, $3)'
-  let values: any = [domain, createdon, updatedon]
-  if(isNaN(createdon) || isNaN(updatedon)) {
-    text = 'INSERT INTO domains(domain, "isValid") VALUES($1, $2)'
-    values = [domain, false]
-  }
-  try {
-    await client.query(text, values)
-  } catch(err) {
-    console.log('error', err)
-  }
-  
-  return {
-    domain,
-    createdon,
-    updatedon
-  }
+	const fromDb = await getDomainCreatedInfoFromDb(client, domain)
+	if (fromDb) {
+		domainInfo.createdon = fromDb.createdon;
+		domainInfo.updatedon = fromDb.updatedon;
+		domainInfo.recordCreatedOn = fromDb.recordCreatedOn;
+		domainInfo.isValid = fromDb.isValid;
+	} else {
+		const results = await whois(domain);
+		domainInfo.createdon = new Date(results.creationDate)
+		domainInfo.updatedon = new Date(results.updatedDate)
+		domainInfo.isValid = true;
+
+		let text = 'INSERT INTO domains(domain, createdon, updatedon) VALUES($1, $2, $3)'
+		let values: any = [domain, domainInfo.createdon, domainInfo.updatedon]
+		if (isNaN(domainInfo.createdon as any) || isNaN(domainInfo.updatedon as any)) {
+			text = 'INSERT INTO domains(domain, "isValid") VALUES($1, $2)'
+			values = [domain, false]
+			domainInfo.isValid = false;
+		}
+		try {
+			await client.query(text, values)
+		} catch (err) {
+			console.log('error', err)
+		}
+	}
+	const scamInfoFromDb = await getDomainScamInfoFromDb(client, domain);
+	if (scamInfoFromDb) {
+		domainInfo.scamInfo = scamInfoFromDb;
+	} else {
+		// do nothing
+	}
+
+	return domainInfo;
 }
 
 
 export { app };
 
-if(process.env.SERVER_TYPE='express') {
-  app.listen(4000, () => {
-    console.log('server listening on 4000')
-  })
+if (process.env.SERVER_TYPE = 'express') {
+	app.listen(4000, () => {
+		console.log('server listening on 4000')
+	})
 }
