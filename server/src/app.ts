@@ -1,6 +1,8 @@
 import express, { json } from 'express';
 import helmet from 'helmet';
+import { PoolClient } from 'pg';
 import pool from './db';
+import { DomainInfo } from "../../important-types";
 const whois = require('whois-json');
 
 const app = express();
@@ -33,7 +35,7 @@ app.use((_, res, _2) => {
   res.status(404).json({ error: 'NOT FOUND' });
 });
 
-async function getDomainFromDb(client: any, domain: string) {
+async function getDomainFromDb(client: PoolClient, domain: string): Promise<DomainInfo | null> {
   let query = 'SELECT * from domains where domain=$1'
   let values = [domain]
   try {
@@ -46,10 +48,10 @@ async function getDomainFromDb(client: any, domain: string) {
   } catch(err) {
     console.log('error', err)
   }
+	return null;
 }
 
-async function getDomainInfo(client: any, domain: string) {
-  
+async function getDomainInfo(client: PoolClient, domain: string): Promise<DomainInfo> {
   let fromDb = await getDomainFromDb(client, domain)
   if(fromDb) {
     return fromDb
