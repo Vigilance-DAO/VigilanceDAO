@@ -10,25 +10,25 @@ app.use(json());
 app.use(helmet());
 
 app.post('/domain-info', async (req, res) => {
-  // await captureWebsite.file('https://cryptnesis.com/', 'screenshot.png');
+	// await captureWebsite.file('https://cryptnesis.com/', 'screenshot.png');
 
-  let domain = req.body.domain
-  console.log('domain', domain)
-  if(!domain) {
-    res.status(400).send({})
-    return;
-  }
+	let domain = req.body.domain
+	console.log('domain', domain)
+	if (!domain) {
+		res.status(400).send({})
+		return;
+	}
 
-  try {
-    let client = await pool.connect()
-    let output = await getDomainInfo(client, domain)
-    client.release()
-    res.json(output);
-  } catch(err) {
-    console.log('get domain details', err)
-    res.status(500).send({})
-  }
-  return;
+	try {
+		let client = await pool.connect()
+		let output = await getDomainInfo(client, domain)
+		client.release()
+		res.json(output);
+	} catch (err) {
+		console.log('get domain details', err)
+		res.status(500).send({})
+	}
+	return;
 });
 
 app.use((_, res, _2) => {
