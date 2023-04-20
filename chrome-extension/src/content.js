@@ -1,5 +1,5 @@
 const createMetaMaskProvider = require('metamask-extension-provider');
-const { address, abi } = require('./constants')
+const { address, abi } = require('../constants')
 
 console.log('psl', psl)
 console.log('ethers', window.ethereum)
@@ -262,4 +262,3 @@ function toggle(){
     //     console.log('message cb', response);
     // });
 }
-
