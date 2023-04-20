@@ -5,7 +5,9 @@
   "main": "bundle-config.js",
   "scripts": {
     "build": "node bundle-config.mjs",
-    "dev": "node bundle-config.mjs --watch"
+    "dev": "node bundle-config.mjs --watch",
+    "build:content": "browserify src/content.js -o ../chrome-extension-build/src/content.js && browserify src/background.js -o ../chrome-extension-build/src/background.js",
+    "release": "yarn build && rm -rf ../chrome-extension-build/static && mkdirp ../chrome-extension-build/static && cp -r build/* ../chrome-extension-build/static && yarn build:content"
   },
   "keywords": [],
   "author": "",
@@ -40,5 +42,8 @@
     "typescript": "4.8.4",
     "web-vitals": "2.1.4",
     "web3.storage": "4.4.0"
+  },
+  "devDependencies": {
+    "mkdirp": "^3.0.0"
   }
 }
