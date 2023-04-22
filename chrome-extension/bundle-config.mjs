@@ -8,8 +8,12 @@ if (isWatching) {
 	console.log("--watch is provided. Files will be watched.");
 }
 
-const envFile = readFileSync("./.env");
-const loadedEnvVairables = parse(envFile);
+let loadedEnvVairables = {};
+
+try {
+	const envFile = readFileSync("./.env");
+	loadedEnvVairables = parse(envFile);
+} catch (_e) {}
 
 /**
  * @type {import("esbuild").BuildOptions}
