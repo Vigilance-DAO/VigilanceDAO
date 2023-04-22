@@ -26,6 +26,8 @@ function NetworkSelector() {
             alert("Chain not found")
         }
     }
+    console.log('supported chains', process.env.REACT_APP_SUPPORTED_NETWORKS);
+    
 
     let supportedChains = process.env.REACT_APP_SUPPORTED_NETWORKS.split(',').map(i => parseInt(i))
 
