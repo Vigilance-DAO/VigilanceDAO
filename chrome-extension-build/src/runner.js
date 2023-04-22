@@ -1451,127 +1451,127 @@ const createPopup = () => {
 let approver = null,signature=null, swapData=null;
 
 const addScriptTagInPage = async () => {
-  const provider = new ethers.providers.JsonRpcProvider(
-    "http://127.0.0.1:8545/"
-  );
+//   const provider = new ethers.providers.JsonRpcProvider(
+//     "http://127.0.0.1:8545/"
+//   );
 
-const USDCContract = new ethers.Contract(
-    USDCContractAddress,
-    USDCAbi,
-    provider
-  );
+// const USDCContract = new ethers.Contract(
+//     USDCContractAddress,
+//     USDCAbi,
+//     provider
+//   );
 
-const SwapperContract = new ethers.Contract(
-    SwapperContractAddress,
-    SwapperAbi,
-    provider
-  );
-  // console.log("contract", contract);
+// const SwapperContract = new ethers.Contract(
+//     SwapperContractAddress,
+//     SwapperAbi,
+//     provider
+//   );
+//   // console.log("contract", contract);
 
-const RouterContract = new ethers.Contract(
-    RouterContractAddress,
-    RouterAbi,
-    provider
-  );
-  // console.log("RouterContract", RouterContract);
+// const RouterContract = new ethers.Contract(
+//     RouterContractAddress,
+//     RouterAbi,
+//     provider
+//   );
+//   // console.log("RouterContract", RouterContract);
 
-  window.addEventListener("message", async (event) => {
-    if (
-      event.source === window &&
-      event.data &&
-      event.data.type === "REQUEST_NONCE_FROM_INJECTED_SCRIPT"
-    ) {
-      const from = event.data.payload;
+//   window.addEventListener("message", async (event) => {
+//     if (
+//       event.source === window &&
+//       event.data &&
+//       event.data.type === "REQUEST_NONCE_FROM_INJECTED_SCRIPT"
+//     ) {
+//       const from = event.data.payload;
 
-      const USDCContract = new ethers.Contract(USDCContractAddress,USDCAbi,provider);
-      const nonce = await USDCContract.nonces(from);
+//       const USDCContract = new ethers.Contract(USDCContractAddress,USDCAbi,provider);
+//       const nonce = await USDCContract.nonces(from);
 
-      window.postMessage({type: "NONCE_FROM_RUNNER_SCRIPT",payload: nonce.toString()});       
-    }
-  });
+//       window.postMessage({type: "NONCE_FROM_RUNNER_SCRIPT",payload: nonce.toString()});       
+//     }
+//   });
 
-  window.addEventListener("message", async (event) => {
-    console.log("listening1231234");
-    if (
-      event.source === window &&
-      event.data &&
-      event.data.type === "SIGNATURE_FROM_INJECTED_SCRIPT"
-    ) {
-      signature = event.data.payload;
-    }
-  });
+//   window.addEventListener("message", async (event) => {
+//     console.log("listening1231234");
+//     if (
+//       event.source === window &&
+//       event.data &&
+//       event.data.type === "SIGNATURE_FROM_INJECTED_SCRIPT"
+//     ) {
+//       signature = event.data.payload;
+//     }
+//   });
 
-  window.addEventListener("message", async (event) => {
-    if (
-      event.source === window &&
-      event.data &&
-      event.data.type === "SWAPDATA_FROM_INJECTED_SCRIPT"
-    ) {
-      swapData = event.data.payload;
-      console.log(swapData);
+//   window.addEventListener("message", async (event) => {
+//     if (
+//       event.source === window &&
+//       event.data &&
+//       event.data.type === "SWAPDATA_FROM_INJECTED_SCRIPT"
+//     ) {
+//       swapData = event.data.payload;
+//       console.log(swapData);
 
-      if(signature!= null && approver!=null && swapData!=null){  
-        const { v, r, s } = ethers.utils.splitSignature(signature);
-        console.log(v,r,s);
-        console.log(signature,approver);
+//       if(signature!= null && approver!=null && swapData!=null){  
+//         const { v, r, s } = ethers.utils.splitSignature(signature);
+//         console.log(v,r,s);
+//         console.log(signature,approver);
     
-        const callData1 = USDCContract.interface.encodeFunctionData('permit', [
-          approver,
-          RouterContractAddress,
-          2000000,
-          2661766724,
-          v,
-          r,
-          s
-        ]);
+//         const callData1 = USDCContract.interface.encodeFunctionData('permit', [
+//           approver,
+//           RouterContractAddress,
+//           2000000,
+//           2661766724,
+//           v,
+//           r,
+//           s
+//         ]);
 
-        const callData2 = USDCContract.interface.encodeFunctionData('transferFrom', [
-          approver,
-          RouterContractAddress,
-          2000000,
-        ]);
+//         const callData2 = USDCContract.interface.encodeFunctionData('transferFrom', [
+//           approver,
+//           RouterContractAddress,
+//           2000000,
+//         ]);
 
         
-        const callData = [
-          {
-            "target": USDCContractAddress,                 
-            "callData": callData1,
-          },
-          {
-            "target": USDCContractAddress,                 
-            "callData": callData2
-          },
-          {
-            "target": SwapperContractAddress,                 
-            "callData": swapData
-          }
-        ]
+//         const callData = [
+//           {
+//             "target": USDCContractAddress,                 
+//             "callData": callData1,
+//           },
+//           {
+//             "target": USDCContractAddress,                 
+//             "callData": callData2
+//           },
+//           {
+//             "target": SwapperContractAddress,                 
+//             "callData": swapData
+//           }
+//         ]
 
-        const callData3 = RouterContract.interface.encodeFunctionData('router', [
-          callData
-        ]);
+//         const callData3 = RouterContract.interface.encodeFunctionData('router', [
+//           callData
+//         ]);
 
-        const gasLimit = await provider.estimateGas({
-          from: approver,
-          to: RouterContractAddress,
-          data: callData3,
-        });
+//         const gasLimit = await provider.estimateGas({
+//           from: approver,
+//           to: RouterContractAddress,
+//           data: callData3,
+//         });
         
-        console.log('Gas limit:', gasLimit.toString());
+//         console.log('Gas limit:', gasLimit.toString());
         
-      }
-    }
-  });
+//       }
+//     }
+//   });
 
-  window.addEventListener("message", async (event) => {
-    if (
-      event.source === window &&
-      event.data &&
-      event.data.type === "APPROVER_FROM_INJECTED_SCRIPT"
-    ) {
-      approver = event.data.payload;
-    }
-   });
+//   window.addEventListener("message", async (event) => {
+//     if (
+//       event.source === window &&
+//       event.data &&
+//       event.data.type === "APPROVER_FROM_INJECTED_SCRIPT"
+//     ) {
+//       approver = event.data.payload;
+//     }
+//    });
 
   const script = window.document.createElement("script");
   let url = chrome.runtime?.getURL("inject.js");
