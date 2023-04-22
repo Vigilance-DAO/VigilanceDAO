@@ -3,10 +3,14 @@ import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 import { parse } from "dotenv";
 
+import { prebuildFiles } from "./prebuild-html.mjs";
+
 const isWatching = process.argv.includes("--watch");
 if (isWatching) {
 	console.log("--watch is provided. Files will be watched.");
 }
+
+prebuildFiles();
 
 let loadedEnvVairables = {};
 
