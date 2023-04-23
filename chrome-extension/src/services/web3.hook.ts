@@ -4,7 +4,7 @@ import AlertMessageType from "../interfaces/AlertMessageType";
 
 declare const chrome: any;
 
-export function Web3Hook() {
+export function useWeb3Hook() {
     const [account, setAccount] = useState({
         loading: false,
         account: ''
