@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 
 const componentStyles: Record<string, React.CSSProperties> = {
 	internetVigilanceBackdrop: {
@@ -46,20 +46,21 @@ const componentStyles: Record<string, React.CSSProperties> = {
 
 export default function Alert() {
 	return (
-		<html>
-			<head>
-				<script
-					src="https://cdnjs.cloudflare.com/ajax/libs/psl/1.9.0/psl.min.js"
-					integrity="sha512-YFdOE8bP/RIePsH38M35+7w1rSePTkneMePyR2FWrdecVbBeHw6bQp8WVxuDJiKjig9PTWDjFMGM4w0Z87tpFQ=="
-					crossOrigin="anonymous"
-					referrerPolicy="no-referrer"
-				></script>
-			</head>
+		// <html>
+		// 	<head>
+		// 		<script
+		// 			src="https://cdnjs.cloudflare.com/ajax/libs/psl/1.9.0/psl.min.js"
+		// 			integrity="sha512-YFdOE8bP/RIePsH38M35+7w1rSePTkneMePyR2FWrdecVbBeHw6bQp8WVxuDJiKjig9PTWDjFMGM4w0Z87tpFQ=="
+		// 			crossOrigin="anonymous"
+		// 			referrerPolicy="no-referrer"
+		// 		></script>
+		// 	</head>
 
-			<body>
-				<script
-					dangerouslySetInnerHTML={{
-						__html: `function getStorageKey(url) {
+		// 	<body>
+		<Fragment>
+			<script
+				dangerouslySetInnerHTML={{
+					__html: `function getStorageKey(url) {
             return "vigil__".concat(url);
         }
 
@@ -73,44 +74,45 @@ export default function Alert() {
         chrome.storage.sync.get([key], async (items) => {
             document.getElementById('domainName').innerHTML = domain
         })`,
-					}}
-				></script>
-				<div
-					style={componentStyles.internetVigilanceBackdrop}
-					id="internetVigilanceBackdrop"
-				>
-					<div style={componentStyles.innerDiv}>
-						<h1 style={componentStyles.heading}>Internet Vigilance</h1>
-						<hr />
-						<p>
-							Domain: <span id="domainName">Loading...</span>
-						</p>
-						<p>
-							Registered on: <span id="domainRegDate">Loading...</span>
-						</p>
-						<p>
-							Warning: This is a newly registered domain. While most newly built
-							websites are safe, a few may be created for fraudulent purposes.
-						</p>
-						<p>
-							Please do necessary research before perfoming any financial
-							transactions or entering your passwords.
-						</p>
-						<button
-							id="closeInternetVigilance"
-							style={componentStyles.closeInternetVigilance}
-						>
-							Close
-						</button>
-						<button
-							id="closeInternetVigilanceWithNoMoreShow"
-							style={componentStyles.closeInternetVigilanceWithNoMoreShow}
-						>
-							Do not show for this website again.
-						</button>
-					</div>
+				}}
+			></script>
+			<div
+				style={componentStyles.internetVigilanceBackdrop}
+				id="internetVigilanceBackdrop"
+			>
+				<div style={componentStyles.innerDiv}>
+					<h1 style={componentStyles.heading}>Internet Vigilance</h1>
+					<hr />
+					<p>
+						Domain: <span id="domainName">Loading...</span>
+					</p>
+					<p>
+						Registered on: <span id="domainRegDate">Loading...</span>
+					</p>
+					<p>
+						Warning: This is a newly registered domain. While most newly built
+						websites are safe, a few may be created for fraudulent purposes.
+					</p>
+					<p>
+						Please do necessary research before perfoming any financial
+						transactions or entering your passwords.
+					</p>
+					<button
+						id="closeInternetVigilance"
+						style={componentStyles.closeInternetVigilance}
+					>
+						Close
+					</button>
+					<button
+						id="closeInternetVigilanceWithNoMoreShow"
+						style={componentStyles.closeInternetVigilanceWithNoMoreShow}
+					>
+						Do not show for this website again.
+					</button>
 				</div>
-			</body>
-		</html>
+			</div>
+		</Fragment>
+		// 	</body>
+		// </html>
 	);
 }
