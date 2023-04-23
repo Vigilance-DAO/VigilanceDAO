@@ -4,6 +4,23 @@ import AlertMessageType from "../interfaces/AlertMessageType";
 
 declare const chrome: any;
 
+export const FOR_DEVELOPMENT = {
+    domainInfo: {
+        domain: 'google.com',
+        registeredOn: 0,
+        status: {
+            message: "Meant for testing",
+            type: 'warning',
+            description: ''
+        },
+        loading: false
+    },
+    account: {
+        account: '0x6426114c0C3531D90Ed8B9f7c09A0dc115F4aaee',
+        loading: false
+    }
+} as const;
+
 export function useWeb3Hook() {
     const [account, setAccount] = useState({
         loading: false,
@@ -89,20 +106,9 @@ export function useWeb3Hook() {
 
     useEffect(() => {
         if(window.location.hostname == 'localhost') {
-            setDomainInfo({
-                domain: 'google.com',
-                registeredOn: 0,
-                status: {
-                    message: "Meant for testing",
-                    type: 'warning',
-                    description: ''
-                },
-                loading: false
-            })
-            setAccount({
-                account: '0x6426114c0C3531D90Ed8B9f7c09A0dc115F4aaee',
-                loading: false
-            })
+            setDomainInfo(FOR_DEVELOPMENT.domainInfo)
+            setAccount(FOR_DEVELOPMENT.account)
+
         }
     }, [])
 

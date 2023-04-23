@@ -15,6 +15,7 @@ import NetworkSelector from "../components/Network";
 import ReviewForm from "../components/ReviewForm";
 import AlertMessageType from "../interfaces/AlertMessageType";
 import History from "../components/History";
+import { FOR_DEVELOPMENT } from "../services/web3.hook";
 
 const { Panel } = Collapse;
 
@@ -46,22 +47,10 @@ export default function Index(props?: {
 		props = {};
 	}
 	if (props.domainInfo == undefined) {
-		props.domainInfo = {
-			domain: "",
-			loading: false,
-			registeredOn: 0,
-			status: {
-				description: "hi",
-				message: "done",
-				type: "success",
-			},
-		};
+		props.domainInfo = FOR_DEVELOPMENT.domainInfo;
 	}
 	if (props.account == undefined) {
-		props.account = {
-			loading: false,
-			account: "",
-		};
+		props.account = FOR_DEVELOPMENT.account;
 	}
 	if (props.connectWallet == undefined) {
 		props.connectWallet = () => {

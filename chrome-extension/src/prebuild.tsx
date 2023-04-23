@@ -25,7 +25,7 @@ const template = (content: string, javascript?: string, css?: string) => {
 	${css == undefined ? "" : `<style>${css}</style>`}
 </head>
 <body>
-	${content}
+	${css?.includes("index.css") ? `<div id="root">${content}</div>` : content}
 	${javascript == undefined ? "" : `<script>${javascript}</script>`}
 </body>
 </html>
@@ -43,13 +43,13 @@ components.forEach(async (component) => {
 	try {
 		cssContent = await readFile(cssFile, "utf-8");
 
-		await rm(cssFile);
+		// await rm(cssFile);
 	} catch (_e) {}
 
 	try {
 		jsContent = await readFile(jsFile, "utf-8");
 
-		await rm(jsFile);
+		// await rm(jsFile);
 	} catch (_e) {}
 
 	outputFile(
