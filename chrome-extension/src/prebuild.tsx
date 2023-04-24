@@ -32,28 +32,34 @@ const template = (content: string, javascript?: string, css?: string) => {
 `;
 };
 
-components.forEach(async (component) => {
-	const rendered = renderToStaticMarkup(component());
-	const baseName = component.name.toLowerCase();
-	const jsFile = join("build", baseName.concat(".js"));
-	const cssFile = join("build", baseName.concat(".css"));
+export function run() {
+	return Promise.all(
+		components.map(async (component) => {
+			const rendered = renderToStaticMarkup(component());
+			const baseName = component.name.toLowerCase();
+			const jsFile = join("build", baseName.concat(".js"));
+			const cssFile = join("build", baseName.concat(".css"));
 
-	let cssContent = undefined,
-		jsContent = undefined;
-	try {
-		cssContent = await readFile(cssFile, "utf-8");
+			let cssContent = undefined,
+				jsContent = undefined;
+			try {
+				cssContent = await readFile(cssFile, "utf-8");
 
-		// await rm(cssFile);
-	} catch (_e) {}
+				// await rm(cssFile);
+			} catch (_e) {}
 
-	try {
-		jsContent = await readFile(jsFile, "utf-8");
+			try {
+				jsContent = await readFile(jsFile, "utf-8");
 
-		// await rm(jsFile);
-	} catch (_e) {}
+				// await rm(jsFile);
+			} catch (_e) {}
 
-	outputFile(
-		join("./build/static/", baseName.concat(".html")),
-		template(rendered, jsContent, cssContent)
+			const destinationFile = join("./build/static/", baseName.concat(".html"));
+			console.log("Writing to", destinationFile);
+			return outputFile(
+				destinationFile,
+				template(rendered, jsContent, cssContent)
+			).catch(console.error);
+		})
 	);
-});
+}

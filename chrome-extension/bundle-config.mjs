@@ -1,5 +1,7 @@
+// @ts-check
 import { readFileSync } from "fs";
-import { rm } from "fs/promises";
+import { join } from "path";
+import { rm, rmdir } from "fs/promises";
 import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 import { parse } from "dotenv";
@@ -9,6 +11,9 @@ if (isWatching) {
 	console.log("--watch is provided. Files will be watched.");
 }
 
+/**
+ * @type {{[key: string]: string}}
+ */
 let definedValues = {};
 
 try {
@@ -43,46 +48,98 @@ const esbuildOptions = {
 	],
 };
 
+const prebuildScript = "./src/prebuild.tsx";
+
+/**
+ * @type {import("esbuild").BuildOptions}
+ */
+const prebuildOptions = {
+	entryPoints: [prebuildScript],
+	entryNames: "[dir]/[name]-[hash]",
+	outdir: "build",
+	bundle: true,
+	jsx: "transform",
+	jsxFactory: "React.createElement",
+	platform: "node",
+	sourcemap: "inline",
+	minify: false,
+	metafile: true,
+	define: definedValues,
+	plugins: [
+		{
+			name: "run-prebuild-script",
+			setup(build) {
+				build.onStart(async () => {
+					console.log("Building", prebuildScript);
+					try {
+						await rm("./build/static", {
+							recursive: true,
+						});
+					} catch (_e) {
+						console.log(_e);
+					}
+				});
+				build.onEnd(async (result) => {
+					if (result.metafile == undefined) {
+						throw new Error("`metafile` option is set to false.");
+					}
+
+					const prebuildOutputScript = "./"
+						.concat(
+							Object.keys(result.metafile.outputs).find((key) => {
+								return key.includes("prebuild") && key.includes(".js");
+							}) || ""
+						)
+						.replace("\\", "/");
+					console.log(prebuildOutputScript);
+
+					if (prebuildOutputScript == "./") {
+						throw new Error("Prebuild script is not found");
+					}
+
+					console.log("Building", prebuildScript, "done");
+					if (result.warnings.length > 0) {
+						result.warnings.forEach((warning) => {
+							console.warn(warning);
+						});
+					}
+					if (result.errors.length > 0) {
+						result.errors.forEach((error) => {
+							console.error(error);
+						});
+					}
+
+					console.log("Generating prebuilt html");
+
+					try {
+						const mod = await import(prebuildOutputScript);
+						await mod.run();
+					} catch (err) {
+						console.error(err);
+					}
+					console.log("Generating prebuilt html done");
+				});
+			},
+		},
+	],
+};
+
 (async () => {
 	if (isWatching) {
 		const ctx = await esbuild.context(esbuildOptions);
+		const prebuildCtx = await esbuild.context(prebuildOptions);
 
 		await ctx.watch();
+		await prebuildCtx.watch();
 		console.log("Watching...");
 
 		process.on("SIGKILL", () => {
 			ctx.dispose();
+			prebuildCtx.dispose();
 			console.log("Stopped watching");
 		});
 	} else {
 		await esbuild.build(esbuildOptions);
+		await esbuild.build(prebuildOptions);
 	}
-
-	// prebuild html files
-	const file = "./src/prebuild.tsx";
-
-	console.log("Building", file);
-	const build = await esbuild.build({
-		entryPoints: [file],
-		bundle: true,
-		outfile: "build/prebuild.js",
-		jsx: "transform",
-		jsxFactory: "React.createElement",
-		platform: "node",
-		sourcemap: "inline",
-		minify: false,
-		define: definedValues,
-	});
-	if (build.warnings.length > 0) {
-		console.warn(build.warnings);
-	}
-	if (build.errors.length > 0) {
-		console.error(build.errors);
-	}
-	console.log("Building", file, "done");
-
-	console.log("Generating prebuilt html");
-	await import("./build/prebuild.js");
-	await rm("./build/prebuild.js");
-	console.log("Generating prebuilt html done");
 })();
