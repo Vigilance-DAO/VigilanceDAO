@@ -14,7 +14,7 @@
     },
     "permissions": ["storage", "declarativeContent", "activeTab", "scripting", "tabs"],
     "action": {
-        "default_popup": "index.html"
+        "default_popup": "static/index.html"
     },
     "content_scripts": [ 
       {
