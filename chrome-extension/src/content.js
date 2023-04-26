@@ -62,7 +62,6 @@ createAlertHandle();
 async function showAlert() {
 	console.log("showAlert");
 
-	console.log(alertDialog.innerHTML);
 	if (alertDialog.innerHTML == "") {
 		const html = await new Promise((resolve, reject) => {
 			fetch(chrome.runtime.getURL("static/alert.html"))
@@ -70,10 +69,10 @@ async function showAlert() {
 				.then(resolve)
 				.catch(reject);
 		});
-        alertDialog.innerHTML = html;
+		alertDialog.innerHTML = html;
 	}
-    
-    alertDialog.show();
+
+	alertDialog.show();
 }
 
 let provider = createMetaMaskProvider();

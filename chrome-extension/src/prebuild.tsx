@@ -18,8 +18,16 @@ interface PrebuildComponentModule {
 
 const components: readonly PrebuildComponentModule[] = [Alert, Index] as const;
 
-const template = (content: string, jsFile?: string, css?: string) => {
-	return `<!DOCTYPE html>
+const template = (
+	content: string,
+	jsFile?: string,
+	css?: string,
+	skipTemplate?: boolean
+) => {
+	if (skipTemplate) {
+		return (css == undefined ? "" : `<style>${css}</style>`).concat(content);
+	} else {
+		return `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
@@ -40,10 +48,7 @@ const template = (content: string, jsFile?: string, css?: string) => {
 </body>
 </html>
 `;
-};
-
-const componentOnly = (content: string, css?: string) => {
-	return (css == undefined ? "" : `<style>${css}</style>`).concat(content);
+	}
 };
 
 export function run() {
@@ -69,9 +74,12 @@ export function run() {
 			return outputFile(
 				destinationFile,
 
-				componentModule.config?.skipTemplate
-					? componentOnly(rendered, cssContent)
-					: template(rendered, jsFile, cssContent)
+				template(
+					rendered,
+					jsFile,
+					cssContent,
+					componentModule.config?.skipTemplate
+				)
 			).catch(console.error);
 		})
 	);

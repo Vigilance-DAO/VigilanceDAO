@@ -14,24 +14,25 @@
 		"credit .";
 }
 
-.heading {
+#heading {
 	margin: 10px 0;
 	font-size: 20px;
 	grid-area: status-message;
 }
 
-.status-description {
+#status-description {
 	grid-area: status-description;
 	margin-top: 0;
 	margin-bottom: 8px;
 }
+
 .credits {
 	grid-area: credit;
 	opacity: 0.5;
 	font-size: 0.8rem;
 }
 
-.status-image {
+#status-image {
 	grid-area: status-image;
 }
 

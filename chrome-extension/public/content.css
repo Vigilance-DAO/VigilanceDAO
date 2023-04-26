@@ -7,6 +7,7 @@
 }
 
 .alert-dialog {
+	border-radius: 9px;
 	position: fixed;
 	bottom: 70px;
 	right: clamp(10px, 3vw, 30px);

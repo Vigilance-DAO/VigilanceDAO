@@ -12,7 +12,7 @@ import { parse } from "dotenv";
  * @property {string?} extension
  *
  * @param {string} dir
- * @param {Options?} options
+ * @param {Options} [options = {}]
  * @returns {string[]}
  */
 function readFileStructure(dir, options) {
@@ -57,9 +57,7 @@ try {
  */
 const esbuildOptions = {
 	entryPoints: ["src/index.tsx", "src/background.js"].concat(
-		readFileStructure("./src/prebuild-components", {
-			extension: ".css",
-		})
+		readFileStructure("./src/prebuild-components")
 	),
 	minify: false,
 	outdir: "build",

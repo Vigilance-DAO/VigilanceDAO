@@ -49,24 +49,20 @@ export default function Alert() {
 			<div className="container" id="internetVigilanceBackdrop">
 				<div className="inner-div">
 					<div className="header">
-						<h1 className="heading">Likely Dangerous website</h1>
-						<p className="status-description">
+						<h1 id="heading">Likely Dangerous website</h1>
+						<p id="status-description">
 							We have reports that this could be a fraudulent website
 						</p>
 						<span className="credits">Powered by Vigilance DAO</span>
-						<img
-							className="status-image"
-							src="./../images/dangerous.png"
-							id="status"
-						/>
+						<img id="status-image" src="./../images/dangerous.png" />
 					</div>
 
 					<div className="domain-info-container">
 						<span>
-							Category: <span id="domainName">Loading...</span>
+							Category: <span id="domain-name">Loading...</span>
 						</span>
 						<span>
-							Registered on: <span id="domainRegDate">Loading...</span>
+							Registered on: <span id="domain-reg-date">Loading...</span>
 						</span>
 					</div>
 
