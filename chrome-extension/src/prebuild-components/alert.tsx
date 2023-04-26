@@ -1,6 +1,84 @@
 import React, { Fragment } from "react";
 import "./alert.css";
 
+const styles = {
+	container: {
+		width: "100%",
+		fontFamily: "Roboto, sans-serif",
+		borderRadius: "9px",
+	},
+	header: {
+		display: "grid",
+		gridTemplateColumns: "auto 70px",
+		gridTemplateRows: "repeat(3, auto)",
+		gridTemplateAreas: `
+		"status-message status-image"
+		"status-description status-image"
+		"credit ."
+	`,
+	},
+	heading: {
+		margin: "10px 0",
+		fontSize: "20px",
+		gridArea: "status-message",
+	},
+	statusDescription: {
+		gridArea: "status-description",
+		marginTop: "0px",
+		marginBottom: "8px",
+	},
+	credits: {
+		gridArea: "credit",
+		opacity: "0.5",
+		fontSize: "0.8rem",
+	},
+	statusImage: {
+		gridArea: "status-image",
+	},
+	domainInfoContainer: {
+		display: "flex",
+		gap: "5px",
+		flexDirection: "column",
+		margin: "10px 0",
+	},
+	buttonContainer: {
+		display: "flex",
+		gap: "6px",
+		justifyItems: "flex-end",
+		margin: "15px 0 6px",
+	},
+	buttonNormal: {
+		border: "1px solid white",
+		background: "none",
+		color: "white",
+		borderRadius: "3px",
+		padding: "5px 10px",
+		fontWeight: "600",
+		opacity: "0.5",
+		cursor: "pointer",
+	},
+	buttonSpecial: {
+		borderRadius: "3px",
+		padding: "5px 10px",
+		fontWeight: "600",
+		cursor: "pointer",
+		opacity: "1",
+		marginRight: "auto",
+		border: "#d9d9d9",
+		background: "none",
+		color: "#0f0f0f",
+		backgroundColor: "#d9d9d9",
+	},
+	innerDiv: {
+		width: "350px",
+		padding: "9px 14px",
+		fontWeight: "bold",
+		color: "hsla(-1, 0%, 82%, 1)",
+		fontSize: "15px",
+		backgroundColor: "hsla(-1, 0%, 20%, 1)",
+	},
+} as const;
+
 declare const psl: {
 	parse: (...args: any[]) => any;
 };
@@ -46,18 +124,18 @@ export default function Alert() {
 
 		// 	<body>
 		<Fragment>
-			<div className="container" id="internetVigilanceBackdrop">
-				<div className="inner-div">
-					<div className="header">
-						<h1 id="heading">Likely Dangerous website</h1>
-						<p id="status-description">
+			<div style={styles.container} id="internetVigilanceBackdrop">
+				<div style={styles.innerDiv}>
+					<div style={styles.header}>
+						<h1 style={styles.heading}>Likely Dangerous website</h1>
+						<p style={styles.statusDescription}>
 							We have reports that this could be a fraudulent website
 						</p>
-						<span className="credits">Powered by Vigilance DAO</span>
-						<img id="status-image" src="./../images/dangerous.png" />
+						<span style={styles.credits}>Powered by Vigilance DAO</span>
+						<img style={styles.statusImage} src="./../images/dangerous.png" />
 					</div>
 
-					<div className="domain-info-container">
+					<div style={styles.domainInfoContainer}>
 						<span>
 							Category: <span id="domain-name">Loading...</span>
 						</span>
@@ -66,10 +144,10 @@ export default function Alert() {
 						</span>
 					</div>
 
-					<div className="alert-button-container">
-						<button className="special">Close</button>
-						<button>Hide</button>
-						<button>Don't show again</button>
+					<div style={styles.buttonContainer}>
+						<button style={styles.buttonSpecial}>Close</button>
+						<button style={styles.buttonNormal}>Hide</button>
+						<button style={styles.buttonNormal}>Don't show again</button>
 					</div>
 				</div>
 			</div>
