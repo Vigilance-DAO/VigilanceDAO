@@ -1,0 +1,88 @@
+.container {
+	width: 100%;
+	min-height: 100vh;
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-family: Roboto, sans-serif;
+	line-height: 20px;
+	z-index: 1000000000000000;
+}
+
+.header {
+	display: grid;
+	grid-template-columns: auto 70px;
+	grid-template-rows: repeat(3, auto);
+	grid-template-areas:
+		"status-message status-image"
+		"status-description status-image"
+		"credit .";
+}
+
+.heading {
+	margin: 10px 0;
+	font-size: 20px;
+	grid-area: status-message;
+}
+
+.status-description {
+	grid-area: status-description;
+	margin-top: 0;
+	margin-bottom: 8px;
+}
+.credits {
+	grid-area: credit;
+	opacity: 0.5;
+	font-size: 0.8rem;
+}
+
+.status-image {
+	grid-area: status-image;
+}
+
+.domain-info-container {
+	display: flex;
+	gap: 5px;
+	flex-direction: column;
+	margin: 10px 0;
+}
+
+.button-container {
+	display: flex;
+	gap: 6px;
+	justify-items: flex-end;
+	margin: 15px 0 6px;
+}
+
+button {
+	border: 1px solid white;
+	background: none;
+	color: white;
+	border-radius: 3px;
+	padding: 5px 10px;
+	font-weight: 600;
+	opacity: 0.5;
+	cursor: pointer;
+}
+
+button.special {
+	opacity: 1;
+	margin-right: auto;
+	border: #d9d9d9;
+	background: "none";
+	color: #0f0f0f;
+	background-color: #d9d9d9;
+}
+
+.inner-div {
+	width: 349px;
+	padding: 9px 14px;
+	border-radius: 9px;
+	font-weight: bold;
+	position: fixed;
+	top: 9px;
+	right: 9px;
+	color: hsla(-1, 0%, 82%, 1);
+	font-size: 15px;
+	background-color: hsla(-1, 0%, 20%, 1);
+}

@@ -39,14 +39,23 @@ export function run() {
 			const baseName = component.name.toLowerCase();
 			const jsFile = join("build", baseName.concat(".js"));
 			const cssFile = join("build", baseName.concat(".css"));
+			const cssFile2 = join(
+				"build/prebuild-components",
+				baseName.concat(".css")
+			);
 
 			let cssContent = undefined,
 				jsContent = undefined;
 			try {
 				cssContent = await readFile(cssFile, "utf-8");
-
 				// await rm(cssFile);
 			} catch (_e) {}
+
+			if (cssContent == undefined) {
+				try {
+					cssContent = await readFile(cssFile2, "utf-8");
+				} catch (_e) {}
+			}
 
 			try {
 				jsContent = await readFile(jsFile, "utf-8");

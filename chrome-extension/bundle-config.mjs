@@ -1,10 +1,37 @@
 // @ts-check
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { rm, rmdir } from "fs/promises";
 import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 import { parse } from "dotenv";
+
+/**
+ *
+ * @typedef Options
+ * @property {string?} extension
+ *
+ * @param {string} dir
+ * @param {Options?} options
+ * @returns {string[]}
+ */
+function readFileStructure(dir, options) {
+	const files = readdirSync(dir, { withFileTypes: true });
+	const structured = [];
+
+	files.forEach((file) => {
+		const name = file.name;
+		if (file.isFile() && file.name.endsWith(options?.extension || "")) {
+			structured.push(join(dir, name));
+		} else if (file.isDirectory()) {
+			readFileStructure(join(dir, name), options).forEach((_file) => {
+				structured.push(_file);
+			});
+		}
+	});
+
+	return structured;
+}
 
 const isWatching = process.argv.includes("--watch");
 if (isWatching) {
@@ -29,7 +56,11 @@ try {
  * @type {import("esbuild").BuildOptions}
  */
 const esbuildOptions = {
-	entryPoints: ["src/index.tsx", "src/background.js"],
+	entryPoints: ["src/index.tsx", "src/background.js"].concat(
+		readFileStructure("./src/prebuild-components", {
+			extension: ".css",
+		})
+	),
 	minify: false,
 	outdir: "build",
 	bundle: true,
@@ -65,6 +96,9 @@ const prebuildOptions = {
 	minify: false,
 	metafile: true,
 	define: definedValues,
+	loader: {
+		".css": "empty",
+	},
 	plugins: [
 		{
 			name: "run-prebuild-script",
