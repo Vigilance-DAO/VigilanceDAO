@@ -1,7 +1,7 @@
 // @ts-check
 import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
-import { rm, rmdir } from "fs/promises";
+import { rm } from "fs/promises";
 import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 import { parse } from "dotenv";
@@ -150,6 +150,35 @@ const prebuildOptions = {
 						console.error(err);
 					}
 					console.log("Generating prebuilt html done");
+				});
+
+				build.onDispose(async () => {
+					console.log("Cleaning up...");
+
+					const files = readFileStructure("./build");
+					console.log(files);
+
+					for (let i = 0; i < files.length; i++) {
+						const file = files[i];
+
+						if (
+							!file.startsWith("build/prebuild") &&
+							!file.startsWith("build\\prebuild")
+						) {
+							continue;
+						}
+
+						if (
+							file.startsWith("build/prebuild-components") ||
+							file.startsWith("build\\prebuild-components")
+						) {
+							if (file.includes("alert.js")) {
+								continue;
+							}
+						}
+						console.log("removing", file);
+						rm(file).catch(console.error);
+					}
 				});
 			},
 		},
