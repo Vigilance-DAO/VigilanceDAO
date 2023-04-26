@@ -13,6 +13,7 @@ interface PrebuildComponentModule {
 		 * @default false
 		 */
 		skipTemplate?: boolean;
+		jsFile?: string;
 	};
 }
 
@@ -43,7 +44,11 @@ const template = (
 	${css == undefined ? "" : `<style>${css}</style>`}
 </head>
 <body>
-	${css?.includes("index.css") ? `<div id="root">${content}</div>` : content}
+	${
+		css?.includes("index.css") || css?.includes("App.css")
+			? `<div id="root">${content}</div>`
+			: content
+	}
 	${jsFile == undefined ? "" : `<script src="${jsFile}"></script>`}
 </body>
 </html>
@@ -57,7 +62,9 @@ export function run() {
 			const component = componentModule.default;
 			const rendered = renderToStaticMarkup(component());
 			const baseName = component.name.toLowerCase();
-			const jsFile = "../prebuild-components/".concat(baseName.concat(".js"));
+			const jsFile =
+				componentModule.config?.jsFile ||
+				"../prebuild-components/".concat(baseName.concat(".js"));
 			const cssFile = join(
 				"build/prebuild-components",
 				baseName.concat(".css")

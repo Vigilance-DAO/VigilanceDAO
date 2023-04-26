@@ -30,6 +30,10 @@ const links = [
 	},
 ];
 
+export const config = {
+	jsFile: "../index.js",
+};
+
 export default function Index(props?: {
 	domainInfo?: {
 		domain: string;
