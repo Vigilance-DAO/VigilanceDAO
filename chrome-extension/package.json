@@ -6,8 +6,8 @@
   "scripts": {
     "build": "node bundle-config.mjs",
     "dev": "node bundle-config.mjs --watch",
-    "build:content": "browserify src/content.js -o ../chrome-extension-build/src/content.js && browserify src/background.js -o ../chrome-extension-build/src/background.js",
-    "release": "yarn build && rm -rf ../chrome-extension-build/static && mkdirp ../chrome-extension-build/static && cp -r build/* ../chrome-extension-build/static && yarn build:content"
+    "build:content": "browserify src/content.js -o build/content.js",
+    "release": "yarn build && yarn build:content"
   },
   "keywords": [],
   "author": "",
