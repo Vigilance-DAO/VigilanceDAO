@@ -22,7 +22,7 @@
       {
         "resources": [
           "static/*",
-          "assets/*",
+          "images/*",
           "content.js"
         ],
         "matches": [
@@ -33,6 +33,9 @@
     "content_scripts": [ 
       {
         "matches": ["<all_urls>"],
+        "css": [
+          "content.css"
+        ],
         "js": [
           "psl.min.js",
           "ethers.umd.min.js",

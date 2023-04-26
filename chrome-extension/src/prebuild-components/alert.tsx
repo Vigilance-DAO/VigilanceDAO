@@ -1,6 +1,37 @@
 import React, { Fragment } from "react";
 import "./alert.css";
 
+declare const psl: {
+	parse: (...args: any[]) => any;
+};
+declare const _url: any;
+declare const domain: any;
+
+function getStorageKey(url: string) {
+	return "vigil__".concat(url);
+}
+
+if (typeof window != "undefined") {
+	window.onload = () => {
+		console.log("hi from alert");
+		let hostname = window.location.hostname;
+		var parsed = psl.parse(_url.hostname);
+		let url = parsed.domain;
+		if (!url) {
+			console.log("no url to show in alert iframe");
+		}
+		const key = getStorageKey(url);
+		chrome.storage.sync.get([key], async (items) => {
+			console.log(domain);
+			document.getElementById("domainName")!.innerHTML = domain;
+		});
+	};
+}
+
+export const config = {
+	skipTemplate: true,
+};
+
 export default function Alert() {
 	return (
 		// <html>
@@ -15,24 +46,6 @@ export default function Alert() {
 
 		// 	<body>
 		<Fragment>
-			<script
-				dangerouslySetInnerHTML={{
-					__html: `function getStorageKey(url) {
-            return "vigil__".concat(url);
-        }
-
-        let hostname = window.location.hostname
-        var parsed = psl.parse(_url.hostname);
-        let url = parsed.domain
-        if (!url) {
-            console.log('no url to show in alert iframe')
-        }
-        const key = getStorageKey(url)
-        chrome.storage.sync.get([key], async (items) => {
-            document.getElementById('domainName').innerHTML = domain
-        })`,
-				}}
-			></script>
 			<div className="container" id="internetVigilanceBackdrop">
 				<div className="inner-div">
 					<div className="header">
@@ -57,7 +70,7 @@ export default function Alert() {
 						</span>
 					</div>
 
-					<div className="button-container">
+					<div className="alert-button-container">
 						<button className="special">Close</button>
 						<button>Hide</button>
 						<button>Don't show again</button>

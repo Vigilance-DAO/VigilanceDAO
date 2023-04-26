@@ -3,12 +3,22 @@ import { readFile, rm } from "fs/promises";
 import { outputFile } from "fs-extra";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import Alert from "./prebuild-components/alert";
-import Index from "./prebuild-components/index";
+import * as Alert from "./prebuild-components/alert";
+import * as Index from "./prebuild-components/index";
 
-const components = [Alert, Index] as const;
+interface PrebuildComponentModule {
+	default: () => JSX.Element;
+	config?: {
+		/**
+		 * @default false
+		 */
+		skipTemplate?: boolean;
+	};
+}
 
-const template = (content: string, javascript?: string, css?: string) => {
+const components: readonly PrebuildComponentModule[] = [Alert, Index] as const;
+
+const template = (content: string, jsFile?: string, css?: string) => {
 	return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,48 +36,42 @@ const template = (content: string, javascript?: string, css?: string) => {
 </head>
 <body>
 	${css?.includes("index.css") ? `<div id="root">${content}</div>` : content}
-	${javascript == undefined ? "" : `<script>${javascript}</script>`}
+	${jsFile == undefined ? "" : `<script src="${jsFile}"></script>`}
 </body>
 </html>
 `;
 };
 
+const componentOnly = (content: string, css?: string) => {
+	return (css == undefined ? "" : `<style>${css}</style>`).concat(content);
+};
+
 export function run() {
 	return Promise.all(
-		components.map(async (component) => {
+		components.map(async (componentModule) => {
+			const component = componentModule.default;
 			const rendered = renderToStaticMarkup(component());
 			const baseName = component.name.toLowerCase();
-			const jsFile = join("build", baseName.concat(".js"));
-			const cssFile = join("build", baseName.concat(".css"));
-			const cssFile2 = join(
+			const jsFile = "../prebuild-components/".concat(baseName.concat(".js"));
+			const cssFile = join(
 				"build/prebuild-components",
 				baseName.concat(".css")
 			);
 
-			let cssContent = undefined,
-				jsContent = undefined;
+			let cssContent = undefined;
 			try {
 				cssContent = await readFile(cssFile, "utf-8");
 				// await rm(cssFile);
-			} catch (_e) {}
-
-			if (cssContent == undefined) {
-				try {
-					cssContent = await readFile(cssFile2, "utf-8");
-				} catch (_e) {}
-			}
-
-			try {
-				jsContent = await readFile(jsFile, "utf-8");
-
-				// await rm(jsFile);
 			} catch (_e) {}
 
 			const destinationFile = join("./build/static/", baseName.concat(".html"));
 			console.log("Writing to", destinationFile);
 			return outputFile(
 				destinationFile,
-				template(rendered, jsContent, cssContent)
+
+				componentModule.config?.skipTemplate
+					? componentOnly(rendered, cssContent)
+					: template(rendered, jsFile, cssContent)
 			).catch(console.error);
 		})
 	);

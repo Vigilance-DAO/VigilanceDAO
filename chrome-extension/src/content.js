@@ -37,19 +37,43 @@ function closeInternetVigilanceWithNoMoreShow() {
 	});
 }
 
-var alertIframe = document.createElement("iframe");
-alertIframe.style.background = "none";
-alertIframe.style.height = "100%";
-alertIframe.style.width = "0px";
-alertIframe.style.position = "fixed";
-alertIframe.style.top = "0px";
-alertIframe.style.right = "0px";
-alertIframe.style.zIndex = "9000000000000000000";
-alertIframe.src = chrome.runtime.getURL("static/alert.html");
-document.body.appendChild(alertIframe);
+/**
+ * @type {HTMLImageElement | null}
+ */
+let alertHandle = null;
+/**
+ * @type {HTMLDialogElement}
+ */
+const alertDialog = document.createElement("dialog");
+alertDialog.className = "alert-dialog";
+document.body.appendChild(alertDialog);
 
-function injectedAlert() {
-	alertIframe.style.width = "420px";
+function createAlertHandle() {
+	console.log("createAlertHandle");
+	alertHandle = document.createElement("img");
+	alertHandle.src = chrome.runtime.getURL("images/icon48.png");
+	alertHandle.className = "alert-handle";
+	alertHandle.addEventListener("click", showAlert);
+	document.body.appendChild(alertHandle);
+}
+
+createAlertHandle();
+
+async function showAlert() {
+	console.log("showAlert");
+
+	console.log(alertDialog.innerHTML);
+	if (alertDialog.innerHTML == "") {
+		const html = await new Promise((resolve, reject) => {
+			fetch(chrome.runtime.getURL("static/alert.html"))
+				.then((response) => response.text())
+				.then(resolve)
+				.catch(reject);
+		});
+        alertDialog.innerHTML = html;
+	}
+    
+    alertDialog.show();
 }
 
 let provider = createMetaMaskProvider();
@@ -219,7 +243,6 @@ async function checkDomain() {
 				}
 				if (now.getTime() - createdon.getTime() < env.alertPeriod) {
 					console.log("Vigilance DAO: domain is new. trigger.");
-					injectedAlert();
 				} else {
 					console.log("Vigilance DAO: domain is old enough");
 				}
