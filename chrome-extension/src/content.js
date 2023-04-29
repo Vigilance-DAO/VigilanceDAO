@@ -46,6 +46,17 @@ let alertHandle = null;
  */
 const alertDialog = document.createElement("dialog");
 alertDialog.className = "alert-dialog";
+alertDialog.addEventListener("click", (event) => {
+	console.log("dialog clicked", event);
+	const targetId = event.target.id;
+	if (targetId == "close") {
+		window.requestAnimationFrame(() => {
+			alertDialog.close();
+		});
+	} else if (targetId == "hide") {
+	} else if (targetId == "dont-show-again") {
+	}
+});
 document.body.appendChild(alertDialog);
 
 function createAlertHandle() {

@@ -1,11 +1,9 @@
 import React, { Fragment } from "react";
-import "./alert.css";
 
 const styles = {
 	container: {
 		width: "100%",
 		fontFamily: "Roboto, sans-serif",
-		borderRadius: "9px",
 	},
 	header: {
 		display: "grid",
@@ -76,6 +74,7 @@ const styles = {
 		color: "hsla(-1, 0%, 82%, 1)",
 		fontSize: "15px",
 		backgroundColor: "hsla(-1, 0%, 20%, 1)",
+		borderRadius: "9px",
 	},
 } as const;
 
@@ -145,9 +144,15 @@ export default function Alert() {
 					</div>
 
 					<div style={styles.buttonContainer}>
-						<button style={styles.buttonSpecial}>Close</button>
-						<button style={styles.buttonNormal}>Hide</button>
-						<button style={styles.buttonNormal}>Don't show again</button>
+						<button id="close" style={styles.buttonSpecial}>
+							Close
+						</button>
+						<button id="hide" style={styles.buttonNormal}>
+							Hide
+						</button>
+						<button id="dont-show-again" style={styles.buttonNormal}>
+							Don't show again
+						</button>
 					</div>
 				</div>
 			</div>
