@@ -5,27 +5,9 @@ try {
 }
 
 const env = {
-    host: 'https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com',
+    host: 'http://localhost:4000', // backend API endpoint
     alertPeriod: 4 * 30 * 86400 * 1000,
     SUBGRAPH_URL: "https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao"
-}
-
-function injectedFunction() {
-    var xhr= new XMLHttpRequest();
-    xhr.open('GET', 'alert.html', true);
-    xhr.onreadystatechange= function() {
-        console.log('resp', this)
-        if (this.readyState!==4) return;
-        if (this.status!==200) return; // or whatever error handling you want
-        
-        var div = document.createElement('div');
-        // div.innerHTML = '<div style="background: yellow;width: 100%;color: black;padding: 10px;text-align: center;position: fixed;z-index: 10000000000;opacity: 95%"><b>Warning: This is a newly registered website. Please maintain caution, especailly if you do not know the person who shared this with you</b></div>'
-        div.innerHTML = this.responseText;
-        document.body.prepend(div)
-        console.log(document.body)
-        // document.getElementById('y').innerHTML= this.responseText;
-    };
-    xhr.send();
 }
 
 function searchColumnIndex(columns, column) {
@@ -41,13 +23,23 @@ function getStorageKey(url) {
 let inMemoryStorage = {}
 let lastUrl = null
 
+/// Returns domain registration date by reading chrome storage/API call
+/// to our backend
+/// API is used if there is no data in chrome storage
+/// Once we get info from API, we save it in chrome storage
+/// @param storageInfo - chrome storage info
+/// @param url - domain name
+/// @returns createdon - Date object
 async function getDomainRegistrationDate(storageInfo, url) {
+    // unique key for this domain
     const key = getStorageKey(url)
+    // check if we have it in chrome storage
     if(storageInfo[key]) {
         console.log('not requesting. saved in db', storageInfo[key], key)
         return new Date(storageInfo[key].createdon)
     } else {
         try {
+            // fetch from our backend
             const rawResponse = await fetch(`${env.host}/domain-info`, {
                 method: 'POST',
                 headers: {
@@ -62,6 +54,7 @@ async function getDomainRegistrationDate(storageInfo, url) {
                 let createdon = new Date(content.createdon)
                 let data = {}
                 data[key] = content
+                // Update it in chrome storage
                 chrome.storage.sync.set(data, function() {
                     console.log('Settings saved', key);
                     inMemoryStorage = data
@@ -77,6 +70,8 @@ async function getDomainRegistrationDate(storageInfo, url) {
 
 let counter = {}
 
+// based on the tab (a chrome API object for current tab)
+// returns the cleaned domain name
 function getUrl(tab) {
     if(!tab.url)
         return;
@@ -92,6 +87,19 @@ function getUrl(tab) {
     return url
 }
 
+// Query from blockchain to know about if there are 
+// any reports from Vigilance DAO community
+/*
+    @param {string} url - domain name without any subdomains (e.g. just google.com, example.xyz)
+    @returns {
+        isLegitVerified: boolean,
+        isScamVerified: boolean,
+        openScamReports: number, - number of open scam reports
+        type: string, enum: ['info', 'warning']
+        msg: string, - this is a msg used to show user on UI
+        description: string - empty strings for now
+    }
+*/
 async function getDomainValidationInfo(url) {
     let type = 'info'
     let msg = 'No reports/reviews'
@@ -139,11 +147,14 @@ async function getDomainValidationInfo(url) {
     } catch(err) {
         console.warn("Error fetching domain information", domain, err)
         console.log('changing icon')
+        // Set chrome extension icon info to show the warning
         chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
         chrome.action.setBadgeText({text: "⚠️"})
         chrome.action.setBadgeBackgroundColor({color: "#000000"});
         type = 'warning'
         msg = "Error fetching domain information"
+        // send msg to the tab about this info. So that it can show it to the user
+        // in extension popup (index.html as of now)
         sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, type, msg, description})
         return;
     }
@@ -158,6 +169,7 @@ function isSoftWarning(createdOn) {
     return (now.getTime() - createdOn.getTime()) < env.alertPeriod
 }
 
+/// Entry point for process the information about current tab domain
 function processTab(tab) {
     // if(tab.status=='complete') {
     //     chrome.tabs.query({
@@ -172,6 +184,7 @@ function processTab(tab) {
     const url = getUrl(tab)
     console.log('processTab', JSON.stringify({url, lastUrl}))
     if(!url || url!=lastUrl) {
+        // Set chrome extension icon info to show the loading       
         chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
         chrome.action.setBadgeText({text: "..."});
         chrome.action.setBadgeBackgroundColor({color: "yellow"});
@@ -180,11 +193,15 @@ function processTab(tab) {
     }
     // chrome.action.setBadgeTextColor({color: "black"});
     if(tab.url && tab.status=='complete') {
-        const key = getStorageKey(url)
+        const key = getStorageKey(url) // a unique key for each domain in storage
+
+        // use chrome.storage.sync API to load the data about domain
+        // from chrome storage
         chrome.storage.sync.get([key], async (items) => {   
             let createdOn = await getDomainRegistrationDate(items, url)
             
             let now = new Date()
+            // data object to be sent to the tab and saved in storage
             let validationInfo = {
                 type: 'info',
                 msg: 'No reports/reviews',
@@ -196,6 +213,8 @@ function processTab(tab) {
             
             
             let lastValidationStateUpdatedOn = items[key]?.validationInfo?.updatedOn
+            // to avoid calling the blockchain API again and again
+            // min 5 min gap between each call for a domain
             if(lastValidationStateUpdatedOn && (now.getTime() - lastValidationStateUpdatedOn.getTime()) < 5 * 60 * 1000) { // 5min
                 validationInfo = items[key]?.validationInfo
             } else {
@@ -204,6 +223,7 @@ function processTab(tab) {
                     if(!items[key])
                         items[key] = {}
                     items[key].validationInfo = validationInfo
+                    // save the data in chrome storage
                     chrome.storage.sync.set(items, function() {
                         console.log('validation info saved', key);
                         inMemoryStorage = items
@@ -211,11 +231,15 @@ function processTab(tab) {
                 })
             }
 
+            // This can be used to show alert.html popup in tab
+            // content.js listens to this msg and shows the popup
             if(createdOn && (isSoftWarning(createdOn) || validationInfo.isScamVerified)) {
                 sendMessage(tab, 'show-warning', {domain: url, createdOn: createdOn ? createdOn.getTime() : 0, 
                     type: validationInfo.type, msg: validationInfo.msg, description: validationInfo.description})
             }
 
+            // If we know from blockchain or our Backend API that a domain is scam
+            // then we show the ❌ icon on extension
             if(validationInfo.isScamVerified) {
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 chrome.action.setBadgeText({text: "❌"});
@@ -223,17 +247,22 @@ function processTab(tab) {
                 validationInfo.type = 'error'
                 validationInfo.msg = 'Verified as fraudulent domain'
             } else if(validationInfo.isLegitVerified) {
+                // If we know from blockchain or our Backend API that a domain is legit
+                // then we show the ✔️ icon on extension
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "✔️"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
                 validationInfo.type = 'success'
                 validationInfo.msg = 'Verified as legit'
             } else if(createdOn && isSoftWarning(createdOn)) {
+                // if a domain is registered recently then we show the ⚠️ icon on extension
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 validationInfo.openScamReports ? chrome.action.setBadgeText({text: validationInfo.openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
                 chrome.action.setBadgeBackgroundColor({color: "#f96c6c"});
                 validationInfo.type = 'warning'
+                // if its recent and has open scam reports then we show the warning
+                // with a custom msg
                 if(validationInfo.openScamReports > 0) {
                     validationInfo.msg = 'Domain registed recently and has `OPEN` fraud reports'
                     validationInfo.description = 'The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.'
@@ -242,6 +271,7 @@ function processTab(tab) {
                     validationInfo.description = 'Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.'
                 }
             } else if(validationInfo.openScamReports) {
+                // domain not recently registered but has open scam reports
                 console.log('changing icon')
                 chrome.action.setIcon({ path: {19: "/images/alerticon19-red.png", 38: "/images/alerticon38-red.png"}})
                 validationInfo.openScamReports ? chrome.action.setBadgeText({text: validationInfo.openScamReports + ""}) : chrome.action.setBadgeText({text: "1"});
@@ -250,10 +280,14 @@ function processTab(tab) {
                 validationInfo.msg = 'Has `OPEN` fraud reports'
                 validationInfo.description = 'The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.'
             } else {
+                // Fallback
                 chrome.action.setIcon({ path: {16: "/images/icon16.png", 32: "/images/icon32.png"}})
                 chrome.action.setBadgeText({text: "0"});
                 chrome.action.setBadgeBackgroundColor({color: "#05ed05"});
             }
+
+            // Update the tab with the validation info
+            // index.html catches this info and shows it in the popup
             sendMessage(tab, 'domain', {isSuccess: true, domain: url, createdOn: createdOn ? createdOn.getTime() : 0, 
                 type: validationInfo.type, msg: validationInfo.msg, description: validationInfo.description})
         })
@@ -261,19 +295,14 @@ function processTab(tab) {
     }
 }
 
+
+// process tab on tab update
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
     console.log(tab)
     processTab(tab)
-    // use `url` here inside the callback because it's asynchronous!
 });
 
-// chrome.tabs.query({active: true, lastFocusedWindow: true}, async (tabs) => {
-//     console.log('tab query', tabs)
-//     processTab(tabs[0])
-// })
-
-
-
+// on tab switch
 chrome.tabs.onActivated.addListener((activeInfo) => {
     console.log({activeInfo});
     chrome.tabs.query({
@@ -287,6 +316,10 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
     });
 });
 
+// standard fucntion to send messages
+// @param tab: tab to send msg to
+// @param type: type of msg (a unique string for each msg differentiation)
+// @param data: data to send (payload)
 async function sendMessage(tab, type, data) {
     return new Promise((resolve, reject) => {
         console.log('sending msg', type)
@@ -298,11 +331,18 @@ async function sendMessage(tab, type, data) {
     })
 }
 
+// trigger to show index.html popup on clicking extension icon
+// content.js processes this
 chrome.action.onClicked.addListener(function(tab){
     console.log('extension clickeddd', tab.id, chrome.tabs)
     sendMessage(tab, 'toggle', {})
 });
 
+// index.html cannot directly communicate with content.js
+// mainly used for some blockchain communications. 
+// so the below functions proxies the msg between index.html and content.js
+// Look for `chrome.runtime.onMessage.addListener` in the code 
+// to see how the msgs are being recieved and sent
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     console.log('msg in background', request, sender, sendResponse)
     if (request.type == "take-screenshot") {
@@ -330,6 +370,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     
 });
 
+// take screenshot of the tab
 function takeScreenshot(tab) {
     return new Promise((resolve, reject) => {
         let capturing = chrome.tabs.captureVisibleTab();
