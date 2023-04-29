@@ -3,16 +3,6 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
-/**
- * @typedef DomainValidationInfo
- * @prop {boolean} isLegitVerified
- * @prop {boolean} isScamVerified
- * @prop {number} openScamReports number of open scam reports
- * @prop {"info" | "warning"} type
- * @prop {string} msg message used to show to the user on UI
- * @prop {string} description empty string currently
- */
-
 try {
 	importScripts("./psl.min.js" /*, and so on */);
 } catch (e) {
@@ -57,17 +47,20 @@ let lastUrl = null;
  * API is used if there is no data in chrome storage
  * Once we get info from API, we save it in chrome storage
  *
- * @param {Record<string, any>} storageInfo - chrome storage info
+ * @param {Record<string, import("./types").DomainStorageItem>} storageInfo - chrome storage info
  * @param {string} url - domain name
  * @returns {Promise<Date | null>} createdon
  */
 async function getDomainRegistrationDate(storageInfo, url) {
+	console.log("getDomainRegistrationDate", storageInfo);
 	// unique key for this domain
 	const key = getStorageKey(url);
 	// check if we have it in chrome storage
-	if (storageInfo[key]) {
+	const itemInStorage = storageInfo[key];
+	if (itemInStorage != undefined && itemInStorage.createdon) {
 		console.log("not requesting. saved in db", storageInfo[key], key);
-		return new Date(storageInfo[key].createdon);
+
+		return new Date(itemInStorage.createdon);
 	} else {
 		try {
 			// fetch from our backend
@@ -87,12 +80,13 @@ async function getDomainRegistrationDate(storageInfo, url) {
 			if (content.domain) {
 				let createdon = new Date(content.createdon);
 				/**
-				 * @type {Record<string, import("../../important-types").DomainInfo>}
+				 * @type {Record<string, import("./types").DomainStorageItem>}
 				 */
 				let data = {};
 				data[key] = content;
 				// Update it in chrome storage
 				chrome.storage.sync.set(data, function () {
+					console.log("saved", data);
 					console.log("Settings saved", key);
 					inMemoryStorage = data;
 				});
@@ -135,7 +129,7 @@ function getUrl(tab) {
  * @param {string} url domain name without any subdomains (e.g. just google.com, example.xyz)
  * @param {chrome.tabs.Tab} tab
  * @param {Date | null} createdOn
- * @returns {Promise<DomainValidationInfo | undefined>}
+ * @returns {Promise<import("./types").DomainValidationInfo | undefined>}
  */
 async function getDomainValidationInfo(url, tab, createdOn) {
 	/**
@@ -260,56 +254,164 @@ function processTab(tab) {
 
 		// use chrome.storage.sync API to load the data about domain
 		// from chrome storage
-		chrome.storage.sync.get([key], async (items) => {
-			let createdOn = await getDomainRegistrationDate(items, url);
+		chrome.storage.sync.get(
+			[key],
+			/**
+			 * @param {Record<string, import("./types").DomainStorageItem>} items
+			 */
+			async (items) => {
+				console.log(items);
+				let createdOn = await getDomainRegistrationDate(items, url);
 
-			let now = new Date();
-			// data object to be sent to the tab and saved in storage
-			let validationInfo = {
-				type: "info",
-				msg: "No reports/reviews",
-				description: "",
-				isScamVerified: false,
-				isLegitVerified: false,
-				openScamReports: 0,
-			};
+				let now = new Date();
+				// data object to be sent to the tab and saved in storage
+				/**
+				 * @type {import("./types").DomainValidationInfo}
+				 */
+				let validationInfo = {
+					type: "info",
+					msg: "No reports/reviews",
+					description: "",
+					isScamVerified: false,
+					isLegitVerified: false,
+					openScamReports: 0,
+				};
 
-			let lastValidationStateUpdatedOn = items[key]?.validationInfo?.updatedOn;
-			// to avoid calling the blockchain API again and again
-			// min 5 min gap between each call for a domain
-			if (
-				lastValidationStateUpdatedOn &&
-				now.getTime() - lastValidationStateUpdatedOn.getTime() < 5 * 60 * 1000
-			) {
-				// 5min
-				validationInfo = items[key]?.validationInfo;
-			} else {
-				const _validationInfo = await getDomainValidationInfo(
-					url,
-					tab,
-					createdOn
-				);
-				if (_validationInfo != undefined) {
-					validationInfo = _validationInfo;
+				let lastValidationStateUpdatedOn = items[key]?.updatedon;
+				// to avoid calling the blockchain API again and again
+				// min 5 min gap between each call for a domain
+				if (
+					lastValidationStateUpdatedOn &&
+					now.getTime() - lastValidationStateUpdatedOn.getTime() < 5 * 60 * 1000
+				) {
+					// 5min
+					validationInfo = items[key]?.validationInfo || validationInfo;
+				} else {
+					const _validationInfo = await getDomainValidationInfo(
+						url,
+						tab,
+						createdOn
+					);
+					if (_validationInfo != undefined) {
+						validationInfo = _validationInfo;
+					}
+					chrome.storage.sync.get(
+						[key],
+						/**
+						 * @param {Record<string, import("./types").DomainStorageItem>} items
+						 */
+						async (items) => {
+							console.log(items);
+							if (!items[key]) items[key] = {};
+							items[key].validationInfo = validationInfo;
+							// save the data in chrome storage
+							chrome.storage.sync.set(items, function () {
+								console.log("storage set", items);
+								console.log("validation info saved", key);
+								inMemoryStorage = items;
+							});
+						}
+					);
 				}
-				chrome.storage.sync.get([key], async (items) => {
-					if (!items[key]) items[key] = {};
-					items[key].validationInfo = validationInfo;
-					// save the data in chrome storage
-					chrome.storage.sync.set(items, function () {
-						console.log("validation info saved", key);
-						inMemoryStorage = items;
-					});
-				});
-			}
 
-			// This can be used to show alert.html popup in tab
-			// content.js listens to this msg and shows the popup
-			if (
-				createdOn &&
-				(isSoftWarning(createdOn) || validationInfo.isScamVerified)
-			) {
-				sendMessage(tab, "show-warning", {
+				// This can be used to show alert.html popup in tab
+				// content.js listens to this msg and shows the popup
+				if (
+					createdOn &&
+					(isSoftWarning(createdOn) || validationInfo.isScamVerified)
+				) {
+					sendMessage(tab, "show-warning", {
+						domain: url,
+						createdOn: createdOn ? createdOn.getTime() : 0,
+						type: validationInfo.type,
+						msg: validationInfo.msg,
+						description: validationInfo.description,
+					});
+				}
+
+				// If we know from blockchain or our Backend API that a domain is scam
+				// then we show the ❌ icon on extension
+				if (validationInfo.isScamVerified) {
+					chrome.action.setIcon({
+						path: {
+							19: "/images/alerticon19-red.png",
+							38: "/images/alerticon38-red.png",
+						},
+					});
+					chrome.action.setBadgeText({ text: "❌" });
+					chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
+					validationInfo.type = "error";
+					validationInfo.msg = "Verified as fraudulent domain";
+				} else if (validationInfo.isLegitVerified) {
+					// If we know from blockchain or our Backend API that a domain is legit
+					// then we show the ✔️ icon on extension
+					chrome.action.setIcon({
+						path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
+					});
+					chrome.action.setBadgeText({ text: "✔️" });
+					chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
+					validationInfo.type = "success";
+					validationInfo.msg = "Verified as legit";
+				} else if (createdOn && isSoftWarning(createdOn)) {
+					// if a domain is registered recently then we show the ⚠️ icon on extension
+					console.log("changing icon");
+					chrome.action.setIcon({
+						path: {
+							19: "/images/alerticon19-red.png",
+							38: "/images/alerticon38-red.png",
+						},
+					});
+					validationInfo.openScamReports
+						? chrome.action.setBadgeText({
+								text: validationInfo.openScamReports + "",
+						  })
+						: chrome.action.setBadgeText({ text: "1" });
+					chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
+					validationInfo.type = "warning";
+					// if its recent and has open scam reports then we show the warning
+					// with a custom msg
+					if (validationInfo.openScamReports > 0) {
+						validationInfo.msg =
+							"Domain registed recently and has `OPEN` fraud reports";
+						validationInfo.description =
+							"The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.";
+					} else {
+						validationInfo.msg = "Domain registed recently";
+						validationInfo.description =
+							"Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.";
+					}
+				} else if (validationInfo.openScamReports) {
+					// domain not recently registered but has open scam reports
+					console.log("changing icon");
+					chrome.action.setIcon({
+						path: {
+							19: "/images/alerticon19-red.png",
+							38: "/images/alerticon38-red.png",
+						},
+					});
+					validationInfo.openScamReports
+						? chrome.action.setBadgeText({
+								text: validationInfo.openScamReports + "",
+						  })
+						: chrome.action.setBadgeText({ text: "1" });
+					chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
+					validationInfo.type = "warning";
+					validationInfo.msg = "Has `OPEN` fraud reports";
+					validationInfo.description =
+						"The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.";
+				} else {
+					// Fallback
+					chrome.action.setIcon({
+						path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
+					});
+					chrome.action.setBadgeText({ text: "0" });
+					chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
+				}
+
+				// Update the tab with the validation info
+				// index.html catches this info and shows it in the popup
+				sendMessage(tab, "domain", {
+					isSuccess: true,
 					domain: url,
 					createdOn: createdOn ? createdOn.getTime() : 0,
 					type: validationInfo.type,
@@ -317,97 +419,7 @@ function processTab(tab) {
 					description: validationInfo.description,
 				});
 			}
-
-			// If we know from blockchain or our Backend API that a domain is scam
-			// then we show the ❌ icon on extension
-			if (validationInfo.isScamVerified) {
-				chrome.action.setIcon({
-					path: {
-						19: "/images/alerticon19-red.png",
-						38: "/images/alerticon38-red.png",
-					},
-				});
-				chrome.action.setBadgeText({ text: "❌" });
-				chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
-				validationInfo.type = "error";
-				validationInfo.msg = "Verified as fraudulent domain";
-			} else if (validationInfo.isLegitVerified) {
-				// If we know from blockchain or our Backend API that a domain is legit
-				// then we show the ✔️ icon on extension
-				chrome.action.setIcon({
-					path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
-				});
-				chrome.action.setBadgeText({ text: "✔️" });
-				chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
-				validationInfo.type = "success";
-				validationInfo.msg = "Verified as legit";
-			} else if (createdOn && isSoftWarning(createdOn)) {
-				// if a domain is registered recently then we show the ⚠️ icon on extension
-				console.log("changing icon");
-				chrome.action.setIcon({
-					path: {
-						19: "/images/alerticon19-red.png",
-						38: "/images/alerticon38-red.png",
-					},
-				});
-				validationInfo.openScamReports
-					? chrome.action.setBadgeText({
-							text: validationInfo.openScamReports + "",
-					  })
-					: chrome.action.setBadgeText({ text: "1" });
-				chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
-				validationInfo.type = "warning";
-				// if its recent and has open scam reports then we show the warning
-				// with a custom msg
-				if (validationInfo.openScamReports > 0) {
-					validationInfo.msg =
-						"Domain registed recently and has `OPEN` fraud reports";
-					validationInfo.description =
-						"The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.";
-				} else {
-					validationInfo.msg = "Domain registed recently";
-					validationInfo.description =
-						"Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.";
-				}
-			} else if (validationInfo.openScamReports) {
-				// domain not recently registered but has open scam reports
-				console.log("changing icon");
-				chrome.action.setIcon({
-					path: {
-						19: "/images/alerticon19-red.png",
-						38: "/images/alerticon38-red.png",
-					},
-				});
-				validationInfo.openScamReports
-					? chrome.action.setBadgeText({
-							text: validationInfo.openScamReports + "",
-					  })
-					: chrome.action.setBadgeText({ text: "1" });
-				chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
-				validationInfo.type = "warning";
-				validationInfo.msg = "Has `OPEN` fraud reports";
-				validationInfo.description =
-					"The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.";
-			} else {
-				// Fallback
-				chrome.action.setIcon({
-					path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
-				});
-				chrome.action.setBadgeText({ text: "0" });
-				chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
-			}
-
-			// Update the tab with the validation info
-			// index.html catches this info and shows it in the popup
-			sendMessage(tab, "domain", {
-				isSuccess: true,
-				domain: url,
-				createdOn: createdOn ? createdOn.getTime() : 0,
-				type: validationInfo.type,
-				msg: validationInfo.msg,
-				description: validationInfo.description,
-			});
-		});
+		);
 	}
 }
 

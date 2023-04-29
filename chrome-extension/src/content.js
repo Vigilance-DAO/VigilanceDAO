@@ -28,23 +28,31 @@ function closeInternetVigilance() {
 
 function closeInternetVigilanceWithNoMoreShow() {
 	document.getElementById("internetVigilanceBackdrop").style.display = "none";
-	chrome.storage.sync.get([url], function (items) {
-		console.debug(
-			"closeInternetVigilanceWithNoMoreShow",
-			items,
-			url,
-			new Date()
-		);
-		if (items[url]) {
-			let data = items[url];
-			data.dontShowAgain = true;
-			let save = {};
-			save[url] = data;
-			chrome.storage.sync.set(save, function () {
-				console.log("saved dont show again", url);
-			});
+	chrome.storage.sync.get(
+		[url],
+		/**
+		 * @param {Record<string,import("./types").DomainStorageItem>} items
+		 */
+		function (items) {
+			console.debug(
+				"closeInternetVigilanceWithNoMoreShow",
+				items,
+				url,
+				new Date()
+			);
+			if (items[url]) {
+				const data = items[url];
+				data.dontShowAgain = true;
+				const save = {
+					[url]: data,
+				};
+				chrome.storage.sync.set(save, function () {
+					console.log("setting storage", save);
+					console.log("saved dont show again", url);
+				});
+			}
 		}
-	});
+	);
 }
 
 /**
@@ -236,24 +244,30 @@ async function checkDomain() {
 	domain = url;
 	let count = 0;
 	let interval = setInterval(() => {
-		chrome.storage.sync.get([url], function (items) {
-			console.debug(items, url, new Date());
-			if (items[url]) {
-				clearInterval(interval);
-				let dontShowAgain = items[url].dontShowAgain;
-				let createdon = new Date(items[url].createdon);
-				let now = new Date();
-				if (dontShowAgain) {
-					console.log("user opted to not show again");
-					return;
-				}
-				if (now.getTime() - createdon.getTime() < env.alertPeriod) {
-					console.log("Vigilance DAO: domain is new. trigger.");
-				} else {
-					console.log("Vigilance DAO: domain is old enough");
+		chrome.storage.sync.get(
+			[url],
+			/**
+			 * @param {Record<string, import("./types").DomainStorageItem>} items
+			 */
+			function (items) {
+				console.debug(items, url, new Date());
+				if (items[url]) {
+					clearInterval(interval);
+					let dontShowAgain = items[url].dontShowAgain;
+					let createdon = new Date(items[url].createdon);
+					let now = new Date();
+					if (dontShowAgain) {
+						console.log("user opted to not show again");
+						return;
+					}
+					if (now.getTime() - createdon.getTime() < env.alertPeriod) {
+						console.log("Vigilance DAO: domain is new. trigger.");
+					} else {
+						console.log("Vigilance DAO: domain is old enough");
+					}
 				}
 			}
-		});
+		);
 		if (count > 100) {
 			clearInterval(interval);
 		}
