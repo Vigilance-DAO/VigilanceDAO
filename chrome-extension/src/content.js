@@ -12,6 +12,16 @@ const env = {
 };
 
 let url = window.location.host;
+
+/**
+ * @param {string} type a unique string
+ * @param {unknown} data the payload
+ * @returns {Promise<any>}
+ */
+function sendMessageToBackground(type, data) {
+	return chrome.runtime.sendMessage({ type, data });
+}
+
 function closeInternetVigilance() {
 	document.getElementById("internetVigilanceBackdrop").style.display = "none";
 }
@@ -104,23 +114,19 @@ provider.on("accountsChanged", (accounts) => {
 });
 
 function onUpdateChainID(chainId) {
-	chrome.runtime.sendMessage(
-		{ type: "chainID", data: { chainId } },
-		function (response) {
-			console.log("message cb: onUpdateChainID", response);
-		}
-	);
+	sendMessageToBackground("chainID", {
+		chainId,
+	}).then((response) => {
+		console.log("message cb: onUpdateChainID", response);
+	});
 }
 
 function onAccountChange(account) {
 	console.log("Account:", account);
 
-	chrome.runtime.sendMessage(
-		{ type: "wallet-connected", data: { account } },
-		function (response) {
-			console.log("message cb: onAccountChange", response);
-		}
-	);
+	sendMessageToBackground("wallet-connected", { account }).then((response) => {
+		console.log("message cb: onAccountChange", response);
+	});
 }
 
 function onTransactionUpdate(txName, txHash, isSuccess, error) {
@@ -130,20 +136,15 @@ function onTransactionUpdate(txName, txHash, isSuccess, error) {
 		isSuccess,
 		error,
 	});
-	chrome.runtime.sendMessage(
-		{
-			type: "transaction-update",
-			data: {
-				txName,
-				txHash,
-				isSuccess,
-				error,
-			},
-		},
-		function (response) {
-			console.log("message cb: onTransactionUpdate", response);
-		}
-	);
+
+	sendMessageToBackground("transaction-update", {
+		txName,
+		txHash,
+		isSuccess,
+		error,
+	}).then((response) => {
+		console.log("message cb: onTransactionUpdate", response);
+	});
 }
 
 async function getStakeAmount() {
@@ -152,17 +153,12 @@ async function getStakeAmount() {
 	let stakeAmount = await contract.stakingAmount();
 	console.log("stakeAmount", stakeAmount);
 	stakeAmount = parseFloat(ethers.utils.formatEther(stakeAmount));
-	chrome.runtime.sendMessage(
-		{
-			type: "stake-amount",
-			data: {
-				stakeAmount,
-			},
-		},
-		function (response) {
-			console.log("message cb: getStakeAmount", response);
-		}
-	);
+
+	sendMessageToBackground("stake-amount", {
+		stakeAmount,
+	}).then((response) => {
+		console.log("message cb: getStakeAmount", response);
+	});
 }
 
 async function submitReport(isFraud, imageUrls, comments, stakeETH) {
@@ -279,21 +275,26 @@ async function changeNetwork(chainID) {
 
 chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
-	if (msg && msg.type == "toggle") {
+
+	if (msg == undefined || typeof msg.type == "string") {
+		return;
+	}
+
+	if (msg.type == "toggle") {
 		toggle();
 		sendResponse();
-	} else if (msg && msg.type == "connect-wallet-2") {
+	} else if (msg.type == "connect-wallet-2") {
 		await connectWallet();
-	} else if (msg && msg.type == "switch-network-2") {
+	} else if (msg.type == "switch-network-2") {
 		await changeNetwork(msg.data.chainID);
-	} else if (msg && msg.type == "submit-report-2") {
+	} else if (msg.type == "submit-report-2") {
 		await submitReport(
 			msg.data.isFraud,
 			msg.data.imageUrls,
 			msg.data.comments,
 			msg.data.stakeETH
 		);
-	} else if (msg && msg.type == "get-stake-amount-2") {
+	} else if (msg.type == "get-stake-amount-2") {
 		await getStakeAmount();
 	}
 });

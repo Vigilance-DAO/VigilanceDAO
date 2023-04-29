@@ -1,3 +1,4 @@
+// @ts-check
 /// <reference types="chrome" />
 /// <reference types="psl" />
 /// <reference lib="webworker" />
@@ -17,10 +18,6 @@ try {
 } catch (e) {
 	console.error(e);
 }
-
-chrome.storage.sync.onChanged.addListener((changes) => {
-	console.log("changes to storage", changes);
-});
 
 const env = {
 	host: "http://localhost:4000", // backend API endpoint
@@ -136,9 +133,11 @@ function getUrl(tab) {
  * any reports from Vigilance DAO community
  *
  * @param {string} url domain name without any subdomains (e.g. just google.com, example.xyz)
- * @returns {Promise<DomainValidationInfo>}
+ * @param {chrome.tabs.Tab} tab
+ * @param {Date | null} createdOn
+ * @returns {Promise<DomainValidationInfo | undefined>}
  */
-async function getDomainValidationInfo(url) {
+async function getDomainValidationInfo(url, tab, createdOn) {
 	/**
 	 * @type {"info" | "warning"}
 	 */
@@ -285,7 +284,14 @@ function processTab(tab) {
 				// 5min
 				validationInfo = items[key]?.validationInfo;
 			} else {
-				validationInfo = await getDomainValidationInfo(url);
+				const _validationInfo = await getDomainValidationInfo(
+					url,
+					tab,
+					createdOn
+				);
+				if (_validationInfo != undefined) {
+					validationInfo = _validationInfo;
+				}
 				chrome.storage.sync.get([key], async (items) => {
 					if (!items[key]) items[key] = {};
 					items[key].validationInfo = validationInfo;
@@ -480,7 +486,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 	}
 	if (request.type == "take-screenshot") {
 		await sendMessage(sender.tab, "toggle", {});
-		// @ts-ignore
 		await takeScreenshot(sender.tab);
 		await sendMessage(sender.tab, "toggle", {});
 	} else if (request.type == "connect-wallet") {
