@@ -147,7 +147,7 @@ function App() {
           See how it works
         </Button>
       </Stack>
-      <!--<Stack
+      {/* <Stack
         direction={{ base: "row", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
         justifyContent="top"
@@ -192,7 +192,7 @@ function App() {
             marginTop="7px"
           />
         </Text>
-      </Stack>-->
+      </Stack> */}
       <Stack
         direction={{ base: "column", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
