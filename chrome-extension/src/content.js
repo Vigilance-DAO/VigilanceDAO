@@ -63,6 +63,17 @@ let alertHandle = null;
  * @type {HTMLDialogElement}
  */
 const alertDialog = document.createElement("dialog");
+
+alertDialog.style.borderRadius = "9px";
+alertDialog.style.position = "fixed";
+alertDialog.style.bottom = "70px";
+alertDialog.style.right = "clamp(10px, 3vw, 30px)";
+alertDialog.style.zIndex = "10000";
+alertDialog.style.margin = "0 0 0 auto";
+alertDialog.style.height = "fit-content";
+alertDialog.style.border = "none";
+alertDialog.style.padding = "0";
+
 alertDialog.className = "alert-dialog";
 alertDialog.addEventListener("click", (event) => {
 	console.log("dialog clicked", event);
@@ -81,15 +92,14 @@ function createAlertHandle() {
 	console.log("createAlertHandle");
 	alertHandle = document.createElement("img");
 	alertHandle.src = chrome.runtime.getURL("images/icon48.png");
-	alertHandle.className = "alert-handle";
-	alertHandle.addEventListener("click", showAlert);
-	document.body.appendChild(alertHandle);
-}
 
-createAlertHandle();
+	alertHandle.style.position = "fixed";
+	alertHandle.style.bottom = "clamp(10px, 2vh, 30px)";
+	alertHandle.style.right = "clamp(10px, 3vw, 30px)";
+	alertHandle.style.zIndex = "10000";
+	alertHandle.style.cursor = "pointer";
 
-async function showAlert() {
-	console.log("showAlert");
+	alertHandle.addEventListener("click", toggleAlert);
 
 	if (alertDialog.innerHTML == "") {
 		const html = await new Promise((resolve, reject) => {
