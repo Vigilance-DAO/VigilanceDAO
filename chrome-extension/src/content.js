@@ -77,18 +77,18 @@ alertDialog.style.padding = "0";
 alertDialog.className = "alert-dialog";
 alertDialog.addEventListener("click", (event) => {
 	console.log("dialog clicked", event);
-	const targetId = event.target.id;
-	if (targetId == "close") {
+	const target = event.target.className;
+	if (target == "close") {
 		window.requestAnimationFrame(() => {
 			alertDialog.close();
 		});
-	} else if (targetId == "hide") {
-	} else if (targetId == "dont-show-again") {
+	} else if (target == "hide") {
+	} else if (target == "dont-show-again") {
 	}
 });
 document.body.appendChild(alertDialog);
 
-function createAlertHandle() {
+async function createAlertHandle() {
 	console.log("createAlertHandle");
 	alertHandle = document.createElement("img");
 	alertHandle.src = chrome.runtime.getURL("images/icon48.png");
@@ -110,8 +110,19 @@ function createAlertHandle() {
 		});
 		alertDialog.innerHTML = html;
 	}
+	// alertHandle will be appended to body after processTab is finished.
+}
 
-	alertDialog.show();
+createAlertHandle();
+
+function toggleAlert() {
+	console.log("toggleAlert");
+
+	if (alertDialog.open) {
+		alertDialog.close();
+	} else {
+		alertDialog.show();
+	}
 }
 
 let provider = createMetaMaskProvider();
@@ -300,7 +311,7 @@ async function changeNetwork(chainID) {
 chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
 
-	if (msg == undefined || typeof msg.type == "string") {
+	if (msg == undefined || typeof msg.type != "string") {
 		return;
 	}
 
@@ -320,6 +331,47 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 		);
 	} else if (msg.type == "get-stake-amount-2") {
 		await getStakeAmount();
+	} else if (msg.type == "processing-finished") {
+		/**
+		 * And extended with isNew property (boolean)
+		 *
+		 * @type {import("./types").DomainStorageItem}
+		 */
+		const data = msg.data;
+
+		const headingElement = alertDialog.querySelector(".heading");
+		const descriptionElement = alertDialog.querySelector(".description");
+		const categoryElement = alertDialog.querySelector(".category");
+		const createdOnElement = alertDialog.querySelector(".domain-reg-date");
+		const statusImgElement = alertDialog.querySelector(".status-image");
+
+		let heading = "";
+		let description = msg.data.description;
+		let category;
+		let imageSrc = "";
+		if (data.isNew) {
+			heading = "Be Cautious";
+			description =
+				"New domains can be risky; scammers may use them for fraud. Be cautious, especially with money.";
+			imageSrc = chrome.runtime.getURL("images/warning.png");
+		} else if (data.validationInfo.openScamReports > 0) {
+			heading = "Likely Dangerous website";
+			description = "We have reports that this could be a fraudulent website.";
+			imageSrc = chrome.runtime.getURL("images/dangerous.png");
+			category = data.validationInfo.type;
+		}
+
+		if (category == undefined) {
+			categoryElement.parentElement.remove();
+		}
+		createdOnElement.innerHTML = new Date(data.createdon).toLocaleDateString(
+			"en-GB",
+			{ dateStyle: "long" }
+		);
+		headingElement.innerHTML = heading;
+		descriptionElement.innerHTML = description;
+		statusImgElement.src = imageSrc;
+		document.body.appendChild(alertHandle);
 	}
 });
 
