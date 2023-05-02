@@ -126,31 +126,37 @@ export default function Alert() {
 			<div style={styles.container} id="internetVigilanceBackdrop">
 				<div style={styles.innerDiv}>
 					<div style={styles.header}>
-						<h1 style={styles.heading}>Likely Dangerous website</h1>
-						<p style={styles.statusDescription}>
+						<h1 style={styles.heading} className="heading">
+							Likely Dangerous website
+						</h1>
+						<p style={styles.statusDescription} className="description">
 							We have reports that this could be a fraudulent website
 						</p>
 						<span style={styles.credits}>Powered by Vigilance DAO</span>
-						<img style={styles.statusImage} src="./../images/dangerous.png" />
+						<img
+							style={styles.statusImage}
+							className="status-image"
+							src="./../images/dangerous.png"
+						/>
 					</div>
 
 					<div style={styles.domainInfoContainer}>
 						<span>
-							Category: <span id="domain-name">Loading...</span>
+							Category: <span className="category">Loading...</span>
 						</span>
 						<span>
-							Registered on: <span id="domain-reg-date">Loading...</span>
+							Registered on: <span className="domain-reg-date">Loading...</span>
 						</span>
 					</div>
 
 					<div style={styles.buttonContainer}>
-						<button id="close" style={styles.buttonSpecial}>
+						<button className="close" style={styles.buttonSpecial}>
 							Close
 						</button>
-						<button id="hide" style={styles.buttonNormal}>
+						<button className="hide" style={styles.buttonNormal}>
 							Hide
 						</button>
-						<button id="dont-show-again" style={styles.buttonNormal}>
+						<button className="dont-show-again" style={styles.buttonNormal}>
 							Don't show again
 						</button>
 					</div>
