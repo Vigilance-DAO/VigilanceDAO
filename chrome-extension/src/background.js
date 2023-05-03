@@ -430,18 +430,18 @@ async function processTab(tab) {
 
 		// This can be used to show alert.html popup in tab
 		// content.js listens to this msg and shows the popup
-		if (
-			createdOn &&
-			(isSoftWarning(createdOn) || storageItem.validationInfo?.isScamVerified)
-		) {
-			sendMessage(tab, "show-warning", {
-				domain: url,
-				createdOn: createdOn ? createdOn.getTime() : 0,
-				type: storageItem.validationInfo?.type,
-				msg: storageItem.validationInfo?.msg,
-				description: storageItem.validationInfo?.description,
-			});
-		}
+		// if (
+		// 	createdOn &&
+		// 	(isSoftWarning(createdOn) || storageItem.validationInfo?.isScamVerified)
+		// ) {
+		// 	sendMessage(tab, "show-warning", {
+		// 		domain: url,
+		// 		createdOn: createdOn ? createdOn.getTime() : 0,
+		// 		type: storageItem.validationInfo?.type,
+		// 		msg: storageItem.validationInfo?.msg,
+		// 		description: storageItem.validationInfo?.description,
+		// 	});
+		// }
 
 		// If we know from blockchain or our Backend API that a domain is scam
 		// then we show the ❌ icon on extension

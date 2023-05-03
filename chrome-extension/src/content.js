@@ -257,7 +257,7 @@ function displayVerifiedAlert() {
 	alertHandle.style.right = "clamp(10px, 3vw, 30px)";
 	alertHandle.style.zIndex = "10000";
 	alertHandle.style.cursor = "pointer";
-	alertHandle.style.filter = "drop-shadow(0px, 0px, 10px, #00eb18)";
+	alertHandle.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
 	document.body.append(alertHandle);
 }
 
@@ -267,11 +267,11 @@ function displayVerifiedAlert() {
 let alertDialog = document.createElement("dialog");
 
 async function createAlertDialog() {
-	if (alertDialog) return;
+	if (alertDialog.innerHTML != "") return;
 
 	alertDialog.style.borderRadius = "9px";
 	alertDialog.style.position = "fixed";
-	alertDialog.style.bottom = "70px";
+	alertDialog.style.bottom = "25px";
 	alertDialog.style.right = "clamp(10px, 3vw, 30px)";
 	alertDialog.style.zIndex = "10000";
 	alertDialog.style.margin = "0 0 0 auto";
@@ -292,18 +292,22 @@ async function createAlertDialog() {
 	alertDialog.addEventListener("click", (event) => {
 		console.log("dialog clicked", event);
 		const target = event.target.className;
-		if (target == "close") {
+		if (target == "close-website") {
+			window.requestAnimationFrame(() => {
+				window.close();
+			});
+		} else if (target == "hide") {
 			window.requestAnimationFrame(() => {
 				alertDialog.close();
 			});
-		} else if (target == "hide") {
 		} else if (target == "dont-show-again") {
+			alert("TODO");
 		}
 	});
 	document.body.appendChild(alertDialog);
 }
 
-chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
 
 	if (msg == undefined || typeof msg.type != "string") {
@@ -313,72 +317,77 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 	if (msg.type == "toggle") {
 		toggle();
 		sendResponse();
-	} else if (msg.type == "connect-wallet-2") {
-		await connectWallet();
-	} else if (msg.type == "switch-network-2") {
-		await changeNetwork(msg.data.chainID);
-	} else if (msg.type == "submit-report-2") {
-		await submitReport(
-			msg.data.isFraud,
-			msg.data.imageUrls,
-			msg.data.comments,
-			msg.data.stakeETH
-		);
-	} else if (msg.type == "get-stake-amount-2") {
-		await getStakeAmount();
-	} else if (msg.type == "processing-finished") {
-		/**
-		 * @type {import("./types").ComputedDomainStorageItem}
-		 */
-		const data = msg.data;
-
-		if (data.validationInfo.isLegitVerified) {
-			displayVerifiedAlert();
-			return;
-		}
-
-		await createAlertDialog();
-
-		const headingElement = alertDialog.querySelector(".heading");
-		const descriptionElement = alertDialog.querySelector(".description");
-		const categoryElement = alertDialog.querySelector(".category");
-		const createdOnElement = alertDialog.querySelector(".domain-reg-date");
-		const statusImgElement = alertDialog.querySelector(".status-image");
-
-		let heading = "Unhandled case: TODO";
-		let description = data.validationInfo.description;
-		let category;
-		let imageSrc = chrome.runtime.getURL("images/icon128.png");
-		if (data.isNew) {
-			heading = "Be Cautious";
-			description =
-				"New domains can be risky; scammers may use them for fraud. Be cautious, especially with money.";
-			imageSrc = chrome.runtime.getURL("images/warning.png");
-		} else if (data.validationInfo.openScamReports > 0) {
-			heading = "Likely Dangerous website";
-			description = "We have reports that this could be a fraudulent website.";
-			imageSrc = chrome.runtime.getURL("images/dangerous.png");
-			category = data.scamInfo.attackType || "Unknown";
-		} else if (data.validationInfo.isScamVerified) {
-			heading = "Confirmed scamming website";
-			description =
-				"This website has been confirmed to be a scam. Avoid using it.";
-			imageSrc = chrome.runtime.getURL("images/dangerous.png");
-			category = data.scamInfo.attackType || "Unknown";
-		}
-
-		if (category == undefined) {
-			categoryElement.parentElement.remove();
-		}
-		createdOnElement.innerHTML = new Date(data.createdon).toLocaleDateString(
-			"en-GB",
-			{ dateStyle: "long" }
-		);
-		headingElement.innerHTML = heading;
-		descriptionElement.innerHTML = description;
-		statusImgElement.src = imageSrc;
-		document.body.appendChild(alertHandle);
 	}
+
+	(async () => {
+		if (msg.type == "connect-wallet-2") {
+			await connectWallet();
+		} else if (msg.type == "switch-network-2") {
+			await changeNetwork(msg.data.chainID);
+		} else if (msg.type == "submit-report-2") {
+			await submitReport(
+				msg.data.isFraud,
+				msg.data.imageUrls,
+				msg.data.comments,
+				msg.data.stakeETH
+			);
+		} else if (msg.type == "get-stake-amount-2") {
+			await getStakeAmount();
+		} else if (msg.type == "processing-finished") {
+			/**
+			 * @type {import("./types").ComputedDomainStorageItem}
+			 */
+			const data = msg.data;
+
+			if (data.validationInfo.isLegitVerified) {
+				displayVerifiedAlert();
+				return;
+			}
+
+			await createAlertDialog();
+
+			const headingElement = alertDialog.querySelector(".heading");
+			const descriptionElement = alertDialog.querySelector(".description");
+			const categoryElement = alertDialog.querySelector(".category");
+			const createdOnElement = alertDialog.querySelector(".domain-reg-date");
+			const statusImgElement = alertDialog.querySelector(".status-image");
+
+			let heading = "Unhandled case: TODO";
+			let description = data.validationInfo.description;
+			let category;
+			let imageSrc = chrome.runtime.getURL("images/icon128.png");
+			if (data.isNew) {
+				heading = "Be Cautious";
+				description =
+					"New domains can be risky; scammers may use them for fraud. Be cautious, especially with money.";
+				imageSrc = chrome.runtime.getURL("images/warning.png");
+			} else if (data.validationInfo.openScamReports > 0) {
+				heading = "Likely Dangerous website";
+				description =
+					"We have reports that this could be a fraudulent website.";
+				imageSrc = chrome.runtime.getURL("images/dangerous.png");
+				category = data.scamInfo.attackType || "Unknown";
+			} else if (data.validationInfo.isScamVerified) {
+				heading = "Confirmed scamming website";
+				description =
+					"This website has been confirmed to be a scam. Avoid using it.";
+				imageSrc = chrome.runtime.getURL("images/dangerous.png");
+				category = data.scamInfo.attackType || "Unknown";
+			}
+
+			if (category == undefined) {
+				categoryElement.parentElement.remove();
+			}
+			createdOnElement.innerHTML = new Date(data.createdon).toLocaleDateString(
+				"en-GB",
+				{ dateStyle: "long" }
+			);
+			headingElement.innerHTML = heading;
+			descriptionElement.innerHTML = description;
+			statusImgElement.src = imageSrc;
+			alertDialog.show();
+		}
+	})();
 });
 
 var iframe = document.createElement("iframe");

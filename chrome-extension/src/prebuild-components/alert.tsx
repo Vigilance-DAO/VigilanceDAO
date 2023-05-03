@@ -32,6 +32,7 @@ const styles = {
 	},
 	statusImage: {
 		gridArea: "status-image",
+		width: "100%",
 	},
 	domainInfoContainer: {
 		display: "flex",
@@ -150,8 +151,8 @@ export default function Alert() {
 					</div>
 
 					<div style={styles.buttonContainer}>
-						<button className="close" style={styles.buttonSpecial}>
-							Close
+						<button className="close-website" style={styles.buttonSpecial}>
+							Close website
 						</button>
 						<button className="hide" style={styles.buttonNormal}>
 							Hide

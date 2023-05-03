@@ -65,6 +65,7 @@ const esbuildOptions = {
 	loader: { ".svg": "dataurl" },
 	platform: "browser",
 	define: definedValues,
+	sourcemap: isWatching ? "inline" : undefined,
 	plugins: [
 		copy({
 			resolveFrom: "cwd",
@@ -156,7 +157,6 @@ const prebuildOptions = {
 					console.log("Cleaning up...");
 
 					const files = readFileStructure("./build");
-					console.log(files);
 
 					for (let i = 0; i < files.length; i++) {
 						const file = files[i];
