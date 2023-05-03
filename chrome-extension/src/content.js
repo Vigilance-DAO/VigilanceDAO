@@ -328,9 +328,7 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 		await getStakeAmount();
 	} else if (msg.type == "processing-finished") {
 		/**
-		 * And extended with isNew property (boolean)
-		 *
-		 * @type {import("./types").DomainStorageItem}
+		 * @type {import("./types").ComputedDomainStorageItem}
 		 */
 		const data = msg.data;
 

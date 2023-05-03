@@ -524,12 +524,16 @@ async function processTab(tab) {
 			chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
 		}
 
-		sendMessage(tab, "processing-finished", {
+		/**
+		 * @type {import("./types").ComputedDomainStorageItem}
+		 */
+		const computedStorageItem = {
 			...storageItem,
 			isNew: storageItem.createdon
 				? isSoftWarning(new Date(storageItem.createdon))
-				: Date.now(),
-		});
+				: false,
+		};
+		sendMessage(tab, "processing-finished", computedStorageItem);
 		// Update the tab with the validation info
 		// index.html catches this info and shows it in the popup
 		sendMessage(tab, "domain", {

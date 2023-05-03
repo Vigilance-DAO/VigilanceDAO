@@ -24,3 +24,10 @@ export interface DomainValidationInfo {
  * Object structure of each item stored in the storage like a cache
  */
 export type DomainStorageItem = ({ validationInfo?: DomainValidationInfo } & Partial<DomainInfo>);
+
+export interface ComputedDomainStorageItem extends DomainStorageItem {
+	/**
+	 * Indicates whether the domain's age is less than `alertPeriod` (defined in background.js).
+	 */
+	isNew?: boolean;
+}
