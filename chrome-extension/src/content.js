@@ -55,76 +55,6 @@ function closeInternetVigilanceWithNoMoreShow() {
 	);
 }
 
-/**
- * @type {HTMLImageElement | null}
- */
-let alertHandle = null;
-/**
- * @type {HTMLDialogElement}
- */
-const alertDialog = document.createElement("dialog");
-
-alertDialog.style.borderRadius = "9px";
-alertDialog.style.position = "fixed";
-alertDialog.style.bottom = "70px";
-alertDialog.style.right = "clamp(10px, 3vw, 30px)";
-alertDialog.style.zIndex = "10000";
-alertDialog.style.margin = "0 0 0 auto";
-alertDialog.style.height = "fit-content";
-alertDialog.style.border = "none";
-alertDialog.style.padding = "0";
-
-alertDialog.className = "alert-dialog";
-alertDialog.addEventListener("click", (event) => {
-	console.log("dialog clicked", event);
-	const target = event.target.className;
-	if (target == "close") {
-		window.requestAnimationFrame(() => {
-			alertDialog.close();
-		});
-	} else if (target == "hide") {
-	} else if (target == "dont-show-again") {
-	}
-});
-document.body.appendChild(alertDialog);
-
-async function createAlertHandle() {
-	console.log("createAlertHandle");
-	alertHandle = document.createElement("img");
-	alertHandle.src = chrome.runtime.getURL("images/icon48.png");
-
-	alertHandle.style.position = "fixed";
-	alertHandle.style.bottom = "clamp(10px, 2vh, 30px)";
-	alertHandle.style.right = "clamp(10px, 3vw, 30px)";
-	alertHandle.style.zIndex = "10000";
-	alertHandle.style.cursor = "pointer";
-
-	alertHandle.addEventListener("click", toggleAlert);
-
-	if (alertDialog.innerHTML == "") {
-		const html = await new Promise((resolve, reject) => {
-			fetch(chrome.runtime.getURL("static/alert.html"))
-				.then((response) => response.text())
-				.then(resolve)
-				.catch(reject);
-		});
-		alertDialog.innerHTML = html;
-	}
-	// alertHandle will be appended to body after processTab is finished.
-}
-
-createAlertHandle();
-
-function toggleAlert() {
-	console.log("toggleAlert");
-
-	if (alertDialog.open) {
-		alertDialog.close();
-	} else {
-		alertDialog.show();
-	}
-}
-
 let provider = createMetaMaskProvider();
 provider.on("chainChanged", (chainId) => {
 	console.log("chainChanged", chainId);
@@ -308,6 +238,71 @@ async function changeNetwork(chainID) {
 	onUpdateChainID(chainId);
 }
 
+/**
+ * @type {HTMLImageElement | null}
+ */
+let alertHandle = null;
+
+/**
+ * Displays a Vigilance DAO logo in the bottom-right corner of the window.
+ */
+function displayVerifiedAlert() {
+	if (alertHandle) return;
+
+	alertHandle = document.createElement("img");
+	alertHandle.src = chrome.runtime.getURL("images/icon48.png");
+
+	alertHandle.style.position = "fixed";
+	alertHandle.style.bottom = "clamp(10px, 2vh, 30px)";
+	alertHandle.style.right = "clamp(10px, 3vw, 30px)";
+	alertHandle.style.zIndex = "10000";
+	alertHandle.style.cursor = "pointer";
+	alertHandle.style.filter = "drop-shadow(0px, 0px, 10px, #00eb18)";
+	document.body.append(alertHandle);
+}
+
+/**
+ * @type {HTMLDialogElement}
+ */
+let alertDialog = document.createElement("dialog");
+
+async function createAlertDialog() {
+	if (alertDialog) return;
+
+	alertDialog.style.borderRadius = "9px";
+	alertDialog.style.position = "fixed";
+	alertDialog.style.bottom = "70px";
+	alertDialog.style.right = "clamp(10px, 3vw, 30px)";
+	alertDialog.style.zIndex = "10000";
+	alertDialog.style.margin = "0 0 0 auto";
+	alertDialog.style.height = "fit-content";
+	alertDialog.style.border = "none";
+	alertDialog.style.padding = "0";
+
+	const html = await fetch(chrome.runtime.getURL("static/alert.html"))
+		.then((response) => response.text())
+		.catch((e) => {
+			console.error("Error while loading html from alert.html", e);
+			return "";
+		});
+
+	alertDialog.innerHTML = html;
+
+	alertDialog.className = "alert-dialog";
+	alertDialog.addEventListener("click", (event) => {
+		console.log("dialog clicked", event);
+		const target = event.target.className;
+		if (target == "close") {
+			window.requestAnimationFrame(() => {
+				alertDialog.close();
+			});
+		} else if (target == "hide") {
+		} else if (target == "dont-show-again") {
+		}
+	});
+	document.body.appendChild(alertDialog);
+}
+
 chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
 
@@ -339,16 +334,23 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 		 */
 		const data = msg.data;
 
+		if (data.validationInfo.isLegitVerified) {
+			displayVerifiedAlert();
+			return;
+		}
+
+		await createAlertDialog();
+
 		const headingElement = alertDialog.querySelector(".heading");
 		const descriptionElement = alertDialog.querySelector(".description");
 		const categoryElement = alertDialog.querySelector(".category");
 		const createdOnElement = alertDialog.querySelector(".domain-reg-date");
 		const statusImgElement = alertDialog.querySelector(".status-image");
 
-		let heading = "";
-		let description = msg.data.description;
+		let heading = "Unhandled case: TODO";
+		let description = data.validationInfo.description;
 		let category;
-		let imageSrc = "";
+		let imageSrc = chrome.runtime.getURL("images/icon128.png");
 		if (data.isNew) {
 			heading = "Be Cautious";
 			description =
@@ -358,7 +360,13 @@ chrome.runtime.onMessage.addListener(async (msg, sender, sendResponse) => {
 			heading = "Likely Dangerous website";
 			description = "We have reports that this could be a fraudulent website.";
 			imageSrc = chrome.runtime.getURL("images/dangerous.png");
-			category = data.validationInfo.type;
+			category = data.scamInfo.attackType || "Unknown";
+		} else if (data.validationInfo.isScamVerified) {
+			heading = "Confirmed scamming website";
+			description =
+				"This website has been confirmed to be a scam. Avoid using it.";
+			imageSrc = chrome.runtime.getURL("images/dangerous.png");
+			category = data.scamInfo.attackType || "Unknown";
 		}
 
 		if (category == undefined) {
