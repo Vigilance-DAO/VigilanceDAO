@@ -111,8 +111,10 @@ async function getDomainInfo(client: PoolClient, domain: string): Promise<Domain
 
 export { app };
 
-if (process.env.SERVER_TYPE = 'express') {
+let isListening = false;
+if (process.env.SERVER_TYPE == 'express' && !isListening) {
 	app.listen(4000, () => {
+		isListening = true;
 		console.log('server listening on 4000')
 	})
 }
