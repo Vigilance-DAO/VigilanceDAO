@@ -9,6 +9,7 @@ try {
 	console.error(e);
 }
 
+const DONT_SHOW_AGAIN_DOMAINS_KEY = "dont_show_again_domains";
 const env = {
 	host: "http://localhost:4000", // backend API endpoint
 	alertPeriod: 4 * 30 * 86400 * 1000,
@@ -118,18 +119,25 @@ function getUrl(tab) {
 	} else {
 		return;
 	}
-	const _url = new URL(url);
 
-	console.debug("bg current url", _url);
-	console.debug("bg current tab", tab);
+	try {
+		const _url = new URL(url);
 
-	var parsed = psl.parse(_url.hostname);
-	if (parsed.error) {
-		throw new Error(parsed.error.message);
+		console.debug("bg current url", _url);
+		console.debug("bg current tab", tab);
+
+		var parsed = psl.parse(_url.hostname);
+		if (parsed.error) {
+			throw new Error(parsed.error.message);
+		}
+		let parsedUrl = parsed.domain;
+		console.debug("bg url", parsedUrl);
+		return parsedUrl || undefined;
+	} catch (error) {
+		console.error(error);
+		console.log("The error was because of trying to construct", url);
+		return undefined;
 	}
-	let parsedUrl = parsed.domain;
-	console.debug("bg url", parsedUrl);
-	return parsedUrl || undefined;
 }
 
 /**
@@ -372,21 +380,23 @@ async function processTab(tab) {
 
 		// use chrome.storage.sync API to load the data about domain
 		// from chrome storage
+		const keysToLoad = [key, DONT_SHOW_AGAIN_DOMAINS_KEY];
 		/**
 		 * Already existing items in the storage
-		 * @type {Record<string, import("./types").DomainStorageItem>}
+		 * @type {import("./types").StorageResult}
 		 */
-		const alreadyExistingItems = await chrome.storage.sync
-			.get(key)
+		const storageItems = await chrome.storage.sync
+			.get(keysToLoad)
 			.catch((error) => {
-				console.warn("Error while loading items from storage for", key);
+				console.warn("Error while loading items from storage for", keysToLoad);
 				console.warn(error);
 				return {};
 			});
 
-		console.log(alreadyExistingItems);
+		const { [DONT_SHOW_AGAIN_DOMAINS_KEY]: _unused, ...existingStorageItems } =
+			storageItems;
 
-		let createdOn = await getDomainRegistrationDate(alreadyExistingItems, url);
+		let createdOn = await getDomainRegistrationDate(existingStorageItems, url);
 
 		let now = new Date();
 
@@ -396,9 +406,9 @@ async function processTab(tab) {
 		 *
 		 * @type {import("./types").DomainStorageItem}
 		 */
-		let storageItem = alreadyExistingItems[key] || (await fetchDomainInfo(url));
+		let storageItem = existingStorageItems[key] || (await fetchDomainInfo(url));
 
-		const fromStorage = alreadyExistingItems[key] != undefined;
+		const fromStorage = existingStorageItems[key] != undefined;
 		let isUpdated = !fromStorage;
 		const lastValidationStateUpdatedOn = storageItem.updatedon;
 
@@ -524,16 +534,6 @@ async function processTab(tab) {
 			chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
 		}
 
-		/**
-		 * @type {import("./types").ComputedDomainStorageItem}
-		 */
-		const computedStorageItem = {
-			...storageItem,
-			isNew: storageItem.createdon
-				? isSoftWarning(new Date(storageItem.createdon))
-				: false,
-		};
-		sendMessage(tab, "processing-finished", computedStorageItem);
 		// Update the tab with the validation info
 		// index.html catches this info and shows it in the popup
 		sendMessage(tab, "domain", {
@@ -544,6 +544,24 @@ async function processTab(tab) {
 			msg: storageItem.validationInfo?.msg,
 			description: storageItem.validationInfo?.description,
 		});
+
+		if (
+			storageItems[DONT_SHOW_AGAIN_DOMAINS_KEY] &&
+			storageItems[DONT_SHOW_AGAIN_DOMAINS_KEY].includes(url)
+		) {
+			return;
+		}
+
+		/**
+		 * @type {import("./types").ComputedDomainStorageItem}
+		 */
+		const computedStorageItem = {
+			...storageItem,
+			isNew: storageItem.createdon
+				? isSoftWarning(new Date(storageItem.createdon))
+				: false,
+		};
+		sendMessage(tab, "processing-finished", computedStorageItem);
 	}
 }
 
@@ -641,6 +659,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			await sendMessage(sender.tab, "get-stake-amount-2", request.data);
 		} else if (request.type == "stake-amount") {
 			await sendMessage(sender.tab, "stake-amount", request.data);
+		} else if (request.type == "alert-dont-show-again") {
+			/**
+			 * @type {string[]}
+			 */
+			const dontShowAgainDomains = await chrome.storage.sync
+				.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
+				.then((items) => items[DONT_SHOW_AGAIN_DOMAINS_KEY] || [])
+				.catch((error) => {
+					console.error(
+						`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
+						error
+					);
+					return [];
+				});
+			chrome.storage.sync.set({
+				[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
+					request.data.url
+				),
+			});
 		}
 	})()
 		.then((v) => {

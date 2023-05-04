@@ -31,3 +31,8 @@ export interface ComputedDomainStorageItem extends DomainStorageItem {
 	 */
 	isNew?: boolean;
 }
+
+
+export type StorageResult = {
+	dont_show_again_domains?: string[]
+} & Record<string, DomainStorageItem>

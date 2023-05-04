@@ -273,6 +273,7 @@ let alertDialog = document.createElement("dialog");
  * @prop {string} category
  * @prop {string} domainCreatedOn
  * @prop {string} imageSrc
+ * @prop {string} url
  *
  * @param {AlertInfo} alertInfo
  */
@@ -317,15 +318,14 @@ async function createAlertDialog(alertInfo) {
 		console.log("dialog clicked", event);
 		const target = event.target.className;
 		if (target == "close-website") {
-			window.requestAnimationFrame(() => {
-				window.close();
-			});
+			window.close();
 		} else if (target == "hide") {
-			window.requestAnimationFrame(() => {
-				alertDialog.close();
-			});
+			alertDialog.close();
 		} else if (target == "dont-show-again") {
-			alert("TODO");
+			sendMessageToBackground("alert-dont-show-again", {
+				url: alertInfo.url 
+			});
+			alertDialog.close();
 		}
 	});
 	document.body.appendChild(alertDialog);
@@ -402,6 +402,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 				category,
 				heading,
 				imageSrc,
+				url: data.domain
 			});
 		}
 	})();
