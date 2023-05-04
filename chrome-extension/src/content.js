@@ -266,7 +266,17 @@ function displayVerifiedAlert() {
  */
 let alertDialog = document.createElement("dialog");
 
-async function createAlertDialog() {
+/**
+ * @typedef AlertInfo
+ * @prop {string} heading
+ * @prop {string} description
+ * @prop {string} category
+ * @prop {string} domainCreatedOn
+ * @prop {string} imageSrc
+ *
+ * @param {AlertInfo} alertInfo
+ */
+async function createAlertDialog(alertInfo) {
 	if (alertDialog.innerHTML != "") return;
 
 	alertDialog.style.borderRadius = "9px";
@@ -288,6 +298,20 @@ async function createAlertDialog() {
 
 	alertDialog.innerHTML = html;
 
+	const headingElement = alertDialog.querySelector(".heading");
+	const descriptionElement = alertDialog.querySelector(".description");
+	const categoryElement = alertDialog.querySelector(".category");
+	const createdOnElement = alertDialog.querySelector(".domain-reg-date");
+	const statusImgElement = alertDialog.querySelector(".status-image");
+
+	if (alertInfo.category == undefined) {
+		categoryElement.parentElement.remove();
+	}
+	createdOnElement.innerHTML = alertInfo.domainCreatedOn;
+	headingElement.innerHTML = alertInfo.heading;
+	descriptionElement.innerHTML = alertInfo.description;
+	statusImgElement.src = alertInfo.imageSrc;
+
 	alertDialog.className = "alert-dialog";
 	alertDialog.addEventListener("click", (event) => {
 		console.log("dialog clicked", event);
@@ -305,6 +329,7 @@ async function createAlertDialog() {
 		}
 	});
 	document.body.appendChild(alertDialog);
+	alertDialog.show();
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -344,16 +369,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 				return;
 			}
 
-			await createAlertDialog();
-
-			const headingElement = alertDialog.querySelector(".heading");
-			const descriptionElement = alertDialog.querySelector(".description");
-			const categoryElement = alertDialog.querySelector(".category");
-			const createdOnElement = alertDialog.querySelector(".domain-reg-date");
-			const statusImgElement = alertDialog.querySelector(".status-image");
-
-			let heading = "Unhandled case: TODO";
-			let description = data.validationInfo.description;
+			let heading = "";
+			let description = "";
 			let category;
 			let imageSrc = chrome.runtime.getURL("images/icon128.png");
 			if (data.isNew) {
@@ -373,19 +390,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 					"This website has been confirmed to be a scam. Avoid using it.";
 				imageSrc = chrome.runtime.getURL("images/dangerous.png");
 				category = data.scamInfo.attackType || "Unknown";
+			} else {
+				return;
 			}
 
-			if (category == undefined) {
-				categoryElement.parentElement.remove();
-			}
-			createdOnElement.innerHTML = new Date(data.createdon).toLocaleDateString(
-				"en-GB",
-				{ dateStyle: "long" }
-			);
-			headingElement.innerHTML = heading;
-			descriptionElement.innerHTML = description;
-			statusImgElement.src = imageSrc;
-			alertDialog.show();
+			await createAlertDialog({
+				domainCreatedOn: new Date(data.createdon).toLocaleDateString("en-GB", {
+					dateStyle: "long",
+				}),
+				description,
+				category,
+				heading,
+				imageSrc,
+			});
 		}
 	})();
 });
