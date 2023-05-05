@@ -91,7 +91,6 @@ const prebuildOptions = {
 	jsx: "transform",
 	jsxFactory: "React.createElement",
 	platform: "node",
-	sourcemap: "inline",
 	minify: false,
 	metafile: true,
 	define: definedValues,

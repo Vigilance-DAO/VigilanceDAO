@@ -73,6 +73,11 @@ export function run() {
 			let cssContent = undefined;
 			try {
 				cssContent = await readFile(cssFile, "utf-8");
+				const lines = cssContent.split("\n");
+				if (lines.at(-2)?.startsWith("/*# sourceMappingURL")) {
+					lines[lines.length - 2] = "";
+					cssContent = lines.join("\n");
+				}
 				// await rm(cssFile);
 			} catch (_e) {}
 

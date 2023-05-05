@@ -428,7 +428,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 				category,
 				heading,
 				imageSrc,
-				url: data.domain
+				url: data.domain,
 			});
 		}
 	})();

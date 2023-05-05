@@ -120,6 +120,8 @@ function getUrl(tab) {
 		return;
 	}
 
+	if (url == "") return undefined;
+
 	try {
 		const _url = new URL(url);
 
@@ -356,6 +358,8 @@ async function processTab(tab) {
 	//         console.log('url', tabs)
 	//     });
 	// }
+	if (tab.url == undefined || tab.url == "" || tab.url.startsWith("chrome://"))
+		return;
 	const url = getUrl(tab);
 	console.log("processTab", JSON.stringify({ url, lastUrl }));
 	if (!url || url != lastUrl) {
