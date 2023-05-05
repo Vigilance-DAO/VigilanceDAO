@@ -1,0 +1,92 @@
+.container {
+	width: 100%;
+	font-family: X_Roboto, sans-serif;
+}
+
+.inner-div {
+	width: 560px;
+	padding: 18px 24px;
+	font-weight: 700;
+	color: hsla(-1, 0%, 82%, 1);
+	font-size: 15px;
+	background-color: hsla(-1, 0%, 20%, 1);
+	border-radius: 9px;
+	border-bottom: 6px solid var(--border-color, red);
+}
+
+button {
+	border-radius: 3px;
+	padding: 5px 10px;
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 19px;
+}
+
+button.normal {
+	border: 1px solid white;
+	background: none;
+	color: white;
+	opacity: 0.5;
+}
+
+button.special {
+	margin-right: auto;
+	border: #d9d9d9;
+	background: none;
+	color: #0f0f0f;
+	background-color: #d9d9d9;
+}
+
+.header {
+	display: grid;
+	grid-template-columns: auto 76px;
+	grid-template-rows: repeat(3, auto);
+	grid-template-areas:
+		"status-message status-image"
+		"status-description status-image"
+		"credit .";
+}
+.heading {
+	margin: 10px 0;
+	font-size: 30px;
+	grid-area: status-message;
+	line-height: 35px;
+}
+.description {
+	grid-area: status-description;
+	margin-top: 0px;
+	margin-bottom: 8px;
+	font-size: 19px;
+	line-height: 22.3px;
+}
+.credits {
+	grid-area: credit;
+	opacity: 0.5;
+	font-size: 14px;
+}
+.status-image {
+	grid-area: status-image;
+	width: 100%;
+}
+.domain-info-container {
+	display: flex;
+	gap: 5px;
+	flex-direction: column;
+	margin: 10px 0;
+}
+.domain-info-item {
+	font-weight: 700;
+	font-size: 26px;
+}
+.domain-info-value {
+	font-weight: 400;
+}
+.button-container {
+	display: flex;
+	gap: 6px;
+	justify-items: flex-end;
+	margin: 15px 0 6px;
+	font-size: 16px;
+	min-height: 36px;
+}
