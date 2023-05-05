@@ -342,7 +342,7 @@ async function createAlertDialog(alertInfo) {
 		const targetElement = event.target;
 		const target = targetElement.id;
 		if (target == "close-website") {
-			window.close();
+			sendMessageToBackground("close-website");
 		} else if (target == "hide") {
 			alertDialog.close();
 		} else if (target == "dont-show-again") {

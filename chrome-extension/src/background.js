@@ -682,6 +682,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 					request.data.url
 				),
 			});
+		} else if (request.type == "close-website") {
+			const currentTab = (
+				await chrome.tabs.query({ active: true, currentWindow: true })
+			)[0];
+			if (currentTab.id == undefined) return;
+			chrome.tabs.remove(currentTab.id);
 		}
 	})()
 		.then((v) => {
