@@ -1,5 +1,6 @@
 const createMetaMaskProvider = require("metamask-extension-provider");
 const { address, abi } = require("../constants");
+const { getFonts } = require("./fonts");
 
 console.log("psl", psl);
 console.log("ethers", window.ethereum);
@@ -290,20 +291,36 @@ async function createAlertDialog(alertInfo) {
 	alertDialog.style.border = "none";
 	alertDialog.style.padding = "0";
 
-	const html = await fetch(chrome.runtime.getURL("static/alert.html"))
+	let html = await fetch(chrome.runtime.getURL("static/alert.html"))
 		.then((response) => response.text())
 		.catch((e) => {
 			console.error("Error while loading html from alert.html", e);
 			return "";
 		});
 
-	alertDialog.innerHTML = html;
+	const div = document.createElement("div");
+	const shadowRoot = div.attachShadow({ mode: "closed" });
+	alertDialog.append(div);
 
-	const headingElement = alertDialog.querySelector(".heading");
-	const descriptionElement = alertDialog.querySelector(".description");
-	const categoryElement = alertDialog.querySelector(".category");
-	const createdOnElement = alertDialog.querySelector(".domain-reg-date");
-	const statusImgElement = alertDialog.querySelector(".status-image");
+	let borderColor = undefined;
+	if (alertInfo.imageSrc.includes("dangerous.png")) {
+		borderColor = "#b70606";
+	} else if (alertInfo.imageSrc.includes("warning.png")) {
+		borderColor = "#ffb800";
+	}
+
+	if (borderColor != undefined) {
+		html = `<style>:host { --border-color: ${borderColor}; }</style>`.concat(
+			html
+		);
+	}
+	shadowRoot.innerHTML = html;
+
+	const headingElement = shadowRoot.querySelector(".heading");
+	const descriptionElement = shadowRoot.querySelector(".description");
+	const categoryElement = shadowRoot.querySelector(".category");
+	const createdOnElement = shadowRoot.querySelector(".domain-reg-date");
+	const statusImgElement = shadowRoot.querySelector(".status-image");
 
 	if (alertInfo.category == undefined) {
 		categoryElement.parentElement.remove();
@@ -313,21 +330,27 @@ async function createAlertDialog(alertInfo) {
 	descriptionElement.innerHTML = alertInfo.description;
 	statusImgElement.src = alertInfo.imageSrc;
 
-	alertDialog.className = "alert-dialog";
-	alertDialog.addEventListener("click", (event) => {
+	shadowRoot.addEventListener("click", (event) => {
 		console.log("dialog clicked", event);
-		const target = event.target.className;
+		/**
+		 * @type {HTMLElement}
+		 */
+		const targetElement = event.target;
+		const target = targetElement.dataset["vigiId"];
 		if (target == "close-website") {
 			window.close();
 		} else if (target == "hide") {
 			alertDialog.close();
 		} else if (target == "dont-show-again") {
 			sendMessageToBackground("alert-dont-show-again", {
-				url: alertInfo.url 
+				url: alertInfo.url,
 			});
 			alertDialog.close();
+		} else {
+			console.log(targetElement.dataset);
 		}
 	});
+	shadowRoot.querySelector("#fonts-to-load").innerHTML = getFonts();
 	document.body.appendChild(alertDialog);
 	alertDialog.show();
 }

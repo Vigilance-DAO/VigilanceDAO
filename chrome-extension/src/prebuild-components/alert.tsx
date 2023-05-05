@@ -1,13 +1,13 @@
 import React, { Fragment } from "react";
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
 	container: {
 		width: "100%",
-		fontFamily: "Roboto, sans-serif",
+		fontFamily: "X_Roboto, sans-serif",
 	},
 	header: {
 		display: "grid",
-		gridTemplateColumns: "auto 70px",
+		gridTemplateColumns: "auto 76px",
 		gridTemplateRows: "repeat(3, auto)",
 		gridTemplateAreas: `
 		"status-message status-image"
@@ -17,18 +17,21 @@ const styles = {
 	},
 	heading: {
 		margin: "10px 0",
-		fontSize: "20px",
+		fontSize: "30px",
 		gridArea: "status-message",
+		lineHeight: "35px",
 	},
 	statusDescription: {
 		gridArea: "status-description",
 		marginTop: "0px",
 		marginBottom: "8px",
+		fontSize: "19px",
+		lineHeight: "22.3px",
 	},
 	credits: {
 		gridArea: "credit",
 		opacity: "0.5",
-		fontSize: "0.8rem",
+		fontSize: "14px",
 	},
 	statusImage: {
 		gridArea: "status-image",
@@ -40,27 +43,36 @@ const styles = {
 		flexDirection: "column",
 		margin: "10px 0",
 	},
+	domainInfoItem: {
+		fontWeight: "700",
+		fontSize: "26px",
+	},
+	domainInfoValue: {
+		fontWeight: "400",
+	},
 	buttonContainer: {
 		display: "flex",
 		gap: "6px",
 		justifyItems: "flex-end",
 		margin: "15px 0 6px",
+		fontSize: "16px",
+		minHeight: "36px",
+	},
+	buttonBase: {
+		borderRadius: "3px",
+		padding: "5px 10px",
+		fontWeight: "600",
+		cursor: "pointer",
+		fontSize: "16px",
+		lineHeight: "19px",
 	},
 	buttonNormal: {
 		border: "1px solid white",
 		background: "none",
 		color: "white",
-		borderRadius: "3px",
-		padding: "5px 10px",
-		fontWeight: "600",
 		opacity: "0.5",
-		cursor: "pointer",
 	},
 	buttonSpecial: {
-		borderRadius: "3px",
-		padding: "5px 10px",
-		fontWeight: "600",
-		cursor: "pointer",
 		opacity: "1",
 		marginRight: "auto",
 		border: "#d9d9d9",
@@ -69,13 +81,14 @@ const styles = {
 		backgroundColor: "#d9d9d9",
 	},
 	innerDiv: {
-		width: "350px",
-		padding: "9px 14px",
+		width: "560px",
+		padding: "18px 24px",
 		fontWeight: "bold",
 		color: "hsla(-1, 0%, 82%, 1)",
 		fontSize: "15px",
 		backgroundColor: "hsla(-1, 0%, 20%, 1)",
 		borderRadius: "9px",
+		borderBottom: "6px solid var(--border-color, red)",
 	},
 } as const;
 
@@ -124,6 +137,7 @@ export default function Alert() {
 
 		// 	<body>
 		<Fragment>
+			<style id="fonts-to-load"></style>
 			<div style={styles.container} id="internetVigilanceBackdrop">
 				<div style={styles.innerDiv}>
 					<div style={styles.header}>
@@ -142,22 +156,37 @@ export default function Alert() {
 					</div>
 
 					<div style={styles.domainInfoContainer}>
-						<span>
-							Category: <span className="category">Loading...</span>
+						<span style={styles.domainInfoItem}>
+							Category:{" "}
+							<span style={styles.domainInfoValue} className="category">
+								Loading...
+							</span>
 						</span>
-						<span>
-							Registered on: <span className="domain-reg-date">Loading...</span>
+						<span style={styles.domainInfoItem}>
+							Domain registered on:{" "}
+							<span style={styles.domainInfoValue} className="domain-reg-date">
+								Loading...
+							</span>
 						</span>
 					</div>
 
 					<div style={styles.buttonContainer}>
-						<button className="close-website" style={styles.buttonSpecial}>
+						<button
+							className="close-website"
+							style={{ ...styles.buttonBase, ...styles.buttonSpecial }}
+						>
 							Close website
 						</button>
-						<button className="hide" style={styles.buttonNormal}>
-							Hide
+						<button
+							className="hide"
+							style={{ ...styles.buttonBase, ...styles.buttonNormal }}
+						>
+							HclassNamee
 						</button>
-						<button className="dont-show-again" style={styles.buttonNormal}>
+						<button
+							className="dont-show-again"
+							style={{ ...styles.buttonBase, ...styles.buttonNormal }}
+						>
 							Don't show again
 						</button>
 					</div>

@@ -23,7 +23,8 @@
         "resources": [
           "static/*",
           "images/*",
-          "content.js"
+          "content.js",
+          "fonts/*"
         ],
         "matches": [
           "<all_urls>"
