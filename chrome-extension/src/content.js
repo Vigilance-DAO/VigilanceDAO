@@ -242,24 +242,25 @@ async function changeNetwork(chainID) {
 /**
  * @type {HTMLImageElement | null}
  */
-let alertHandle = null;
+let alertVerified = null;
 
 /**
  * Displays a Vigilance DAO logo in the bottom-right corner of the window.
  */
 function displayVerifiedAlert() {
-	if (alertHandle) return;
+	if (alertVerified) return;
 
-	alertHandle = document.createElement("img");
-	alertHandle.src = chrome.runtime.getURL("images/icon48.png");
+	alertVerified = document.createElement("img");
+	alertVerified.src = chrome.runtime.getURL("images/icon48.png");
+	alertVerified.title = "Verified by Vigilance DAO";
 
-	alertHandle.style.position = "fixed";
-	alertHandle.style.bottom = "clamp(10px, 2vh, 30px)";
-	alertHandle.style.right = "clamp(10px, 3vw, 30px)";
-	alertHandle.style.zIndex = "10000";
-	alertHandle.style.cursor = "pointer";
-	alertHandle.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
-	document.body.append(alertHandle);
+	alertVerified.style.position = "fixed";
+	alertVerified.style.bottom = "clamp(10px, 2vh, 30px)";
+	alertVerified.style.right = "clamp(10px, 3vw, 30px)";
+	alertVerified.style.zIndex = "10000";
+	alertVerified.style.cursor = "pointer";
+	alertVerified.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
+	document.body.append(alertVerified);
 }
 
 /**
