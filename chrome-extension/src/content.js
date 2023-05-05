@@ -283,11 +283,8 @@ async function createAlertDialog(alertInfo) {
 	if (alertDialog.innerHTML != "") return;
 
 	alertDialog.style.borderRadius = "9px";
-	alertDialog.style.position = "fixed";
-	alertDialog.style.bottom = "25px";
-	alertDialog.style.right = "clamp(10px, 3vw, 30px)";
 	alertDialog.style.zIndex = "10000";
-	alertDialog.style.margin = "0 0 0 auto";
+	alertDialog.style.margin = "auto clamp(10px, 3vw, 30px) 25px auto";
 	alertDialog.style.height = "fit-content";
 	alertDialog.style.border = "none";
 	alertDialog.style.padding = "0";
@@ -355,8 +352,9 @@ async function createAlertDialog(alertInfo) {
 			alertDialog.close();
 		}
 	});
+	alertDialog.className = "____vigilance-dao-alert-dialog____";
 	document.body.appendChild(alertDialog);
-	alertDialog.show();
+	alertDialog.showModal();
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -400,6 +398,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 			let description = "";
 			let category;
 			let imageSrc = chrome.runtime.getURL("images/icon128.png");
+			if (data.scamInfo == undefined) {
+				data.scamInfo = {};
+			}
 			if (data.isNew) {
 				heading = "Be Cautious";
 				description =

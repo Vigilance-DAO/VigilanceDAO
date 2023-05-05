@@ -59,6 +59,7 @@ button.special {
 	margin-bottom: 8px;
 	font-size: 19px;
 	line-height: 22.3px;
+	width: 90%;
 }
 .credits {
 	grid-area: credit;

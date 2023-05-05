@@ -41,6 +41,9 @@
           "ethers.umd.min.js",
           "detect-provider.min.js",
           "content.js"
+        ],
+        "css": [
+          "content.css"
         ]
       }
     ]
