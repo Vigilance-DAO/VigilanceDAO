@@ -231,7 +231,7 @@ iframe.style.top = "0px";
 iframe.style.right = "0px";
 iframe.style.zIndex = "9000000000000000000";
 iframe.frameBorder = "none"; 
-iframe.src = chrome.runtime.getURL("index.html")
+iframe.src = chrome.runtime.getURL("static/index.html")
 document.body.appendChild(iframe);
 // iframe.innerHTML
 function toggle(){
