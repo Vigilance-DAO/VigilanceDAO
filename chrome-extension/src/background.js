@@ -575,6 +575,9 @@ async function processTab(tab) {
 // process tab on tab update
 chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 	console.log("tabs onUpdated", tabId, info, tab);
+	if (info.url == undefined && info.status == undefined) {
+		return;
+	}
 	processTab(tab);
 });
 
