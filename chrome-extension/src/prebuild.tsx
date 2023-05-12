@@ -3,13 +3,32 @@ import { readFile, rm } from "fs/promises";
 import { outputFile } from "fs-extra";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import Alert from "./prebuild-components/alert";
-import Index from "./prebuild-components/index";
+import * as Alert from "./prebuild-components/alert";
+import * as Index from "./prebuild-components/index";
 
-const components = [Alert, Index] as const;
+interface PrebuildComponentModule {
+	default: () => JSX.Element;
+	config?: {
+		/**
+		 * @default false
+		 */
+		skipTemplate?: boolean;
+		jsFile?: string;
+	};
+}
 
-const template = (content: string, javascript?: string, css?: string) => {
-	return `<!DOCTYPE html>
+const components: readonly PrebuildComponentModule[] = [Alert, Index] as const;
+
+const template = (
+	content: string,
+	jsFile?: string,
+	css?: string,
+	skipTemplate?: boolean
+) => {
+	if (skipTemplate) {
+		return (css == undefined ? "" : `<style>${css}</style>`).concat(content);
+	} else {
+		return `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
@@ -25,40 +44,54 @@ const template = (content: string, javascript?: string, css?: string) => {
 	${css == undefined ? "" : `<style>${css}</style>`}
 </head>
 <body>
-	${css?.includes("index.css") ? `<div id="root">${content}</div>` : content}
-	${javascript == undefined ? "" : `<script>${javascript}</script>`}
+	${
+		css?.includes("index.css") || css?.includes("App.css")
+			? `<div id="root">${content}</div>`
+			: content
+	}
+	${jsFile == undefined ? "" : `<script src="${jsFile}"></script>`}
 </body>
 </html>
 `;
+	}
 };
 
 export function run() {
 	return Promise.all(
-		components.map(async (component) => {
+		components.map(async (componentModule) => {
+			const component = componentModule.default;
 			const rendered = renderToStaticMarkup(component());
 			const baseName = component.name.toLowerCase();
-			const jsFile = join("build", baseName.concat(".js"));
-			const cssFile = join("build", baseName.concat(".css"));
+			const jsFile =
+				componentModule.config?.jsFile ||
+				"../prebuild-components/".concat(baseName.concat(".js"));
+			const cssFile = join(
+				"build/prebuild-components",
+				baseName.concat(".css")
+			);
 
-			let cssContent = undefined,
-				jsContent = undefined;
+			let cssContent = undefined;
 			try {
 				cssContent = await readFile(cssFile, "utf-8");
-
+				const lines = cssContent.split("\n");
+				if (lines.at(-2)?.startsWith("/*# sourceMappingURL")) {
+					lines[lines.length - 2] = "";
+					cssContent = lines.join("\n");
+				}
 				// await rm(cssFile);
-			} catch (_e) {}
-
-			try {
-				jsContent = await readFile(jsFile, "utf-8");
-
-				// await rm(jsFile);
 			} catch (_e) {}
 
 			const destinationFile = join("./build/static/", baseName.concat(".html"));
 			console.log("Writing to", destinationFile);
 			return outputFile(
 				destinationFile,
-				template(rendered, jsContent, cssContent)
+
+				template(
+					rendered,
+					jsFile,
+					cssContent,
+					componentModule.config?.skipTemplate
+				)
 			).catch(console.error);
 		})
 	);

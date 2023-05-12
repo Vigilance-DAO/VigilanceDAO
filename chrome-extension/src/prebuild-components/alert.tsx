@@ -1,48 +1,36 @@
 import React, { Fragment } from "react";
+import "./alert.css";
 
-const componentStyles: Record<string, React.CSSProperties> = {
-	internetVigilanceBackdrop: {
-		backgroundColor: "rgb(0 0 0 / 45%)",
-		width: "100%",
-		minHeight: "100vh",
-		position: "absolute",
-		top: 0,
-		left: 0,
-		fontFamily: "sans-serif",
-		lineHeight: "20px",
-		zIndex: 1000000000000000,
-	},
-	heading: { margin: "10px 0", fontSize: 20 },
-	innerDiv: {
-		width: 350,
-		border: "10px solid #0b182c",
-		padding: 10,
-		borderRadius: 10,
-		backgroundColor: "#f3f6fb",
-		fontWeight: "bold",
-		position: "fixed",
-		top: 10,
-		right: 10,
-		color: "black",
-		fontSize: 16,
-	},
-	closeInternetVigilance: {
-		background: "#5e542d",
-		border: "none",
-		padding: "5px 20px",
-		marginBottom: 10,
-		color: "white",
-		fontSize: 13,
-	},
-	closeInternetVigilanceWithNoMoreShow: {
-		background: "#5e542d",
-		border: "none",
-		padding: "5px 20px",
-		marginBottom: 10,
-		color: "white",
-		fontSize: 13,
-	},
-} as const;
+declare const psl: {
+	parse: (...args: any[]) => any;
+};
+declare const _url: any;
+declare const domain: any;
+
+function getStorageKey(url: string) {
+	return "vigil__".concat(url);
+}
+
+if (typeof window != "undefined") {
+	window.onload = () => {
+		console.log("hi from alert");
+		let hostname = window.location.hostname;
+		var parsed = psl.parse(_url.hostname);
+		let url = parsed.domain;
+		if (!url) {
+			console.log("no url to show in alert iframe");
+		}
+		const key = getStorageKey(url);
+		chrome.storage.sync.get([key], async (items) => {
+			console.log(domain);
+			document.getElementById("domainName")!.innerHTML = domain;
+		});
+	};
+}
+
+export const config = {
+	skipTemplate: true,
+};
 
 export default function Alert() {
 	return (
@@ -58,57 +46,43 @@ export default function Alert() {
 
 		// 	<body>
 		<Fragment>
-			<script
-				dangerouslySetInnerHTML={{
-					__html: `function getStorageKey(url) {
-            return "vigil__".concat(url);
-        }
+			<div className="container" id="internetVigilanceBackdrop">
+				<div className="inner-div">
+					<div className="header">
+						<h1 className="heading">Likely Dangerous website</h1>
+						<p className="description">
+							We have reports that this could be a fraudulent website
+						</p>
+						<span className="credits">Powered by Vigilance DAO</span>
+						<img className="status-image" src="./../images/dangerous.png" />
+					</div>
 
-        let hostname = window.location.hostname
-        var parsed = psl.parse(_url.hostname);
-        let url = parsed.domain
-        if (!url) {
-            console.log('no url to show in alert iframe')
-        }
-        const key = getStorageKey(url)
-        chrome.storage.sync.get([key], async (items) => {
-            document.getElementById('domainName').innerHTML = domain
-        })`,
-				}}
-			></script>
-			<div
-				style={componentStyles.internetVigilanceBackdrop}
-				id="internetVigilanceBackdrop"
-			>
-				<div style={componentStyles.innerDiv}>
-					<h1 style={componentStyles.heading}>Internet Vigilance</h1>
-					<hr />
-					<p>
-						Domain: <span id="domainName">Loading...</span>
-					</p>
-					<p>
-						Registered on: <span id="domainRegDate">Loading...</span>
-					</p>
-					<p>
-						Warning: This is a newly registered domain. While most newly built
-						websites are safe, a few may be created for fraudulent purposes.
-					</p>
-					<p>
-						Please do necessary research before perfoming any financial
-						transactions or entering your passwords.
-					</p>
-					<button
-						id="closeInternetVigilance"
-						style={componentStyles.closeInternetVigilance}
-					>
-						Close
-					</button>
-					<button
-						id="closeInternetVigilanceWithNoMoreShow"
-						style={componentStyles.closeInternetVigilanceWithNoMoreShow}
-					>
-						Do not show for this website again.
-					</button>
+					<div className="domain-info-container">
+						<span className="domain-info-item">
+							Category:{" "}
+							<span className="domain-info-value" id="category">
+								Loading...
+							</span>
+						</span>
+						<span className="domain-info-item">
+							Domain registered on:{" "}
+							<span className="domain-info-value" id="domain-reg-date">
+								Loading...
+							</span>
+						</span>
+					</div>
+
+					<div className="button-container">
+						<button id="close-website" className="special">
+							Close website
+						</button>
+						<button id="hide" className="normal">
+							Hide
+						</button>
+						<button id="dont-show-again" className="normal">
+							Don't show again
+						</button>
+					</div>
 				</div>
 			</div>
 		</Fragment>
