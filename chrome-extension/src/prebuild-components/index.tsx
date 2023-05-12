@@ -71,12 +71,12 @@ export default function Index(props?: {
 					level={1}
 					style={{ color: "white", marginTop: "15px", marginBottom: "5px" }}
 				>
-					Internet Vigilance
+					Web3 Security
 				</Typography.Title>
 				<Typography.Paragraph
 					style={{ color: "white", fontSize: "12px", textAlign: "center" }}
 				>
-					Powered by Blockchain
+					Powered by Vigilance DAO
 				</Typography.Paragraph>
 				<Divider
 					style={{

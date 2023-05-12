@@ -384,6 +384,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		} else if (msg.type == "get-stake-amount-2") {
 			await getStakeAmount();
 		} else if (msg.type == "processing-finished") {
+			console.log("processing-finished", msg.data);
 			/**
 			 * @type {import("./types").ComputedDomainStorageItem}
 			 */

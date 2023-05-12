@@ -5,6 +5,7 @@ import { rm } from "fs/promises";
 import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 import { parse } from "dotenv";
+import * as envFilePlugin from 'esbuild-envfile-plugin';
 
 /**
  *

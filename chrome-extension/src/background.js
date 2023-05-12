@@ -17,6 +17,7 @@ const env = {
 		"https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao",
 };
 
+
 /**
  * @typedef ActionBadgeValues
  * @prop {string} [text]
@@ -407,6 +408,13 @@ async function fetchDomainInfo(simplifiedUrl) {
  * @param {chrome.tabs.Tab} tab
  */
 async function processTab(tab) {
+
+	// let queryOptions = { active: true, lastFocusedWindow: true };
+	// // `tab` will either be a `tabs.Tab` instance or `undefined`.
+	// let [currentTab] = await chrome.tabs.query(queryOptions);
+	// console.log("currentTab", currentTab, tab)
+	// if (tab.id != currentTab?.id) return;
+
 	// if(tab.status=='complete') {
 	//     chrome.tabs.query({
 	//         active: true,
@@ -431,10 +439,190 @@ async function processTab(tab) {
 		// Set chrome extension icon info to show the loading
 		updateActionBadge("loading");
 
-		if (url == undefined) {
-			return;
+		// use chrome.storage.sync API to load the data about domain
+		// from chrome storage
+		const keysToLoad = [key, DONT_SHOW_AGAIN_DOMAINS_KEY];
+		/**
+		 * Already existing items in the storage
+		 * @type {import("./types").StorageResult}
+		 */
+		const storageItems = await chrome.storage.sync
+			.get(keysToLoad)
+			.catch((error) => {
+				console.warn("Error while loading items from storage for", keysToLoad);
+				console.warn(error);
+				return {};
+			});
+
+		const { [DONT_SHOW_AGAIN_DOMAINS_KEY]: _unused, ...existingStorageItems } =
+			storageItems;
+
+		let createdOn = await getDomainRegistrationDate(existingStorageItems, url);
+
+		let now = new Date();
+
+		/**
+		 * Contains the information about the domain
+		 * it will be saved to the storage
+		 *
+		 * @type {import("./types").DomainStorageItem}
+		 */
+		let storageItem = existingStorageItems[key] || (await fetchDomainInfo(url));
+
+		const fromStorage = existingStorageItems[key] != undefined;
+		let isUpdated = !fromStorage;
+		const lastValidationStateUpdatedOn = storageItem.updatedon;
+
+		// if it's from storage and the info was fetched 5minutes before,
+		// revalidate the validationInfo property
+		if (
+			fromStorage &&
+			(lastValidationStateUpdatedOn == undefined ||
+				now.getTime() - new Date(lastValidationStateUpdatedOn).getTime() >=
+					5 * 60 * 1000)
+		) {
+			// revalidate
+			const _validationInfo = await getDomainValidationInfo(
+				url,
+				tab,
+				createdOn
+			);
+			if (_validationInfo != undefined) {
+				isUpdated = true;
+				storageItem.validationInfo = _validationInfo;
+			}
 		}
-		lastUrl = url;
+
+		if (isUpdated) {
+			chrome.storage.sync.set({
+				[key]: storageItem,
+			});
+		}
+
+		// This can be used to show alert.html popup in tab
+		// content.js listens to this msg and shows the popup
+		// if (
+		// 	createdOn &&
+		// 	(isSoftWarning(createdOn) || storageItem.validationInfo?.isScamVerified)
+		// ) {
+		// 	sendMessage(tab, "show-warning", {
+		// 		domain: url,
+		// 		createdOn: createdOn ? createdOn.getTime() : 0,
+		// 		type: storageItem.validationInfo?.type,
+		// 		msg: storageItem.validationInfo?.msg,
+		// 		description: storageItem.validationInfo?.description,
+		// 	});
+		// }
+
+		// If we know from blockchain or our Backend API that a domain is scam
+		// then we show the ❌ icon on extension
+		if (storageItem.validationInfo?.isScamVerified) {
+			chrome.action.setIcon({
+				path: {
+					19: "/images/alerticon19-red.png",
+					38: "/images/alerticon38-red.png",
+				},
+			});
+			chrome.action.setBadgeText({ text: "❌" });
+			chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
+			storageItem.validationInfo.type = "error";
+			storageItem.validationInfo.msg = "Verified as fraudulent domain";
+		} else if (storageItem.validationInfo?.isLegitVerified) {
+			// If we know from blockchain or our Backend API that a domain is legit
+			// then we show the ✔️ icon on extension
+			chrome.action.setIcon({
+				path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
+			});
+			chrome.action.setBadgeText({ text: "✔️" });
+			chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
+			storageItem.validationInfo.type = "success";
+			storageItem.validationInfo.msg = "Verified as legit";
+		} else if (createdOn && isSoftWarning(createdOn)) {
+			// if a domain is registered recently then we show the ⚠️ icon on extension
+			console.log("changing icon");
+			chrome.action.setIcon({
+				path: {
+					19: "/images/alerticon19-red.png",
+					38: "/images/alerticon38-red.png",
+				},
+			});
+			storageItem.validationInfo?.openScamReports
+				? chrome.action.setBadgeText({
+						text: storageItem.validationInfo.openScamReports + "",
+				  })
+				: chrome.action.setBadgeText({ text: "1" });
+			chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
+			if (storageItem.validationInfo) {
+				storageItem.validationInfo.type = "warning";
+				// if its recent and has open scam reports then we show the warning
+				// with a custom msg
+				if (storageItem.validationInfo.openScamReports > 0) {
+					storageItem.validationInfo.msg =
+						"Domain registed recently and has `OPEN` fraud reports";
+					storageItem.validationInfo.description =
+						"The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.";
+				} else {
+					storageItem.validationInfo.msg = "Domain registed recently";
+					storageItem.validationInfo.description =
+						"Majority of new domains are legit but some could be scam. Please maintain caution, especially while performing financial transactions.";
+				}
+			}
+		} else if (storageItem.validationInfo?.openScamReports) {
+			// domain not recently registered but has open scam reports
+			console.log("changing icon");
+			chrome.action.setIcon({
+				path: {
+					19: "/images/alerticon19-red.png",
+					38: "/images/alerticon38-red.png",
+				},
+			});
+			storageItem.validationInfo.openScamReports
+				? chrome.action.setBadgeText({
+						text: storageItem.validationInfo.openScamReports + "",
+				  })
+				: chrome.action.setBadgeText({ text: "1" });
+			chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
+			storageItem.validationInfo.type = "warning";
+			storageItem.validationInfo.msg = "Has `OPEN` fraud reports";
+			storageItem.validationInfo.description =
+				"The legitimacy of this domain is currently in debate and being validated. Please maintain caution, especially while performing financial transactions.";
+		} else {
+			// Fallback
+			chrome.action.setIcon({
+				path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
+			});
+			chrome.action.setBadgeText({ text: "0" });
+			chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
+		}
+
+		// Update the tab with the validation info
+		// index.html catches this info and shows it in the popup
+		sendMessage(tab, "domain", {
+			isSuccess: true,
+			domain: url,
+			createdOn: createdOn ? createdOn.getTime() : 0,
+			type: storageItem.validationInfo?.type,
+			msg: storageItem.validationInfo?.msg,
+			description: storageItem.validationInfo?.description,
+		});
+
+		// if (
+		// 	storageItems[DONT_SHOW_AGAIN_DOMAINS_KEY] &&
+		// 	storageItems[DONT_SHOW_AGAIN_DOMAINS_KEY].includes(url)
+		// ) {
+		// 	return;
+		// }
+
+		/**
+		 * @type {import("./types").ComputedDomainStorageItem}
+		 */
+		const computedStorageItem = {
+			...storageItem,
+			isNew: storageItem.createdon
+				? isSoftWarning(new Date(storageItem.createdon))
+				: false,
+		};
+		sendMessage(tab, "processing-finished", computedStorageItem);
 	}
 
 	// chrome.action.setBadgeTextColor({color: "black"});

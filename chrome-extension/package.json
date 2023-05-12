@@ -48,6 +48,7 @@
     "web3.storage": "4.4.0"
   },
   "devDependencies": {
+    "esbuild-envfile-plugin": "^1.0.5",
     "mkdirp": "^3.0.0"
   }
 }
