@@ -264,7 +264,7 @@ export default function Index(props?: {
 							className="site-collapse-custom-panel"
 						>
 							<a
-								href="https://discord.truts.xyz/"
+								href="https://discord.gg/wTvGsNBHek"
 								target={"_blank"}
 								style={{ marginRight: "10px" }}
 							>

@@ -76,6 +76,14 @@ const esbuildOptions = {
 			},
 			watch: isWatching,
 		}),
+		copy({
+			resolveFrom: "cwd",
+			assets: {
+				from: "./assets/**/*",
+				to: ["./build/static/assets"],
+			},
+			watch: isWatching,
+		}),
 	],
 };
 
@@ -107,6 +115,7 @@ const prebuildOptions = {
 					try {
 						await rm("./build/static", {
 							recursive: true,
+							force: true
 						});
 					} catch (_e) {
 						console.log(_e);

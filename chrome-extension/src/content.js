@@ -127,6 +127,7 @@ async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 		imageUrls,
 		comments,
 		stakeETH,
+		domain
 	});
 	let _provider = new ethers.providers.Web3Provider(provider, "any");
 	const contract = new ethers.Contract(address, abi, _provider);

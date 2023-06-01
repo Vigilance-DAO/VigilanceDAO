@@ -75,12 +75,14 @@ async function getDomainInfo(client: PoolClient, domain: string): Promise<Domain
 
 	const fromDb = await getDomainCreatedInfoFromDb(client, domain)
 	if (fromDb) {
+		console.log('loading from db', domain, fromDb)
 		domainInfo.createdon = fromDb.createdon;
 		domainInfo.updatedon = fromDb.updatedon;
 		domainInfo.recordCreatedOn = fromDb.recordCreatedOn;
 		domainInfo.isValid = fromDb.isValid;
 	} else {
 		const results = await whois(domain);
+		console.log('reading new domain info', domain, results);
 		domainInfo.createdon = new Date(results.creationDate)
 		domainInfo.updatedon = new Date(results.updatedDate)
 		domainInfo.isValid = true;
