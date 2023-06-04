@@ -39,6 +39,7 @@
     "fs-extra": "^11.1.1",
     "graphql-request": "5.0.0",
     "metamask-extension-provider": "3.0.0",
+    "mixpanel-browser": "^2.47.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-ipfs-image": "0.6.0",

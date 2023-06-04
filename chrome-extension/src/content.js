@@ -1,4 +1,5 @@
 const createMetaMaskProvider = require("metamask-extension-provider");
+const mixpanel = require("mixpanel-browser")
 const { address, abi } = require("../constants");
 const { getFonts } = require("./fonts");
 
@@ -6,6 +7,9 @@ console.log("psl", psl);
 console.log("ethers", window.ethereum);
 let domain = "";
 // console.log('window', window)
+
+// initialize mixpanel with Project ID.
+mixpanel.init('054e76ef93470d554c616b4142434799', {debug: true});
 
 const env = {
 	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
@@ -83,6 +87,7 @@ function onUpdateChainID(chainId) {
 
 function onAccountChange(account) {
 	console.log("Account:", account);
+	mixpanel.identify(account);
 
 	sendMessageToBackground("wallet-connected", { account }).then((response) => {
 		console.log("message cb: onAccountChange", response);
@@ -120,6 +125,42 @@ async function getStakeAmount() {
 		console.log("message cb: getStakeAmount", response);
 	});
 }
+
+function trackSubmitReport(domain , isFraud, txHash) {
+	mixpanel.track("Submit Report",{
+		"domain" : domain,
+		"isFraud" : isFraud,
+		"txHash" : txHash
+	})
+}
+
+function trackDomainError(data) {
+	mixpanel.track("Domain Error", {
+		"domain" : data.domain,
+		"error" : data.error
+	})
+}
+
+function trackVisitedDomain(data) {
+	mixpanel.track("Visited Domain", {
+		"domain" : data.domain,
+		"createdOn" : data.createdon,
+		"hasScamReports" : data.validationInfo.isScamVerified,
+		"hasLegitReports" : data.validationInfo.isLegitVerified,
+		"IsCreatedRecently" : data.isNew,
+		"Report" : data.validationInfo.msg
+	})
+}
+
+const addScriptTagInPage = async () => {
+	const script = window.document.createElement("script");
+	let url = chrome.runtime?.getURL("inject.js");
+	console.log("url", url);
+	script.src = url;
+	(window.document.head || window.document.documentElement).appendChild(script);
+};
+
+addScriptTagInPage();
 
 async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 	console.log("submitting report", {
@@ -165,6 +206,7 @@ async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 			if (status == 1 || status == 0) {
 				onTransactionUpdate("submit-report", tx, true, null);
 				clearInterval(interval);
+				trackSubmitReport(domain , isFraud, tx)
 			}
 		}, 5000);
 	} catch (err) {
@@ -390,6 +432,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 			 * @type {import("./types").ComputedDomainStorageItem}
 			 */
 			const data = msg.data;
+			trackVisitedDomain(data)
 
 			if (data.validationInfo.isLegitVerified) {
 				displayVerifiedAlert();
@@ -434,6 +477,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 				imageSrc,
 				url: data.domain,
 			});
+		}
+		else if(msg.type == "domain-error") {
+			trackDomainError(msg.data)
 		}
 	})();
 });

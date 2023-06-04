@@ -279,6 +279,11 @@ async function getDomainValidationInfo(url, tab, createdOn) {
 			msg,
 			description,
 		});
+
+		sendMessage(tab, "domain-error", {
+			domain: url,
+			error : err
+		})
 		return;
 	}
 

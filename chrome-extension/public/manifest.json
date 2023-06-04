@@ -24,7 +24,8 @@
           "static/*",
           "images/*",
           "content.js",
-          "fonts/*"
+          "fonts/*",
+          "inject.js"
         ],
         "matches": [
           "<all_urls>"
