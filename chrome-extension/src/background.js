@@ -417,11 +417,12 @@ async function processTab(tab) {
 	//         console.log('url', tabs)
 	//     });
 	// }
-	if (
-		tab.url == undefined ||
-		tab.url == "" ||
-		tab.url.startsWith("chrome://")
-	) {
+	if (tab.url == undefined || tab.url == "") {
+		return;
+	}
+
+	if (tab.url.startsWith("chrome://")) {
+		updateActionBadge("reset");
 		return;
 	}
 
