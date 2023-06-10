@@ -11,7 +11,8 @@ try {
 
 const DONT_SHOW_AGAIN_DOMAINS_KEY = "dont_show_again_domains";
 const env = {
-	host: "http://localhost:4000", // backend API endpoint
+	// host: "http://localhost:4000", // backend API endpoint
+	host: 'https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com',
 	alertPeriod: 4 * 30 * 86400 * 1000,
 	SUBGRAPH_URL:
 		"https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao",
@@ -278,6 +279,11 @@ async function getDomainValidationInfo(url, tab, createdOn) {
 			msg,
 			description,
 		});
+
+		sendMessage(tab, "domain-error", {
+			domain: url,
+			error : err
+		})
 		return;
 	}
 

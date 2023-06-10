@@ -24,7 +24,7 @@ const Evidence: React.FC<{fileList: UploadFile[], setFileList: Function}> = (inp
     const [previewImage, setPreviewImage] = useState('');
     const [previewTitle, setPreviewTitle] = useState('');
     const [emptyList, setEmptyList] = useState<UploadFile[]>([]);
-    const web3storage_key = process.env.WEB3_STORAGE_KEY;
+    const web3storage_key = process.env.REACT_APP_WEB3_STORAGE_KEY;
 
 
     const handleCancel = () => setPreviewOpen(false);

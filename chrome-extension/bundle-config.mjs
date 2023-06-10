@@ -5,6 +5,7 @@ import { rm } from "fs/promises";
 import * as esbuild from "esbuild";
 import { copy } from "esbuild-plugin-copy";
 import { parse } from "dotenv";
+import * as envFilePlugin from 'esbuild-envfile-plugin';
 
 /**
  *
@@ -75,6 +76,14 @@ const esbuildOptions = {
 			},
 			watch: isWatching,
 		}),
+		copy({
+			resolveFrom: "cwd",
+			assets: {
+				from: "./assets/**/*",
+				to: ["./build/static/assets"],
+			},
+			watch: isWatching,
+		}),
 	],
 };
 
@@ -106,6 +115,7 @@ const prebuildOptions = {
 					try {
 						await rm("./build/static", {
 							recursive: true,
+							force: true
 						});
 					} catch (_e) {
 						console.log(_e);
