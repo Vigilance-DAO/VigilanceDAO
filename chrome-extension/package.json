@@ -8,7 +8,8 @@
     "dev": "node bundle-config.mjs --watch",
     "build:content": "browserify src/content.js -o build/content.js",
     "build:inject": "browserify src/inject.js -o build/inject.js",
-    "release": "yarn build && yarn build:content && yarn build:inject"
+    "copy:assets": "cp -r assets/ build/static/",
+    "release": "yarn build && yarn build:content && yarn build:inject && yarn copy:assets"
   },
   "keywords": [],
   "author": "",
