@@ -1,6 +1,7 @@
 const createMetaMaskProvider = require("metamask-extension-provider");
 const mixpanel = require("mixpanel-browser")
 const { address, abi } = require("../constants");
+const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
 
 console.log("psl", psl);
@@ -9,7 +10,7 @@ let domain = "";
 // console.log('window', window)
 
 // initialize mixpanel with Project ID.
-mixpanel.init('054e76ef93470d554c616b4142434799', {debug: true});
+mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
 
 const env = {
 	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
@@ -149,6 +150,8 @@ function trackVisitedDomain(data) {
 		"hasLegitReports" : data.validationInfo.isLegitVerified,
 		"IsCreatedRecently" : data.isNew,
 		"Report" : data.validationInfo.msg
+	}, (err) => {
+		console.log("mixpanel track visited domain", err)
 	})
 }
 
