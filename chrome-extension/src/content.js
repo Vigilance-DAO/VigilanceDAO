@@ -1,6 +1,7 @@
 const createMetaMaskProvider = require("metamask-extension-provider");
 const mixpanel = require("mixpanel-browser")
-const { address, abi, MIXPANEL_PROJECT_ID } = require("../constants");
+const { address, abi } = require("../constants");
+const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
 
 console.log("psl", psl);
@@ -149,6 +150,8 @@ function trackVisitedDomain(data) {
 		"hasLegitReports" : data.validationInfo.isLegitVerified,
 		"IsCreatedRecently" : data.isNew,
 		"Report" : data.validationInfo.msg
+	}, (err) => {
+		console.log("mixpanel track visited domain", err)
 	})
 }
 

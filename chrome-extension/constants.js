@@ -410,8 +410,6 @@ const abi = [
 
 const address = "0x68Db62ADCaADdb21cB000841f1F347A6d8bEED9b"
 
-MIXPANEL_PROJECT_ID = "054e76ef93470d554c616b4142434799"
-
 module.exports = {
-    abi, address, MIXPANEL_PROJECT_ID
+    abi, address
 }

@@ -1,5 +1,5 @@
 const mixpanel = require('mixpanel-browser');
-const { MIXPANEL_PROJECT_ID } = require('../constants');
+const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 
 (function() {
     const metamaskRequest = window.ethereum.request;

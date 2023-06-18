@@ -1,0 +1,5 @@
+MIXPANEL_PROJECT_ID = "059e33bfa6d7d402593dac5fa218f343"
+
+module.exports = {
+    MIXPANEL_PROJECT_ID,
+}
