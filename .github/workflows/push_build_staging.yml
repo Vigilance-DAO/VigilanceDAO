@@ -58,7 +58,7 @@ jobs:
       - name: Upload step
         run: |-
           cd chrome-extension
-          chrome-webstore-upload upload --source chrome-extension.zip --extension-id ${{ env.EXTENSION_ID }} --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }} --trusted-testers
+          chrome-webstore-upload upload --source chrome-extension.zip --extension-id ${{ env.EXTENSION_ID }} --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }}
       
       - name: Create Pre-Release
         id: create_release
@@ -66,8 +66,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: pre-release
+          release_name: Release ${{ github.sha }}
           draft: false
           prerelease: true
 
