@@ -283,27 +283,52 @@ async function changeNetwork(chainID) {
 }
 
 /**
- * @type {HTMLImageElement | null}
+ * @type {HTMLDivElement | null}
  */
-let alertVerified = null;
+let alertVerifiedContainer = null;
 
 /**
  * Displays a Vigilance DAO logo in the bottom-right corner of the window.
  */
 function displayVerifiedAlert() {
-	if (alertVerified) return;
+	if (alertVerifiedContainer) return;
 
-	alertVerified = document.createElement("img");
-	alertVerified.src = chrome.runtime.getURL("images/icon48.png");
-	alertVerified.title = "Verified by Vigilance DAO";
+	alertVerifiedContainer = document.createElement("div");
+	alertVerifiedContainer.style.zIndex = "10000";
+	alertVerifiedContainer.style.position = "fixed";
+	alertVerifiedContainer.style.bottom = "clamp(10px, 2vh, 30px)";
+	alertVerifiedContainer.style.right = "clamp(10px, 3vw, 30px)";
 
-	alertVerified.style.position = "fixed";
-	alertVerified.style.bottom = "clamp(10px, 2vh, 30px)";
-	alertVerified.style.right = "clamp(10px, 3vw, 30px)";
-	alertVerified.style.zIndex = "10000";
-	alertVerified.style.cursor = "pointer";
-	alertVerified.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
-	document.body.append(alertVerified);
+	const verifiedIcon = document.createElement("img");
+	verifiedIcon.src = chrome.runtime.getURL("images/icon48.png");
+	verifiedIcon.title = "Verified by Vigilance DAO";
+	verifiedIcon.style.cursor = "pointer";
+	verifiedIcon.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
+	alertVerifiedContainer.appendChild(verifiedIcon);
+
+	const closeIcon = document.createElement("span");
+	closeIcon.innerHTML = `<svg class="icon icon-tabler icon-tabler-x" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+   <path d="M18 6l-12 12"></path>
+   <path d="M6 6l12 12"></path>
+</svg>`;
+	closeIcon.title = "Close";
+	closeIcon.style.cursor = "pointer";
+	closeIcon.style.position = "absolute";
+	closeIcon.style.top = "-10px";
+	closeIcon.style.right = "-10px";
+	closeIcon.style.width = "16px";
+	closeIcon.style.height = "16px";
+	alertVerifiedContainer.appendChild(closeIcon);
+
+	closeIcon.addEventListener("click", () => {
+		if (alertVerifiedContainer) {
+			alertVerifiedContainer.remove();
+			alertVerifiedContainer = null;
+		}
+	});
+
+	document.body.append(alertVerifiedContainer);
 }
 
 /**
