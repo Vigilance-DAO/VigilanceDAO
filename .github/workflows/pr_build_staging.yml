@@ -30,8 +30,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: chrome-extension/package-lock.json
 
 
       - name: "Setup .env"
