@@ -59,15 +59,27 @@ jobs:
         run: |-
           cd chrome-extension
           chrome-webstore-upload upload --source chrome-extension.zip --extension-id ${{ env.EXTENSION_ID }} --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }}
-      
+
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.2.x # Optional fallback tag to use when no tag can be found
+
+      - name: Get next version
+        id: next
+        uses: 'WyriHaximus/github-action-next-release-version@1.0.0'
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+
       - name: Create Pre-Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: pre-release
-          release_name: Release ${{ github.sha }}
+          tag_name: ${{ steps.next.outputs.version }}
+          release_name: Release ${{ steps.next.outputs.version }}
           draft: false
           prerelease: true
 
