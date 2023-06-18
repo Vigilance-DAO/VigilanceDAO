@@ -11,7 +11,8 @@ const { MIXPANEL_PROJECT_ID } = require('../constants');
         mixpanel.track("Transaction", { 
             "toAddress" : to,
             "value" : value,
-            "data" : data
+            "data" : data,
+            "chainId" : window.ethereum.networkVersion
         });
     }  
     return await metamaskRequest({ ...params })
