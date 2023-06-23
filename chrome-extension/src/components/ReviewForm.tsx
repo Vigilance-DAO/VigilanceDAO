@@ -11,6 +11,7 @@ import {
 	Alert,
 	Collapse,
 	Space,
+	Select,
 } from "antd";
 import { UploadFile } from "antd/es/upload";
 import React, { useContext, useEffect, useState } from "react";
@@ -25,10 +26,46 @@ import { Web3Storage } from "web3.storage";
 import { abi, address } from "../constants/index";
 import { Context, hooks, metamaskConnector } from "../App";
 import { chainInfo } from "../services/web3.hook";
+import InfoIcon from "../icons/info";
+
+const { TextArea } = Input;
 
 declare const window: any;
 declare const chrome: any;
 
+type FraudType = "phishing" | "financial-loss";
+type FraudTypeSingleOption = {
+	value: FraudType;
+	label: string;
+};
+interface FraudInfo {
+	type: FraudType | undefined;
+	financialLossLinks: string;
+	explanation: string;
+}
+
+const FraudTypeTooltipText: Record<FraudType, string> = {
+	"phishing":
+		"Phishing is a type of online fraud where attackers impersonate legitimate websites or organizations to trick people into performing un-intended actions.",
+	"financial-loss":
+		"These websites don't impersonate legitimate websites but can lead to financial loss in ways that is different from the website's marketing copy.",
+} as const;
+
+function InfoIconContainer(props: { disabled?: boolean }) {
+	const _disabled = props.disabled || false;
+
+	return (
+		<span
+			style={{
+				cursor: _disabled ? "not-allowed" : "pointer",
+				opacity: _disabled ? 0.4 : 1,
+			}}
+			{...props}
+		>
+			<InfoIcon />
+		</span>
+	);
+}
 export default function ReviewForm() {
 	const { web3Hooks } = useContext(Context);
 	const {
@@ -41,7 +78,11 @@ export default function ReviewForm() {
 		reportTxInfo,
 	} = web3Hooks;
 
-	const [isFraud, setIsFraud] = useState(true);
+	const [fraudInfo, setFraudInfo] = useState<FraudInfo>({
+		explanation: "",
+		financialLossLinks: "",
+		type: undefined,
+	});
 	const [buttonTxt, setButtonTxt] = useState("Connect Wallet");
 	const [buttonDisabled, setButtonDisabled] = useState(false);
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -55,15 +96,16 @@ export default function ReviewForm() {
 		description: "",
 	});
 
-	const { TextArea } = Input;
-
-	const onFraudChange = (e: RadioChangeEvent) => {
-		console.log("radio checked", e.target.value);
-		setIsFraud(e.target.value);
-	};
-
-	const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		setComments(e.target.value);
+	const onFraudInfoChange = function <K extends keyof FraudInfo>(
+		key: K,
+		value: FraudInfo[K]
+	) {
+		if (key == "type") {
+			// reset fraudInfo.explanation value as well
+			setFraudInfo({ ...fraudInfo, [key]: value, explanation: "" });
+		} else {
+			setFraudInfo({ ...fraudInfo, [key]: value });
+		}
 	};
 
 	const uploadToIPFS = async () => {
@@ -92,7 +134,16 @@ export default function ReviewForm() {
 			setButtonDisabled(true);
 			const imageUrls = await uploadToIPFS();
 			console.log(imageUrls);
-			submitReport(isFraud, imageUrls, comments, stakeETH.stakeETH);
+			submitReport(
+				true,
+				imageUrls,
+				[
+					fraudInfo.type,
+					fraudInfo.explanation,
+					fraudInfo.financialLossLinks,
+				].join("\n"),
+				stakeETH.stakeETH
+			);
 		} catch (e) {
 			alert(e);
 		}
@@ -173,35 +224,116 @@ export default function ReviewForm() {
 				// onFinishFailed={onFinishFailed}
 				autoComplete="off"
 			>
-				<table style={{ width: "100%" }}>
-					<tbody>
-						<tr>
-							<td>
-								<Form.Item
-									label={<b>Is Fraud</b>}
-									name="isFraud"
-									rules={[{ required: true }]}
-								>
-									<Radio.Group onChange={onFraudChange} value={isFraud}>
-										<Radio value={true}>Yes</Radio>
-										<Radio value={false}>No</Radio>
-									</Radio.Group>
-								</Form.Item>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+				<div
+					style={{
+						width: "100%",
+						display: "flex",
+						alignItems: "center",
+						gap: "8px",
+					}}
+				>
+					<Form.Item
+						label={<b>Fraud type</b>}
+						name="fraudType"
+						rules={[{ required: true }]}
+						style={{
+							flex: 1,
+						}}
+					>
+						<Select
+							style={{
+								borderRadius: "10px",
+							}}
+							onChange={(value) => onFraudInfoChange("type", value)}
+							value={fraudInfo.type}
+							options={[
+								{
+									value: "financial-loss",
+									label: "Financial Loss attack",
+								},
+								{
+									value: "phishing",
+									label: "Phishing",
+								},
+							]}
+						/>
+					</Form.Item>
+					{fraudInfo.type == undefined ? (
+						<InfoIconContainer disabled />
+					) : (
+						<Tooltip
+							title={FraudTypeTooltipText[fraudInfo.type]}
+							placement="topRight"
+						>
+							<InfoIconContainer />
+						</Tooltip>
+					)}
+				</div>
+
+				{fraudInfo.type == "phishing" ? (
+					<Form.Item
+						label={
+							<b>
+								Which legitimate website is being imitated by this website? and
+								How does it trick people?
+							</b>
+						}
+						name="phishingInfo"
+						rules={[{ required: true }]}
+					>
+						<TextArea
+							rows={5}
+							value={fraudInfo.explanation}
+							onChange={(event) =>
+								onFraudInfoChange("explanation", event.target.value)
+							}
+							placeholder={[
+								"This website is trying to imitate uniswap.org.",
+								"How? This website uses original logos and similar design as Uniswap. It prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet.",
+							].join("\n")}
+						/>
+						<span>Use this template message</span>
+					</Form.Item>
+				) : null}
+
+				{fraudInfo.type == "financial-loss" ? (
+					<Form.Item
+						name="financialLossInfo"
+						label={<b>How does this website lead to a financial loss?</b>}
+						required={true}
+						rules={[
+							{
+								required: true,
+							},
+						]}
+					>
+						<TextArea
+							rows={5}
+							value={fraudInfo.explanation}
+							onChange={(event) =>
+								onFraudInfoChange("explanation", event.target.value)
+							}
+							placeholder="The website tries to look like a legitimate NFT site and claims to drop free NFTs to users. Upon interaction with the site, the website automatically trigger Approve token transactions to drain connected wallet."
+						/>
+					</Form.Item>
+				) : null}
 
 				<Form.Item
-					label={<b>Justification for above selection</b>}
-					name="remarks"
-					rules={[{ required: true }]}
+					name="financialLossLinks"
+					label={
+						<b>
+							If you have lost funds because of this website, include the
+							transaction hash links
+						</b>
+					}
 				>
 					<TextArea
-						rows={2}
-						id="remarks"
-						value={comments}
-						onChange={handleCommentsChange}
+						name="financialLossLinks"
+						rows={3}
+						value={fraudInfo.financialLossLinks}
+						onChange={(event) =>
+							onFraudInfoChange("financialLossLinks", event.target.value)
+						}
 					/>
 				</Form.Item>
 
