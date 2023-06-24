@@ -44,12 +44,21 @@ interface FraudInfo {
 	explanation: string;
 }
 
-const FraudTypeTooltipText: Record<FraudType, string> = {
-	"phishing":
-		"Phishing is a type of online fraud where attackers impersonate legitimate websites or organizations to trick people into performing un-intended actions.",
-	"financial-loss":
-		"These websites don't impersonate legitimate websites but can lead to financial loss in ways that is different from the website's marketing copy.",
-} as const;
+const FraudTypeTooltipText = () => (
+	<div>
+		<span>
+			Phishing: a type of online fraud where attackers impersonate legitimate
+			websites or organizations to trick people into performing un-intended
+			actions.
+		</span>
+		<br />
+		<span>
+			Financial Loss Attack: These websites don't impersonate legitimate
+			websites but can lead to financial loss in ways that is different from the
+			website's marketing copy.
+		</span>
+	</div>
+);
 
 function InfoIconContainer(props: { disabled?: boolean }) {
 	const _disabled = props.disabled || false;
@@ -249,7 +258,7 @@ export default function ReviewForm() {
 							options={[
 								{
 									value: "financial-loss",
-									label: "Financial Loss attack",
+									label: "Financial Loss Attack",
 								},
 								{
 									value: "phishing",
@@ -258,16 +267,9 @@ export default function ReviewForm() {
 							]}
 						/>
 					</Form.Item>
-					{fraudInfo.type == undefined ? (
-						<InfoIconContainer disabled />
-					) : (
-						<Tooltip
-							title={FraudTypeTooltipText[fraudInfo.type]}
-							placement="topRight"
-						>
-							<InfoIconContainer />
-						</Tooltip>
-					)}
+					<Tooltip title={<FraudTypeTooltipText />} placement="topRight">
+						<InfoIconContainer />
+					</Tooltip>
 				</div>
 
 				{fraudInfo.type == "phishing" ? (
