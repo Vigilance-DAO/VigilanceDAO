@@ -425,6 +425,75 @@ async function createAlertDialog(alertInfo) {
 	alertDialog.showModal();
 }
 
+const financialAlertDialog = document.createElement("dialog");
+
+/**
+ * @typedef FinancialAlertInfo
+ * @prop {string} contract
+ * @prop {string} createdOn
+ * @prop {"high"} drainedAccountsValue
+ * @prop {string} transactionsIn24hours
+ * @prop {string} transactionsIn30days
+ *
+ * @param {FinancialAlertInfo} alertInfo
+ */
+async function createFinancialAlertDialog(alertInfo) {
+	if (financialAlertDialog.innerHTML != "") return;
+
+	financialAlertDialog.style.borderRadius = "9px";
+	financialAlertDialog.style.zIndex = "10000";
+	financialAlertDialog.style.margin = "auto clamp(10px, 3vw, 30px) 25px auto";
+	financialAlertDialog.style.height = "fit-content";
+	financialAlertDialog.style.border = "none";
+	financialAlertDialog.style.padding = "0";
+
+	/**
+	 * @type {string[]}
+	 */
+	const innerHTMLParts = new Array(2).fill("");
+	// part 0 -> fonts
+	// part 1 -> financial-alert component content
+
+	innerHTMLParts[0] = `<style>${getFonts()}</style>`;
+	innerHTMLParts[1] = await fetch(
+		chrome.runtime.getURL("static/financial-alert.html")
+	)
+		.then((response) => response.text())
+		.catch((e) => {
+			console.error("Error while loading html from financial-alert.html", e);
+			return "";
+		});
+
+	const div = document.createElement("div");
+	const shadowRoot = div.attachShadow({ mode: "closed" });
+	financialAlertDialog.append(div);
+
+	shadowRoot.innerHTML = innerHTMLParts.join("");
+
+	const contractInfoElement = shadowRoot.querySelector(".contract-info");
+	const contractCreatedOnElement = shadowRoot.querySelector(
+		".contract-created-on"
+	);
+	const transactionsIn24hoursElement = shadowRoot.querySelector(
+		".transactions-in-day"
+	);
+	const transactionsIn30daysElement = shadowRoot.querySelector(
+		".transactions-in-month"
+	);
+	const drainedAccountsValueElement = shadowRoot.querySelector(
+		".drained-info .value"
+	);
+
+	contractInfoElement.innerHTML = alertInfo.contract;
+	contractCreatedOnElement.innerHTML = alertInfo.createdOn;
+	transactionsIn24hoursElement.innerHTML = alertInfo.transactionsIn24hours;
+	transactionsIn30daysElement.innerHTML = alertInfo.transactionsIn30days;
+	drainedAccountsValueElement.innerHTML = alertInfo.drainedAccountsValue;
+
+	document.body.appendChild(financialAlertDialog);
+	financialAlertDialog.showModal();
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
 
