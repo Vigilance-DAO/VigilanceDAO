@@ -19,7 +19,7 @@ declare const chrome: any;
 
 export default function ReviewForm() {
     const { web3Hooks } = useContext(Context);
-    const { connectWallet, submitReport, getStakeAmount, stakeETH, account, chainId, reportTxInfo } = web3Hooks
+    const { connectWallet, submitReport, getStakeAmount, switchNetwork, stakeETH, account, chainId, reportTxInfo } = web3Hooks
 
     const [isFraud, setIsFraud] = useState(true);
     const [buttonTxt, setButtonTxt] = useState("Connect Wallet")
@@ -36,6 +36,8 @@ export default function ReviewForm() {
     })
 
     const { TextArea } = Input;
+
+    const CHAIN_ID = parseInt(process.env.REACT_APP_DEFAULT_NETWORK)
     
     const onFraudChange = (e: RadioChangeEvent) => {
         console.log('radio checked', e.target.value);
@@ -78,21 +80,23 @@ export default function ReviewForm() {
     
     useEffect(() => {
         console.log('connectingWallet triggered', account, stakeETH, account, stakeETH)
-        if(account.loading) {
-            setButtonTxt("Connecting...")
-            setButtonDisabled(true)
-        } else if(stakeETH.loading){
-            setButtonTxt('loading...')
-            setButtonDisabled(true)
-        } else {
-            setButtonDisabled(false)
-            if(account.account && stakeETH.stakeETH == 0) {
+        if(chainId.chainId == CHAIN_ID) {
+            if(account.loading) {
+                setButtonTxt("Connecting...")
+                setButtonDisabled(true)
+            } else if(stakeETH.loading){
                 setButtonTxt('loading...')
                 setButtonDisabled(true)
-                getStakeAmount()
-            } else if(account.account && stakeETH.stakeETH != 0) {
-                setButtonTxt("Report")
+            } else {
                 setButtonDisabled(false)
+                if(account.account && stakeETH.stakeETH == 0) {
+                    setButtonTxt('loading...')
+                    setButtonDisabled(true)
+                    getStakeAmount()
+                } else if(account.account && stakeETH.stakeETH != 0) {
+                    setButtonTxt("Report")
+                    setButtonDisabled(false)
+                }
             }
         }
 
@@ -120,9 +124,23 @@ export default function ReviewForm() {
         })
     }, [reportTxInfo])
 
+    useEffect(() => {
+        if(chainId.loading) {
+            setButtonTxt("Switching...")
+            setButtonDisabled(true)
+        } else if(chainId.chainId != CHAIN_ID && account.account) {
+            setButtonTxt("Switch Network")
+        } else if(chainId.chainId == CHAIN_ID && account.account) {
+            setButtonDisabled(false)
+            setButtonTxt("Report")
+        }
+    }, [chainId])
+
     async function handleButtonClick() {
         if(!account.account) {
             connectWallet()
+        } else if(buttonTxt == 'Switch Network') {
+            switchNetwork()
         } else if(buttonTxt == 'Report') {
             reportDomain()
         } else {
@@ -170,6 +188,12 @@ export default function ReviewForm() {
                 
                 <Evidence fileList={fileList} setFileList={setFileList}></Evidence>
                 <div style={{display: 'flex'}}>
+                    {chainId.chainId != CHAIN_ID && account.account?
+                    <div>
+                    <p style={{paddingRight: '25px', paddingBlock: '2px', color: 'red', fontWeight: '600', fontSize: '13px'}}>Incorrect Network</p>
+                    </div>
+                    :
+                    <div>
                     {account.account ? 
                         <Tooltip 
                             title="This is required to create a report. If deemed correct, you get your stake back along with additional rewards. If incorrect, entire stake is slashed."
@@ -183,6 +207,8 @@ export default function ReviewForm() {
                             </Button>
                         </Tooltip>
                         : <></>
+                    }
+                    </div>
                     }
                     <Button 
                         type="primary" 
