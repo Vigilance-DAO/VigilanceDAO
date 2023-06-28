@@ -8,11 +8,14 @@ const { MIXPANEL_PROJECT_ID } = require("../privateenv");
         const { to, from, value, data } = params.params[0];
         mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
         mixpanel.identify(from);
-        mixpanel.track("Transaction", { 
+        const props = { 
             "toAddress" : to,
             "value" : value,
-            "data" : data
-        });
+            "data" : data,
+            "chainId" : window.ethereum.networkVersion
+        }
+        console.log('props', props)
+        mixpanel.track("Transaction", props);
     }  
     return await metamaskRequest({ ...params })
 }

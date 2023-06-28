@@ -226,6 +226,7 @@ async function connectWallet() {
 	// const provider = await detectEthereumProvider()
 	if (provider) {
 		// Prompt user for account connections
+		await checkNetwork();
 		await provider.send("eth_requestAccounts", []);
 		const account = provider.selectedAddress;
 		onAccountChange(account);
@@ -457,6 +458,13 @@ async function createAlertDialog(alertInfo) {
 	alertDialog.className = "____vigilance-dao-alert-dialog____";
 	document.body.appendChild(alertDialog);
 	alertDialog.showModal();
+}
+
+async function checkNetwork() {
+	let chainId = provider.chainId;
+	if (chainId != "0x13881") {
+		await changeNetwork("0x13881");
+	}
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
