@@ -219,13 +219,6 @@ async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 	}
 }
 
-async function checkNetwork() {
-	let chainId = provider.chainId;
-	if (chainId != "0x13881") {
-		await changeNetwork("0x13881");
-	}
-}
-
 async function connectWallet() {
 	console.log("connect wallet", ethers);
 	console.log("provider", provider);
@@ -233,7 +226,6 @@ async function connectWallet() {
 	// const provider = await detectEthereumProvider()
 	if (provider) {
 		// Prompt user for account connections
-		await checkNetwork()
 		await provider.send("eth_requestAccounts", []);
 		const account = provider.selectedAddress;
 		onAccountChange(account);
