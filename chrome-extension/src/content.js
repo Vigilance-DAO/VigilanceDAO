@@ -289,6 +289,11 @@ async function changeNetwork(chainID) {
  * @type {HTMLDivElement | null}
  */
 let alertVerifiedContainer = null;
+const CLOSE_ICON = `<svg class="icon icon-tabler icon-tabler-x" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+   <path d="M18 6l-12 12"></path>
+   <path d="M6 6l12 12"></path>
+</svg>`;
 
 /**
  * Displays a Vigilance DAO logo in the bottom-right corner of the window.
@@ -297,34 +302,60 @@ function displayVerifiedAlert() {
 	if (alertVerifiedContainer) return;
 
 	alertVerifiedContainer = document.createElement("div");
-	alertVerifiedContainer.style.zIndex = "10000";
-	alertVerifiedContainer.style.position = "fixed";
-	alertVerifiedContainer.style.bottom = "clamp(10px, 2vh, 30px)";
-	alertVerifiedContainer.style.right = "clamp(10px, 3vw, 30px)";
 
-	const verifiedIcon = document.createElement("img");
-	verifiedIcon.src = chrome.runtime.getURL("images/icon48.png");
-	verifiedIcon.title = "Verified by Vigilance DAO";
-	verifiedIcon.style.cursor = "pointer";
-	verifiedIcon.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
-	alertVerifiedContainer.appendChild(verifiedIcon);
+	const innerHTMLParts = new Array(2);
+	// part 0 -> fonts, css
+	// part 1 -> html
 
-	const closeIcon = document.createElement("span");
-	closeIcon.innerHTML = `<svg class="icon icon-tabler icon-tabler-x" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-   <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-   <path d="M18 6l-12 12"></path>
-   <path d="M6 6l12 12"></path>
-</svg>`;
-	closeIcon.title = "Close";
-	closeIcon.style.cursor = "pointer";
-	closeIcon.style.position = "absolute";
-	closeIcon.style.top = "-10px";
-	closeIcon.style.right = "-10px";
-	closeIcon.style.width = "16px";
-	closeIcon.style.height = "16px";
-	alertVerifiedContainer.appendChild(closeIcon);
+	innerHTMLParts[0] = `
+	<style>
+		${getFonts()}
+		:host {
+			z-index: 10000;
+			position: fixed;
+			bottom: clamp(10px, 2vh, 30px);
+			right: clamp(10px, 3vw, 30px);
+		}
+		img.verified-icon {
+			cursor: pointer;
+			filter: drop-shadow(0px 0px 10px #00eb18);
+		}
+		span.close-icon {
+			cursor: pointer;
+			position: absolute;
+			z-index: -1;
+			top: -10px;
+			right: -10px;
+			width: 16px;
+			height: 16px;
+			transition: opacity .3s ease-in-out, transform .2s ease-in-out;
+		}
+		div.container span.close-icon {
+			opacity: 0;
+			pointer-events: none;
+			transform: translate(-16px, 16px);
+		}
+		div.container:hover span.close-icon {
+			opacity: 1;
+			pointer-events: auto;
+			transform: translate(0, 0);
+		}
+	</style>`.trim();
 
-	closeIcon.addEventListener("click", () => {
+	const verifiedIconSrc = chrome.runtime.getURL("images/icon48.png");
+	innerHTMLParts[1] = `
+		<div class="container">
+			<img class="verified-icon" src="${verifiedIconSrc}" title="Verified by Vigilance DAO" />
+			<span class="close-icon" title="Close">
+				${CLOSE_ICON}
+			</span>
+		</div>
+	`;
+
+	const shadowRoot = alertVerifiedContainer.attachShadow({ mode: "closed" });
+	shadowRoot.innerHTML = innerHTMLParts.join("");
+
+	shadowRoot.querySelector(".close-icon").addEventListener("click", () => {
 		if (alertVerifiedContainer) {
 			alertVerifiedContainer.remove();
 			alertVerifiedContainer = null;
