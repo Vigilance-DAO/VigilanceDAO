@@ -180,8 +180,8 @@ async function getCreationDate(client: PoolClient, address: string): Promise<Str
 
   } catch (error) {
     console.log(error);  
-    return "NA";
   }
+  return "NA";
 }
 
 async function getContractInfo(client: PoolClient, address: string): Promise<any> {
@@ -209,8 +209,8 @@ async function getContractInfo(client: PoolClient, address: string): Promise<any
     };   
   }catch (error) {
     console.log(error);
-    return null;
   }
+  return null;
 }
 
 export { app };
