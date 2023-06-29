@@ -139,50 +139,49 @@ async function getDomainInfo(client: PoolClient, domain: string): Promise<Domain
 }
 
 async function getCreationDate(client: PoolClient, address: string): Promise<String> {
-
-  const query = 'SELECT "creationDate" FROM "ContractAddresses" WHERE "address" LIKE $1';
-  var contractData = await client.query(query, [address]);  
-  
-  if(contractData.rowCount == 0){
-    const query1 = 'INSERT INTO "ContractAddresses"("address") VALUES($1)';
-    await client.query(query1, [address]);
-    contractData = await client.query(query, [address]);
-  }
-  
-  var date = contractData.rows[0].creationDate;
-
-  if (date == "NA") {
-    const response = await fetch(
-      `https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${address}&apikey=${ETHERSCAN_API_KEY}`
-    );
-      
-    const data:any = await response.json();
-      
-    if (data.result == null) {
-      return date;
+  try {
+    
+    const query = 'SELECT "creationDate" FROM "ContractAddresses" WHERE "address" LIKE $1';
+    var contractData = await client.query(query, [address]);  
+    
+    if(contractData.rowCount == 0){
+      const query1 = 'INSERT INTO "ContractAddresses"("address") VALUES($1)';
+      await client.query(query1, [address]);
+      contractData = await client.query(query, [address]);
     }
+    
+    var date = contractData.rows[0].creationDate;
 
-    const txHash = data.result[0].txHash;
+    if (date == "NA") {
+      const response = await fetch(
+        `https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${address}&apikey=${ETHERSCAN_API_KEY}`
+      );
+        
+      const data:any = await response.json();
+        
+      if (data.result == null) {
+        return date;
+      }
 
-    try {
+      const txHash = data.result[0].txHash;
+
       const tx = await provider.getTransaction(txHash);
       if (tx?.blockHash) {
         const block = await provider.getBlock(tx.blockHash);
-        if(block) {
+      if(block) {
           date = new Date(block.timestamp * 1000);
           date = date.toISOString().slice(0, 10);
         } 
       } 
-    } catch (error) {
-      console.log(error);
-      return date;
+      const query2 = 'UPDATE "ContractAddresses" SET "creationDate"=$1 WHERE "address" LIKE $2';
+      await client.query(query2, [date, address]);
     }
+    return date;
 
-    const query2 = 'UPDATE "ContractAddresses" SET "creationDate"=$1 WHERE "address" LIKE $2';
-    await client.query(query2, [date, address]);
+  } catch (error) {
+    console.log(error);  
+    return "NA";
   }
-
-  return date;
 }
 
 async function getContractInfo(client: PoolClient, address: string): Promise<any> {
@@ -194,19 +193,24 @@ async function getContractInfo(client: PoolClient, address: string): Promise<any
   yesterday = Math.floor(yesterday);
   lastMonth = Math.floor(lastMonth);
 
-  const query = 'SELECT COUNT(DISTINCT "from") FROM "Transactions" WHERE "to" LIKE $1 AND "timeStamp" > $2';
+  try {
+    const query = 'SELECT COUNT(DISTINCT "from") FROM "Transactions" WHERE "to" LIKE $1 AND "timeStamp" > $2';
 
-  const transactionsLast24Hours = await client.query(query, [address, yesterday]);
+    const transactionsLast24Hours = await client.query(query, [address, yesterday]);
 
-  const transactionsLast30Days = await client.query(query, [address, lastMonth]);
+    const transactionsLast30Days = await client.query(query, [address, lastMonth]);
 
-  const date = await getCreationDate(client,address);
+    const date = await getCreationDate(client,address);
 
-  return { 
-    userCount24hours: transactionsLast24Hours.rows[0].count,
-    userCount30days: transactionsLast30Days.rows[0].count,
-    creationDate: date
-  };   
+    return { 
+      userCount24hours: transactionsLast24Hours.rows[0].count,
+      userCount30days: transactionsLast30Days.rows[0].count,
+      creationDate: date
+    };   
+  }catch (error) {
+    console.log(error);
+    return null;
+  }
 }
 
 export { app };
