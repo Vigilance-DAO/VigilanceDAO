@@ -1,32 +1,25 @@
+:host {
+	/* Will be set from javascript */
+	/* --border: 10px; */
+	/* --inner-border-radius: 10px; */
+}
+
 * {
 	box-sizing: border-box;
 }
 
 .container {
-	--border: 10px;
 	--icon-size: 70px;
 
 	padding: 25px 18px 10px;
-	border-radius: 10px;
+	border-radius: var(--inner-border-radius);
 	position: relative;
 	background: hsl(265, 100%, 92%);
 	font-family: Roboto;
 	max-width: 540px;
 	min-width: 470px;
 	overflow: hidden;
-}
-
-.container:before {
-	content: "";
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	z-index: -1;
-	background: linear-gradient(to bottom, hsl(265, 100%, 40%), hsl(265, 94%, 19%));
-	margin: calc(-1 * var(--border));
-	border-radius: inherit;
+	margin: var(--border);
 }
 
 .basic-info {

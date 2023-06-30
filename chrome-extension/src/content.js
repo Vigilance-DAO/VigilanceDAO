@@ -447,22 +447,31 @@ async function createFinancialAlertDialog(alertInfo) {
 		return;
 	}
 
-	financialAlertDialog.style.borderRadius = "9px";
+	const INNER_BORDER_RADIUS = 10;
+	const BORDER_WIDTH = 10;
+	const OUTER_BORDER_RADIUS = INNER_BORDER_RADIUS + BORDER_WIDTH;
+
+	financialAlertDialog.style.borderRadius =
+		OUTER_BORDER_RADIUS.toString().concat("px");
 	financialAlertDialog.style.zIndex = "10000";
 	financialAlertDialog.style.margin = "auto clamp(10px, 3vw, 30px) 25px auto";
 	financialAlertDialog.style.height = "fit-content";
 	financialAlertDialog.style.border = "none";
 	financialAlertDialog.style.padding = "0";
+	financialAlertDialog.style.background =
+		"linear-gradient(to bottom, hsl(265, 100%, 40%), hsl(265, 94%, 19%))";
 
 	/**
 	 * @type {string[]}
 	 */
 	const innerHTMLParts = new Array(2).fill("");
 	// part 0 -> fonts
-	// part 1 -> financial-alert component content
+	// part 1 -> css variables
+	// part 2 -> financial-alert component content
 
 	innerHTMLParts[0] = `<style>${getFonts()}</style>`;
-	innerHTMLParts[1] = await fetch(
+	innerHTMLParts[1] = `<style>:host { --border: ${BORDER_WIDTH}px; --inner-border-radius: ${INNER_BORDER_RADIUS}px; }</style>`;
+	innerHTMLParts[2] = await fetch(
 		chrome.runtime.getURL("static/financial-alert.html")
 	)
 		.then((response) => response.text())
@@ -490,12 +499,8 @@ async function createFinancialAlertDialog(alertInfo) {
 	const drainedAccountsValueElement = shadowRoot.querySelector(
 		".drained-info .value"
 	);
-	const proceedButton = shadowRoot.querySelector(
-		"#proceed-btn"
-	);
-	const closeButton = shadowRoot.querySelector(
-		"#close-btn"
-	);
+	const proceedButton = shadowRoot.querySelector("#proceed-btn");
+	const closeButton = shadowRoot.querySelector("#close-btn");
 
 	let formattedTransactionsIn30days = alertInfo.transactionsIn30days.toString();
 	if (alertInfo.transactionsIn30days >= 1000) {
