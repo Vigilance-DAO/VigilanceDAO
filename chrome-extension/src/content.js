@@ -522,13 +522,14 @@ async function createFinancialAlertDialog(alertInfo) {
 	financialAlertDialog.showModal();
 }
 
-createFinancialAlertDialog({
-	contract: "Uniswap V3 Router 0x00...34244 [>]",
-	createdOn: new Date().toDateString(),
-	drainedAccountsValue: "High",
-	transactionsIn24hours: 102,
-	transactionsIn30days: 1000,
-});
+// For testing only
+// createFinancialAlertDialog({
+// 	contract: "Uniswap V3 Router 0x00...34244 [>]",
+// 	createdOn: new Date().toDateString(),
+// 	drainedAccountsValue: "High",
+// 	transactionsIn24hours: 102,
+// 	transactionsIn30days: 1000,
+// });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
