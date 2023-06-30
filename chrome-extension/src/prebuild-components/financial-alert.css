@@ -127,9 +127,34 @@ h4 {
 	margin: auto;
 }
 
-.credits {
+.bottom-container {
+	display: flex;
+	align-items: center;
+}
+
+.credits{ 
+	margin-right: auto;
 	text-align: right;
 	color: hsl(264, 29%, 53%);
 	font-size: 14px;
 	font-weight: 700;
+}
+
+.bottom-container button  {
+	margin-left: 5px; 
+	border-radius: 3px;
+	padding: 5px 10px;
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 19px;
+	border: 2px solid rgb(223, 223, 223);
+	background: none;
+	opacity: 0.7;
+	transition: opacity .2s ease-in-out, border-color .2s ease-in-out;
+}
+
+.bottom-container button:hover {
+	opacity: 1;
+	border-color: hsl(265deg 94% 75%);
 }

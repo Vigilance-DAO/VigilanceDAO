@@ -490,6 +490,12 @@ async function createFinancialAlertDialog(alertInfo) {
 	const drainedAccountsValueElement = shadowRoot.querySelector(
 		".drained-info .value"
 	);
+	const proceedButton = shadowRoot.querySelector(
+		"#proceed-btn"
+	);
+	const closeButton = shadowRoot.querySelector(
+		"#close-btn"
+	);
 
 	let formattedTransactionsIn30days = alertInfo.transactionsIn30days.toString();
 	if (alertInfo.transactionsIn30days >= 1000) {
@@ -505,10 +511,24 @@ async function createFinancialAlertDialog(alertInfo) {
 	transactionsIn24hoursElement.innerHTML = alertInfo.transactionsIn24hours;
 	transactionsIn30daysElement.innerHTML = formattedTransactionsIn30days;
 	drainedAccountsValueElement.innerHTML = alertInfo.drainedAccountsValue;
+	proceedButton.addEventListener("click", () => {
+		console.log("TODO: proceedButton onclick");
+	});
+	closeButton.addEventListener("click", () => {
+		financialAlertDialog.close();
+	});
 
 	document.body.appendChild(financialAlertDialog);
 	financialAlertDialog.showModal();
 }
+
+createFinancialAlertDialog({
+	contract: "Uniswap V3 Router 0x00...34244 [>]",
+	createdOn: new Date().toDateString(),
+	drainedAccountsValue: "High",
+	transactionsIn24hours: 102,
+	transactionsIn30days: 1000,
+});
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	console.log("on message", msg, sender);
