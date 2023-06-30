@@ -420,7 +420,7 @@ async function createAlertDialog(alertInfo) {
 			alertDialog.close();
 		}
 	});
-	alertDialog.className = "____vigilance-dao-alert-dialog____";
+	alertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(alertDialog);
 	alertDialog.showModal();
 }
@@ -518,6 +518,7 @@ async function createFinancialAlertDialog(alertInfo) {
 		financialAlertDialog.close();
 	});
 
+	financialAlertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(financialAlertDialog);
 	financialAlertDialog.showModal();
 }
