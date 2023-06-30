@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import * as Alert from "./prebuild-components/alert";
 import * as Index from "./prebuild-components/index";
+import * as FinancialAlert from "./prebuild-components/financial-alert";
 
 interface PrebuildComponentModule {
 	default: () => JSX.Element;
@@ -17,7 +18,11 @@ interface PrebuildComponentModule {
 	};
 }
 
-const components: readonly PrebuildComponentModule[] = [Alert, Index] as const;
+const components: readonly PrebuildComponentModule[] = [
+	Alert,
+	Index,
+	FinancialAlert,
+] as const;
 
 const template = (
 	content: string,
