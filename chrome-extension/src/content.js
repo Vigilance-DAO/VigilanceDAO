@@ -431,7 +431,7 @@ const financialAlertDialog = document.createElement("dialog");
  * @typedef FinancialAlertInfo
  * @prop {string} contract
  * @prop {string} createdOn
- * @prop {"high"} drainedAccountsValue
+ * @prop {"High"} drainedAccountsValue
  * @prop {string} transactionsIn24hours
  * @prop {string} transactionsIn30days
  *
@@ -439,6 +439,13 @@ const financialAlertDialog = document.createElement("dialog");
  */
 async function createFinancialAlertDialog(alertInfo) {
 	if (financialAlertDialog.innerHTML != "") return;
+
+	if (alertInfo == undefined) {
+		console.error(
+			"createFinancialAlertDialog: alertInfo parameter is required"
+		);
+		return;
+	}
 
 	financialAlertDialog.style.borderRadius = "9px";
 	financialAlertDialog.style.zIndex = "10000";
@@ -484,10 +491,19 @@ async function createFinancialAlertDialog(alertInfo) {
 		".drained-info .value"
 	);
 
+	let formattedTransactionsIn30days = alertInfo.transactionsIn30days.toString();
+	if (alertInfo.transactionsIn30days >= 1000) {
+		formattedTransactionsIn30days = Math.floor(
+			alertInfo.transactionsIn30days / 1000
+		)
+			.toString()
+			.concat("K");
+	}
+
 	contractInfoElement.innerHTML = alertInfo.contract;
 	contractCreatedOnElement.innerHTML = alertInfo.createdOn;
 	transactionsIn24hoursElement.innerHTML = alertInfo.transactionsIn24hours;
-	transactionsIn30daysElement.innerHTML = alertInfo.transactionsIn30days;
+	transactionsIn30daysElement.innerHTML = formattedTransactionsIn30days;
 	drainedAccountsValueElement.innerHTML = alertInfo.drainedAccountsValue;
 
 	document.body.appendChild(financialAlertDialog);

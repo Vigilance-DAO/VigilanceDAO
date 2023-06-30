@@ -13,6 +13,7 @@
 	font-family: Roboto;
 	max-width: 540px;
 	min-width: 470px;
+	overflow: hidden;
 }
 
 .container:before {
@@ -99,6 +100,7 @@ h4 {
 
 .transaction-info-item {
 	grid-row: 2;
+	text-align: center;
 }
 .transaction-info-item:first-child {
 	border-right: 2px solid gray;
