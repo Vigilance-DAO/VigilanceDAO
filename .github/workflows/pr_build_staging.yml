@@ -1,0 +1,53 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches: [ "staging" ]
+
+  workflow_dispatch:
+    inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+        tags:
+          description: 'Test scenario tags'  
+
+# Tests have been split into various categories to reduce runtime and ensure rough 15-20min to complete all tests
+jobs:
+  build-publish:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        node-version: [16.14.0]
+    env:
+      EXTENSION_ID: olgmmbfdmfbnihhcfhalglddbjobgpli
+    steps:
+      - name: "Checkout this repo"
+        uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+
+      - name: "Setup .env"
+        run: |
+          cd chrome-extension
+          touch .env
+          echo 'REACT_APP_SUPPORTED_NETWORKS=80001' >> .env
+          echo 'REACT_APP_DEFAULT_NETWORK=80001' >> .env
+          echo 'REACT_APP_WEB3_STORAGE_KEY=${{secrets.REACT_APP_WEB3_STORAGE_KEY}}' >> .env
+          echo 'REACT_APP_THEGRAPH_URL=https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao' >> .env
+
+      - name: "Install node_modules"
+        run: |
+          cd chrome-extension
+          npm install
+
+      - name: "Create release build"
+        run: |
+          cd chrome-extension
+          npm run release  
+          zip -r chrome-extension-${{ github.event.pull_request.head.sha }}.zip build

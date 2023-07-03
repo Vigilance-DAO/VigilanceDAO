@@ -2,12 +2,19 @@ import express, { json } from 'express';
 import helmet from 'helmet';
 import { PoolClient } from 'pg';
 import pool from './db';
+import {ethers}  from 'ethers';
+import fetch from 'node-fetch';
 import { BasicDomainInfo, DomainInfo, DomainScamInfo } from "../../important-types";
 const whois = require('whois-json');
 
 const app = express();
 app.use(json());
 app.use(helmet());
+
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const ETHEREUM_RPC_URL = process.env.ETHEREUM_RPC_URL;
+
+const provider = new ethers.JsonRpcProvider(ETHEREUM_RPC_URL);
 
 app.post('/domain-info', async (req, res) => {
 	// await captureWebsite.file('https://cryptnesis.com/', 'screenshot.png');
@@ -29,6 +36,27 @@ app.post('/domain-info', async (req, res) => {
 		res.status(500).send({})
 	}
 	return;
+});
+
+app.post("/contract-info", async (req, res) => {
+  const address = req.body.address;
+  
+  console.log("address", address);
+  if (!address) {
+    res.status(400).send({});
+    return;
+  }
+
+  try {
+    const client = await pool.connect();
+    const output = await getContractInfo(client, address);
+    client.release();
+    res.json(output);
+  } catch (err) {
+    console.log("get contract details", err);
+    res.status(500).send({});
+  }
+  return;
 });
 
 app.use((_, res, _2) => {
@@ -110,6 +138,80 @@ async function getDomainInfo(client: PoolClient, domain: string): Promise<Domain
 	return domainInfo;
 }
 
+async function getCreationDate(client: PoolClient, address: string): Promise<String> {
+  try {
+    
+    const query = 'SELECT "creationDate" FROM "ContractAddresses" WHERE "address" LIKE $1';
+    var contractData = await client.query(query, [address]);  
+    
+    if(contractData.rowCount == 0){
+      const query1 = 'INSERT INTO "ContractAddresses"("address") VALUES($1)';
+      await client.query(query1, [address]);
+      contractData = await client.query(query, [address]);
+    }
+    
+    var date = contractData.rows[0].creationDate;
+
+    if (date == "NA") {
+      const response = await fetch(
+        `https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${address}&apikey=${ETHERSCAN_API_KEY}`
+      );
+        
+      const data:any = await response.json();
+        
+      if (data.result == null) {
+        return date;
+      }
+
+      const txHash = data.result[0].txHash;
+
+      const tx = await provider.getTransaction(txHash);
+      if (tx?.blockHash) {
+        const block = await provider.getBlock(tx.blockHash);
+      if(block) {
+          date = new Date(block.timestamp * 1000);
+          date = date.toISOString().slice(0, 10);
+        } 
+      } 
+      const query2 = 'UPDATE "ContractAddresses" SET "creationDate"=$1 WHERE "address" LIKE $2';
+      await client.query(query2, [date, address]);
+    }
+    return date;
+
+  } catch (error) {
+    console.log(error);  
+  }
+  return "NA";
+}
+
+async function getContractInfo(client: PoolClient, address: string): Promise<any> {
+  const now = new Date();
+
+  var yesterday = new Date(now.setDate(now.getDate() - 1)).getTime() / 1000;
+  var lastMonth = new Date(now.setDate(now.getDate() - 30)).getTime() / 1000;
+
+  yesterday = Math.floor(yesterday);
+  lastMonth = Math.floor(lastMonth);
+
+  try {
+    const query = 'SELECT COUNT(DISTINCT "from") FROM "Transactions" WHERE "to" LIKE $1 AND "timeStamp" > $2';
+
+    const transactionsLast24Hours = await client.query(query, [address, yesterday]);
+
+    const transactionsLast30Days = await client.query(query, [address, lastMonth]);
+
+    const date = await getCreationDate(client,address);
+
+    return { 
+      userCount24hours: transactionsLast24Hours.rows[0].count,
+      userCount30days: transactionsLast30Days.rows[0].count,
+      creationDate: date
+    };   
+  }catch (error) {
+    console.log(error);
+  }
+  return null;
+}
 
 export { app };
 
