@@ -53,6 +53,7 @@
     "web3.storage": "4.4.0"
   },
   "devDependencies": {
+    "@types/mixpanel-browser": "^2.47.0",
     "concurrently": "^8.2.0",
     "esbuild-envfile-plugin": "^1.0.5",
     "mkdirp": "^3.0.0",
