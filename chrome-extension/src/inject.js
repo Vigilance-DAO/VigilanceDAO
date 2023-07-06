@@ -51,16 +51,7 @@ function querySelector(shadowRoot, selector) {
 const financialAlertDialog = document.createElement("dialog");
 let financialAlertDialogInnerHtml = "";
 
-/**
- * @typedef FinancialAlertInfo
- * @prop {string} contract
- * @prop {string} createdOn
- * @prop {"High"} drainedAccountsValue
- * @prop {number} transactionsIn24hours
- * @prop {number} transactionsIn30days
- * @prop {() => void} cancelButtonClickListener
- * @prop {() => void} proceedButtonClickListener
- *
+ /**
  * @param {FinancialAlertInfo} alertInfo
  */
 async function createFinancialAlertDialog(alertInfo) {

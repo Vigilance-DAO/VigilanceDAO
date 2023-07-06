@@ -43,3 +43,13 @@ interface BasicContractInfo {
 }
  * 
  */
+
+interface FinancialAlertInfo {
+	contract: string;
+	createdOn: string;
+	drainedAccountsValue: "High";
+	transactionsIn24hours: number;
+	transactionsIn30days: number;
+	cancelButtonClickListener: () => void;
+	proceedButtonClickListener: () => void;
+}
