@@ -1,3 +1,4 @@
+// @ts-check
 const FONT_NAME = "X_Roboto";
 const FONT_WEIGHTS = {
 	"400": "./fonts/Roboto-Regular.ttf",
@@ -28,9 +29,9 @@ async function chromeRuntimeGetUrlWrapped(url) {
 				) {
 					// if event.data.for is available, only resolve it if it matches with relativeUrl
 					if (event.data.for && event.data.for != message.relativeUrl) {
-						return;
+						console.error("data.for is undefined", event.data);
+						return "";
 					}
-
 					// Remove the event listener once the response is received
 					window.removeEventListener("message", handleMessage);
 					resolve(event.data.response);
@@ -42,6 +43,9 @@ async function chromeRuntimeGetUrlWrapped(url) {
 
 			// Send the message to the content script
 			window.postMessage(message, "*");
+		}).catch((error) => {
+			console.error(error);
+			return "";
 		});
 	} else {
 		return chrome.runtime.getURL(url);
@@ -58,13 +62,14 @@ async function getFonts() {
 	return Promise.all(
 		entries.map(async (entry) => {
 			const [weight, value] = entry;
+			const url = await chromeRuntimeGetUrlWrapped(value);
 
 			return `@font-face {
   font-family: '${FONT_NAME}';
   font-style: normal;
   font-weight: ${weight};
   font-display: swap;
-  src: url(${await chromeRuntimeGetUrlWrapped(value)}) format('ttf');
+  src: url(${url}) format('ttf');
 }`;
 		})
 	)
