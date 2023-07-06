@@ -1,7 +1,7 @@
 // @ts-check
 const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
-const { getFonts } = require("./fonts");
+const { getFonts, chromeRuntimeGetUrlWrapped } = require("./fonts");
 
 const ContractInfoAPIURL =
 	"https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com/contract-info";
@@ -103,11 +103,11 @@ async function createFinancialAlertDialog(alertInfo) {
 		// part 1 -> css variables
 		// part 2 -> financial-alert component content
 
-		innerHTMLParts[0] = `<style>${getFonts()}</style>`;
+		innerHTMLParts[0] = `<style>${await getFonts()}</style>`;
 		innerHTMLParts[1] = `<style>:host { --border: ${BORDER_WIDTH}px; --inner-border-radius: ${INNER_BORDER_RADIUS}px; }</style>`;
-		innerHTMLParts[2] = await fetch(
-			chrome.runtime.getURL("static/financial-alert.html")
-		)
+		const url = await chromeRuntimeGetUrlWrapped("static/financial-alert.html");
+		console.log("LAODINLAJLKA", url);
+		innerHTMLParts[2] = await fetch(url)
 			.then((response) => response.text())
 			.catch((e) => {
 				console.error("Error while loading html from financial-alert.html", e);
