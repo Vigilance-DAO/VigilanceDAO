@@ -2,6 +2,7 @@
 	/* Will be set from javascript */
 	/* --border: 10px; */
 	/* --inner-border-radius: 10px; */
+	font-size: 16px;
 }
 
 * {
@@ -34,7 +35,7 @@
 .basic-info h2 {
 	margin: 0 0 16px;
 	grid-area: heading;
-	font-size: 25px;
+	font-size: 1.5em;
 }
 .basic-info .icon-container {
 	grid-area: icon;
@@ -49,7 +50,7 @@
 .basic-info p {
 	grid-area: info;
 	margin: 0;
-	font-size: 18px;
+	font-size: 1.1em;
 }
 .basic-info p > span {
 	display: block;
@@ -69,7 +70,7 @@
 h4 {
 	text-align: center;
 	color: hsl(264, 29%, 53%);
-	font-size: 18px;
+	font-size: 1.1em;
 	font-weight: 700;
 	margin: 0 0 12px;
 }
@@ -102,7 +103,7 @@ h4 {
 	display: block;
 }
 .transaction-info-item span:first-child {
-	font-size: 2rem;
+	font-size: 2em;
 	font-weight: 600;
 	text-align: center;
 	margin-bottom: 4px;
@@ -115,7 +116,7 @@ h4 {
 }
 .drained-info .value {
 	color: hsl(0, 100%, 52%);
-	font-size: 25px;
+	font-size: 1.5em;
 	font-weight: 700;
 	margin: auto;
 }
@@ -129,7 +130,7 @@ h4 {
 	margin-right: auto;
 	text-align: right;
 	color: hsl(264, 29%, 53%);
-	font-size: 14px;
+	font-size: 0.8em;
 	font-weight: 700;
 }
 
@@ -139,9 +140,9 @@ h4 {
 	padding: 5px 10px;
 	font-weight: 600;
 	cursor: pointer;
-	font-size: 16px;
+	font-size: 1em;
 	line-height: 19px;
-	border: 2px solid rgb(223, 223, 223);
+	border: 2px solid rgb(187 187 187);
 	background: none;
 	opacity: 0.7;
 	transition: opacity .2s ease-in-out, border-color .2s ease-in-out;

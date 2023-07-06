@@ -88,7 +88,10 @@ async function createFinancialAlertDialog(alertInfo) {
 		financialAlertDialog.style.borderRadius =
 			OUTER_BORDER_RADIUS.toString().concat("px");
 		financialAlertDialog.style.zIndex = "10000";
-		financialAlertDialog.style.margin = "auto clamp(10px, 3vw, 30px) 25px auto";
+		financialAlertDialog.style.position = "absolute";
+		financialAlertDialog.style.top = "10px";
+		financialAlertDialog.style.right = "clamp(10px, 3vw, 30px)";
+		financialAlertDialog.style.left = "auto";
 		financialAlertDialog.style.height = "fit-content";
 		financialAlertDialog.style.border = "none";
 		financialAlertDialog.style.padding = "0";
