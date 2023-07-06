@@ -155,6 +155,16 @@ function formatDate(dateString) {
 	});
 }
 
+/**
+ * Formats a long text into truncated format
+ * @example 0x2ef4a574b72e1f555185afa8a09c6d1a8ac4025c --> 0x2e...025c
+ * @param {string} text
+ * @returns {string}
+ */
+function truncateText(text) {
+	return text.slice(0, 4).concat("...", text.slice(-4));
+}
+
 (function () {
 	if (window.ethereum == undefined) {
 		console.warn("Metamask extension is not installed");
@@ -200,15 +210,13 @@ function formatDate(dateString) {
 				}
 				createFinancialAlertDialog({
 					createdOn: formatDate(contractInfo.creationDate),
-					contract: contractInfo.name,
+					contract: truncateText(to).concat(" (", contractInfo.name, ")"),
 					transactionsIn24hours: contractInfo.userCount24hours,
 					transactionsIn30days: contractInfo.userCount30days,
 					proceedButtonClickListener: () => {
 						console.log("proceed btn clicked");
 						financialAlertDialog.close();
 						continueRequest();
-						// TODO FOR TESTING ONLY
-						// reject();
 					},
 					cancelButtonClickListener: () => {
 						financialAlertDialog.close();
