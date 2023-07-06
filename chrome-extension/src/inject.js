@@ -51,7 +51,7 @@ function querySelector(shadowRoot, selector) {
 const financialAlertDialog = document.createElement("dialog");
 let financialAlertDialogInnerHtml = "";
 
- /**
+/**
  * @param {FinancialAlertInfo} alertInfo
  */
 async function createFinancialAlertDialog(alertInfo) {
@@ -143,6 +143,18 @@ async function createFinancialAlertDialog(alertInfo) {
 	financialAlertDialog.show();
 }
 
+/**
+ * Formats a ISO date string (2023-07-06T08:58:10.102Z) --> "06 Jul 2023"
+ * @param {string} dateString
+ */
+function formatDate(dateString) {
+	return new Date(dateString).toLocaleDateString("en-GB", {
+		year: "numeric",
+		month: "short",
+		day: "2-digit",
+	});
+}
+
 (function () {
 	if (window.ethereum == undefined) {
 		console.warn("Metamask extension is not installed");
@@ -187,7 +199,7 @@ async function createFinancialAlertDialog(alertInfo) {
 					return;
 				}
 				createFinancialAlertDialog({
-					createdOn: contractInfo.creationDate,
+					createdOn: formatDate(contractInfo.creationDate),
 					contract: contractInfo.name,
 					transactionsIn24hours: contractInfo.userCount24hours,
 					transactionsIn30days: contractInfo.userCount30days,
