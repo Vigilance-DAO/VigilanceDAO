@@ -588,3 +588,26 @@ function toggle() {
 	//     console.log('message cb', response);
 	// });
 }
+
+window.addEventListener("message", (event) => {
+	if (
+		event.source != window ||
+		event.data == undefined ||
+		typeof event.data.reason != "string"
+	) {
+		return;
+	}
+
+	if (
+		event.data.reason == "runtime-get-url" &&
+		typeof event.data.relativeUrl == "string"
+	) {
+		window.postMessage(
+			{
+				for: event.data.relativeUrl,
+				response: chrome.runtime.getURL(event.data.relativeUrl),
+			},
+			"*"
+		);
+	}
+});

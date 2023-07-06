@@ -19,6 +19,7 @@ function isSendTransactionRequest(params) {
  * @returns {Promise<ContractInfo | null>}
  */
 function fetchContractInfo(basicInfo) {
+	console.log("fetchContractInfo", basicInfo);
 	return fetch(ContractInfoAPIURL, {
 		method: "POST",
 		headers: {
@@ -63,6 +64,7 @@ let financialAlertDialogInnerHtml = "";
  * @param {FinancialAlertInfo} alertInfo
  */
 async function createFinancialAlertDialog(alertInfo) {
+	console.log("createFinancialAlertDialog", alertInfo);
 	if (alertInfo == undefined) {
 		console.error(
 			"createFinancialAlertDialog: alertInfo parameter is required"
