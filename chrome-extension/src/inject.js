@@ -27,15 +27,6 @@ function fetchContractInfo(basicInfo) {
 		body: JSON.stringify(basicInfo),
 	})
 		.then((response) => response.json())
-		.then(
-			/**
-			 * @param {ContractInfo} jsonData
-			 */
-			(jsonData) => {
-				console.log(jsonData);
-				return jsonData;
-			}
-		)
 		.catch((error) => {
 			console.error(error);
 			return null;
@@ -72,7 +63,6 @@ let financialAlertDialogInnerHtml = "";
  * @param {FinancialAlertInfo} alertInfo
  */
 async function createFinancialAlertDialog(alertInfo) {
-	console.log("createFinancialAlertDialog", alertInfo);
 	if (alertInfo == undefined) {
 		console.error(
 			"createFinancialAlertDialog: alertInfo parameter is required"
@@ -109,7 +99,6 @@ async function createFinancialAlertDialog(alertInfo) {
 		innerHTMLParts[0] = `<style>${await getFonts()}</style>`;
 		innerHTMLParts[1] = `<style>:host { --border: ${BORDER_WIDTH}px; --inner-border-radius: ${INNER_BORDER_RADIUS}px; }</style>`;
 		const url = await chromeRuntimeGetUrlWrapped("static/financial-alert.html");
-		console.log("LAODINLAJLKA", url);
 		innerHTMLParts[2] = await fetch(url)
 			.then((response) => response.text())
 			.catch((e) => {
@@ -176,9 +165,6 @@ async function createFinancialAlertDialog(alertInfo) {
 	window.ethereum.request = (params) => {
 		return /** @type {Promise<void>} */ (
 			new Promise(async (continueRequest, reject) => {
-				console.log("INJECTED", params);
-				console.log("isSendTransactionRequest", params);
-
 				if (window.ethereum == undefined || !isSendTransactionRequest(params)) {
 					continueRequest();
 					return;
@@ -186,7 +172,6 @@ async function createFinancialAlertDialog(alertInfo) {
 
 				// @ts-expect-error
 				const chainId = window.ethereum.networkVersion;
-				console.log("chainId", chainId);
 
 				const { to, from, value, data } = params.params[0];
 				mixpanel.init(MIXPANEL_PROJECT_ID, { debug: true });
@@ -202,7 +187,6 @@ async function createFinancialAlertDialog(alertInfo) {
 					address: to,
 					chain_id: chainId,
 				});
-				console.log("contractInfo", contractInfo);
 
 				if (contractInfo == null) {
 					// TODO decide what to do at this point
@@ -217,9 +201,9 @@ async function createFinancialAlertDialog(alertInfo) {
 					proceedButtonClickListener: () => {
 						console.log("proceed btn clicked");
 						financialAlertDialog.close();
-						// continueRequest();
+						continueRequest();
 						// TODO FOR TESTING ONLY
-						reject();
+						// reject();
 					},
 					cancelButtonClickListener: () => {
 						financialAlertDialog.close();
@@ -230,8 +214,18 @@ async function createFinancialAlertDialog(alertInfo) {
 				});
 			})
 		).then(() => {
-			console.log("will complete transaction now");
 			return metamaskRequest({ ...params });
 		});
 	};
+
+	// FOR TESTING
+	// createFinancialAlertDialog({
+	// 	contract: "Uniswap V3 Router 0x00...34244 [>]",
+	// 	createdOn: new Date().toDateString(),
+	// 	drainedAccountsValue: "High",
+	// 	transactionsIn24hours: 102,
+	// 	transactionsIn30days: 1000,
+	// 	cancelButtonClickListener: () => {},
+	// 	proceedButtonClickListener: () => {},
+	// });
 })();
