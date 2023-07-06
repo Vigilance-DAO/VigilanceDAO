@@ -155,6 +155,12 @@ function trackVisitedDomain(data) {
 	})
 }
 
+/**
+ * We can't use inject.js as a content script because content scripts wouldn't
+ * have access to window.ethereum or any other additional APIs.
+ * To learn more:
+ * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#content_script_environment:~:text=However%2C%20content%20scripts,the%20redefined%20version.
+ */
 const addScriptTagInPage = async () => {
 	const script = window.document.createElement("script");
 	let url = chrome.runtime?.getURL("inject.js");
