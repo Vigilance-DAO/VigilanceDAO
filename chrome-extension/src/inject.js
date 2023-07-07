@@ -208,9 +208,19 @@ function truncateText(text) {
 					continueRequest();
 					return;
 				}
+				
+				let contractDisplay = truncateText(to);
+				if (contractInfo.name) {
+					contractDisplay = contractDisplay.concat(
+						" (",
+						contractInfo.name,
+						")"
+					);
+				}
+
 				createFinancialAlertDialog({
 					createdOn: formatDate(contractInfo.creationDate),
-					contract: truncateText(to).concat(" (", contractInfo.name, ")"),
+					contract: contractDisplay,
 					transactionsIn24hours: contractInfo.userCount24hours,
 					transactionsIn30days: contractInfo.userCount30days,
 					proceedButtonClickListener: () => {
