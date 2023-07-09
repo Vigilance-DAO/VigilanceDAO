@@ -238,8 +238,8 @@ function truncateText(text) {
 				createFinancialAlertDialog({
 					createdOn: formatDate(contractInfo.creationDate),
 					contract: contractDisplay,
-					transactionsIn24hours: contractInfo.userCount24hours,
-					transactionsIn30days: contractInfo.userCount30days,
+					transactionsIn24hours: contractInfo.userCount24hours || 0,
+					transactionsIn30days: contractInfo.userCount30days || 0,
 					proceedButtonClickListener: () => {
 						console.log("proceed btn clicked");
 						financialAlertDialog.close();

@@ -18,8 +18,8 @@ interface MetaMaskRequest {
 type RiskRating = "LOW" | "MEDIUM" | "HIGH";
 
 interface ContractInfo {
-	userCount24hours: number;
-	userCount30days: number;
+	userCount24hours: number | null;
+	userCount30days: number | null;
 	creationDate: string | null;
 	name: string;
 	riskRating: RiskRating;
