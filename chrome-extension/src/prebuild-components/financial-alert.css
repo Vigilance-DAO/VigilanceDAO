@@ -124,13 +124,13 @@ h4 {
 	font-weight: 700;
 	margin: auto;
 }
-.drained-info[data-priority="high"] .value {
+.drained-info .value[data-priority="high"] {
 	color: hsl(0, 100%, 52%);
 }
-.drained-info[data-priority="medium"] .value {
+.drained-info .value[data-priority="medium"] {
 	color: hsl(60, 100%, 52%);
 }
-.drained-info[data-priority="low"] .value {
+.drained-info .value[data-priority="low"] {
 	color: hsl(115, 100%, 42%);
 }
 
