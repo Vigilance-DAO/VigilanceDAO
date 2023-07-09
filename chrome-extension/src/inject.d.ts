@@ -20,7 +20,7 @@ type RiskRating = "LOW" | "MEDIUM" | "HIGH";
 interface ContractInfo {
 	userCount24hours: number;
 	userCount30days: number;
-	creationDate: string;
+	creationDate: string | null;
 	name: string;
 	riskRating: RiskRating;
 }
@@ -49,7 +49,7 @@ interface BasicContractInfo {
 
 interface FinancialAlertInfo {
 	contract: string;
-	createdOn: string;
+	createdOn?: string;
 	drainedAccountsValue: RiskRating;
 	transactionsIn24hours: number;
 	transactionsIn30days: number;

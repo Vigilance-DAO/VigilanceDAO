@@ -112,6 +112,9 @@ async function createFinancialAlertDialog(alertInfo) {
 	const select = querySelector.bind(null, shadowRoot);
 
 	const contractInfoElement = select(".contract-info");
+	const contractCreatedOnContainerElement = select(
+		".contract-created-on-container"
+	);
 	const contractCreatedOnElement = select(".contract-created-on");
 	const transactionsIn24hoursElement = select(".transactions-in-day");
 	const transactionsIn30daysElement = select(".transactions-in-month");
@@ -130,7 +133,14 @@ async function createFinancialAlertDialog(alertInfo) {
 	}
 
 	contractInfoElement.innerHTML = alertInfo.contract;
-	contractCreatedOnElement.innerHTML = alertInfo.createdOn;
+
+	if (alertInfo.createdOn == undefined) {
+		contractCreatedOnContainerElement.classList.toggle("hidden", true);
+	} else {
+		contractCreatedOnContainerElement.classList.toggle("hidden", false);
+		contractCreatedOnElement.innerHTML = alertInfo.createdOn;
+	}
+
 	transactionsIn24hoursElement.innerHTML =
 		alertInfo.transactionsIn24hours.toString();
 	transactionsIn30daysElement.innerHTML = formattedTransactionsIn30days;
@@ -149,9 +159,12 @@ async function createFinancialAlertDialog(alertInfo) {
 
 /**
  * Formats a ISO date string (2023-07-06T08:58:10.102Z) --> "06 Jul 2023"
- * @param {string} dateString
+ * @param {string | null} dateString
  */
 function formatDate(dateString) {
+	if (dateString == null) {
+		return undefined;
+	}
 	return new Date(dateString).toLocaleDateString("en-GB", {
 		year: "numeric",
 		month: "short",

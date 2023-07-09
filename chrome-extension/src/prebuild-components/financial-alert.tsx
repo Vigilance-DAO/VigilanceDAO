@@ -36,7 +36,7 @@ export default function FinancialAlert() {
 							{/* {"Uniswap V3 Router 0x00...34244 [>]"} */}
 						</span>
 					</span>
-					<span>
+					<span className="contract-created-on-container">
 						<b>Created on:</b>{" "}
 						<span className="contract-created-on">
 							Loading...
