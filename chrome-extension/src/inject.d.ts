@@ -15,11 +15,14 @@ interface MetaMaskRequest {
 	method: string;
 }
 
+type RiskRating = "LOW" | "MEDIUM" | "HIGH";
+
 interface ContractInfo {
 	userCount24hours: number;
 	userCount30days: number;
 	creationDate: string;
 	name: string;
+	riskRating: RiskRating;
 }
 
 interface BasicContractInfo {
@@ -47,7 +50,7 @@ interface BasicContractInfo {
 interface FinancialAlertInfo {
 	contract: string;
 	createdOn: string;
-	drainedAccountsValue: "High";
+	drainedAccountsValue: RiskRating;
 	transactionsIn24hours: number;
 	transactionsIn30days: number;
 	cancelButtonClickListener: () => void;

@@ -35,7 +35,7 @@ function fetchContractInfo(basicInfo) {
 }
 
 /**
- * @type {<E extends Element = Element>(shadowRoot: ShadowRoot, selector: string) => E}
+ * @type {<E extends HTMLElement = HTMLElement>(shadowRoot: ShadowRoot, selector: string) => E}
  */
 function querySelector(shadowRoot, selector) {
 	const element = shadowRoot.querySelector(selector);
@@ -135,6 +135,10 @@ async function createFinancialAlertDialog(alertInfo) {
 		alertInfo.transactionsIn24hours.toString();
 	transactionsIn30daysElement.innerHTML = formattedTransactionsIn30days;
 	drainedAccountsValueElement.innerHTML = alertInfo.drainedAccountsValue;
+	// color is applied based on this property
+	drainedAccountsValueElement.dataset["priority"] =
+		alertInfo.drainedAccountsValue.toLowerCase();
+
 	proceedButton.addEventListener("click", alertInfo.proceedButtonClickListener);
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
 
@@ -208,7 +212,7 @@ function truncateText(text) {
 					continueRequest();
 					return;
 				}
-				
+
 				let contractDisplay = truncateText(to);
 				if (contractInfo.name) {
 					contractDisplay = contractDisplay.concat(
@@ -232,8 +236,7 @@ function truncateText(text) {
 						financialAlertDialog.close();
 						reject(new Error("Transaction cancelled by user."));
 					},
-					// TODO
-					drainedAccountsValue: "High",
+					drainedAccountsValue: contractInfo.riskRating,
 				});
 			})
 		).then(() => {

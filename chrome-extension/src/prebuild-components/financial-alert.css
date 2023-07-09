@@ -115,10 +115,19 @@ h4 {
 	flex-direction: column;
 }
 .drained-info .value {
-	color: hsl(0, 100%, 52%);
+	color: hsl(0, 0%, 47%);
 	font-size: 1.5em;
 	font-weight: 700;
 	margin: auto;
+}
+.drained-info[data-priority="high"] .value {
+	color: hsl(0, 100%, 52%);
+}
+.drained-info[data-priority="medium"] .value {
+	color: hsl(60, 100%, 52%);
+}
+.drained-info[data-priority="low"] .value {
+	color: hsl(115, 100%, 42%);
 }
 
 .bottom-container {
@@ -126,7 +135,7 @@ h4 {
 	align-items: center;
 }
 
-.credits{ 
+.credits { 
 	margin-right: auto;
 	text-align: right;
 	color: hsl(264, 29%, 53%);
