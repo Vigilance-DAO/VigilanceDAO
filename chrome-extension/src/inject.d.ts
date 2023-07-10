@@ -1,3 +1,5 @@
+type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
+
 interface ETH_SendTransactionRequestParamsItem {
 	gas: string;
 	value: string;
@@ -24,6 +26,14 @@ interface ContractInfo {
 	name: string;
 	riskRating: RiskRating;
 }
+
+type ContractInfoJsonResponse = Overwrite<
+	ContractInfo,
+	{
+		userCount24hours: string | null | number;
+		userCount30days: string | null | number;
+	}
+>;
 
 interface BasicContractInfo {
 	address: string;

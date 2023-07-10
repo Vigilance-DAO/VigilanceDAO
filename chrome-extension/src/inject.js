@@ -28,6 +28,39 @@ function fetchContractInfo(basicInfo) {
 		body: JSON.stringify(basicInfo),
 	})
 		.then((response) => response.json())
+		.then(
+			/**
+			 * @param {ContractInfoJsonResponse} data
+			 */
+			(data) => {
+				/**
+				 * @type {ContractInfo}
+				 */
+				const d = {
+					userCount24hours: 0,
+					userCount30days: 0,
+					creationDate: null,
+					feedback: [],
+					name: "NA",
+					riskRating: "MEDIUM",
+				};
+
+				if (data.userCount24hours) {
+					d.userCount24hours =
+						typeof data.userCount24hours == "string"
+							? parseInt(data.userCount24hours)
+							: data.userCount24hours;
+				}
+				if (data.userCount30days) {
+					d.userCount30days =
+						typeof data.userCount30days == "string"
+							? parseInt(data.userCount30days)
+							: data.userCount30days;
+				}
+
+				return d;
+			}
+		)
 		.catch((error) => {
 			console.error(error);
 			return null;
