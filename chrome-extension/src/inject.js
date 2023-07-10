@@ -190,10 +190,12 @@ function populateFinancialAlertWithData(alertInfo) {
 
 	contractInfoElement.innerHTML = alertInfo.contract;
 
-	if (alertInfo.createdOn == undefined) {
-		contractCreatedOnContainerElement.classList.toggle("hidden", true);
-	} else {
-		contractCreatedOnContainerElement.classList.toggle("hidden", false);
+	// hide date if undefined
+	contractCreatedOnContainerElement.classList.toggle(
+		"hidden",
+		alertInfo.createdOn == undefined
+	);
+	if (alertInfo.createdOn != undefined) {
 		contractCreatedOnElement.innerHTML = alertInfo.createdOn;
 	}
 
@@ -311,15 +313,26 @@ function truncateText(text) {
 			return metamaskRequest({ ...params });
 		});
 	};
-
-	// FOR TESTING
-	// createFinancialAlertDialog({
-	// 	contract: "Uniswap V3 Router 0x00...34244 [>]",
-	// 	createdOn: new Date().toDateString(),
-	// 	drainedAccountsValue: "High",
-	// 	transactionsIn24hours: 102,
-	// 	transactionsIn30days: 1000,
-	// 	cancelButtonClickListener: () => {},
-	// 	proceedButtonClickListener: () => {},
-	// });
 })();
+
+// (async () => {
+	// FOR TESTING
+// 	if (location.hostname != "sahithyandev.github.io") {
+// 		return;
+// 	}
+// 	await createFinancialAlertDialog();
+
+// 	await new Promise((resolve) => {
+// 		setTimeout(resolve, 5000);
+// 	});
+
+// 	populateFinancialAlertWithData({
+// 		contract: "Uniswap V3 Router 0x00...34244 [>]",
+// 		createdOn: formatDate(new Date().toString()),
+// 		drainedAccountsValue: "HIGH",
+// 		transactionsIn24hours: 102,
+// 		transactionsIn30days: 1000,
+// 		cancelButtonClickListener: () => {},
+// 		proceedButtonClickListener: () => {},
+// 	});
+// })();
