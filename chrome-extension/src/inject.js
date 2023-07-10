@@ -49,20 +49,15 @@ function querySelector(shadowRoot, selector) {
 }
 
 const financialAlertDialog = document.createElement("dialog");
+const FINANCIAL_ALERT_INNER_DIV_ID = "FINANCIAL_ALERT_INNER_DIV_ID";
+const FINANCIAL_ALERT_INNER_DIV_SELECTOR = `div#${FINANCIAL_ALERT_INNER_DIV_ID}`;
+const FINANCIAL_ALERT_IS_LOADING = "isLoading";
 let financialAlertDialogInnerHtml = "";
 
 /**
- * @param {FinancialAlertInfo} alertInfo
+ * Creates the financial alert dialog and displays a loader inside
  */
-async function createFinancialAlertDialog(alertInfo) {
-	console.log("createFinancialAlertDialog", alertInfo);
-	if (alertInfo == undefined) {
-		console.error(
-			"createFinancialAlertDialog: alertInfo parameter is required"
-		);
-		return;
-	}
-
+async function createFinancialAlertDialog() {
 	const INNER_BORDER_RADIUS = 10;
 	const BORDER_WIDTH = 10;
 	const OUTER_BORDER_RADIUS = INNER_BORDER_RADIUS + BORDER_WIDTH;
@@ -102,15 +97,76 @@ async function createFinancialAlertDialog(alertInfo) {
 		financialAlertDialogInnerHtml = innerHTMLParts.join("");
 	}
 
-	financialAlertDialog.innerHTML = "";
-	const div = document.createElement("div");
-	const shadowRoot = div.attachShadow({ mode: "closed" });
-	financialAlertDialog.appendChild(div);
+	let div = financialAlertDialog.querySelector(
+		FINANCIAL_ALERT_INNER_DIV_SELECTOR
+	);
 
+	if (div == null) {
+		div = document.createElement("div");
+		div.id = FINANCIAL_ALERT_INNER_DIV_ID;
+		financialAlertDialog.appendChild(div);
+	}
+
+	const shadowRoot = div.attachShadow({ mode: "open" });
 	shadowRoot.innerHTML = financialAlertDialogInnerHtml;
+
+	financialAlertDialog.className = "____vigilance-dao-dialog____";
+	document.body.appendChild(financialAlertDialog);
 
 	const select = querySelector.bind(null, shadowRoot);
 
+	const containerElement = select(".container");
+	const loadingScreenElement = select(".loading-screen");
+	containerElement.dataset[FINANCIAL_ALERT_IS_LOADING] = `${true}`;
+
+	loadingScreenElement.addEventListener("animationend", (event) => {
+		if (!(event.target instanceof HTMLElement)) {
+			return;
+		}
+		event.target.remove();
+	});
+
+	financialAlertDialog.show();
+}
+
+/**
+ * @param {FinancialAlertInfo} alertInfo
+ */
+function populateFinancialAlertWithData(alertInfo) {
+	console.log("populateFinancialAlertWithData", alertInfo);
+	if (alertInfo == undefined) {
+		console.error(
+			"populateFinancialAlertWithData: alertInfo parameter is required"
+		);
+		return;
+	}
+	if (financialAlertDialog.innerHTML == "") {
+		console.error(
+			"populateFinancialAlertWithData: financialAlertDialog haven't been created yet"
+		);
+		return;
+	}
+
+	const innerDiv = financialAlertDialog.querySelector(
+		FINANCIAL_ALERT_INNER_DIV_SELECTOR
+	);
+	if (innerDiv == null || !(innerDiv instanceof HTMLDivElement)) {
+		console.error(
+			"populateFinancialAlertWithData: financialAlertDialog doesn't have inner div"
+		);
+		return;
+	}
+	const shadowRoot = innerDiv.shadowRoot;
+	if (shadowRoot == null) {
+		console.error(
+			"populateFinancialAlertWithData: financialAlertDialog's inner div have closed shadowRoot"
+		);
+		return;
+	}
+
+	const select = querySelector.bind(null, shadowRoot);
+
+	const containerElement = select(".container");
 	const contractInfoElement = select(".contract-info");
 	const contractCreatedOnContainerElement = select(
 		".contract-created-on-container"
@@ -152,9 +208,7 @@ async function createFinancialAlertDialog(alertInfo) {
 	proceedButton.addEventListener("click", alertInfo.proceedButtonClickListener);
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
 
-	financialAlertDialog.className = "____vigilance-dao-dialog____";
-	document.body.appendChild(financialAlertDialog);
-	financialAlertDialog.show();
+	containerElement.dataset[FINANCIAL_ALERT_IS_LOADING] = `${false}`;
 }
 
 /**
@@ -235,7 +289,8 @@ function truncateText(text) {
 					);
 				}
 
-				createFinancialAlertDialog({
+				await createFinancialAlertDialog();
+				populateFinancialAlertWithData({
 					createdOn: formatDate(contractInfo.creationDate),
 					contract: contractDisplay,
 					transactionsIn24hours: contractInfo.userCount24hours || 0,

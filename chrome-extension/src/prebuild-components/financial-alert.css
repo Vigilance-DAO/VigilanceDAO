@@ -16,7 +16,7 @@
 .container {
 	--icon-size: 70px;
 
-	padding: 25px 18px 10px;
+	padding: 10px;
 	border-radius: var(--inner-border-radius);
 	position: relative;
 	background: hsl(265, 100%, 92%);
@@ -25,6 +25,38 @@
 	min-width: 470px;
 	overflow: hidden;
 	margin: var(--border);
+}
+
+.container .loading-screen {
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: auto;
+	opacity: 1;
+	transition: height 0ms 0ms, opacity 600ms 0ms;
+}
+
+.container .data-screen {
+	overflow: hidden;
+	height: 0;
+	opacity: 0;
+	transition: height 0ms 400ms, opacity 400ms 0ms;
+}
+
+.container[data-is-loading="false"] .loading-screen {
+	overflow: hidden;
+	height: 0;
+	opacity: 0;
+	transition: height 0ms 400ms, opacity 400ms 0ms;
+}
+
+.container[data-is-loading="false"] .data-screen {
+	padding: 15px 8px 0;
+	height: auto;
+	opacity: 1;
+	transition: height 0ms 0ms, opacity 600ms 0ms;
 }
 
 .basic-info {
@@ -139,7 +171,7 @@ h4 {
 	align-items: center;
 }
 
-.credits { 
+.credits {
 	margin-right: auto;
 	text-align: right;
 	color: hsl(264, 29%, 53%);
@@ -147,8 +179,8 @@ h4 {
 	font-weight: 700;
 }
 
-.bottom-container button  {
-	margin-left: 5px; 
+.bottom-container button {
+	margin-left: 5px;
 	border-radius: 3px;
 	padding: 5px 10px;
 	font-weight: 600;
@@ -164,4 +196,15 @@ h4 {
 .bottom-container button:hover {
 	opacity: 1;
 	border-color: hsl(265deg 94% 75%);
+}
+
+@keyframes rotate-360 {
+	to {
+		rotate: 180deg;
+	}
+}
+
+.icon-tabler-loader {
+	animation: rotate-360 infinite 0.6s linear;
+	margin-right: 10px;
 }
