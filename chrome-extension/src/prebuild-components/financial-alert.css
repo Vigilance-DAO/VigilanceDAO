@@ -21,8 +21,7 @@
 	position: relative;
 	background: hsl(265, 100%, 92%);
 	font-family: Roboto;
-	max-width: 540px;
-	min-width: 470px;
+	width: 470px;
 	overflow: hidden;
 	margin: var(--border);
 }
@@ -150,11 +149,15 @@ h4 {
 	display: flex;
 	flex-direction: column;
 }
+
+.drained-info > span {
+	margin: auto;
+}
+
 .drained-info .value {
 	color: hsl(0, 0%, 47%);
 	font-size: 1.5em;
 	font-weight: 700;
-	margin: auto;
 }
 .drained-info .value[data-priority="high"] {
 	color: hsl(0, 100%, 52%);
@@ -165,10 +168,17 @@ h4 {
 .drained-info .value[data-priority="low"] {
 	color: hsl(115, 100%, 42%);
 }
+.drained-info .icon {
+	height: 16px;
+	width: 16px;
+	margin-left: 10px;
+	cursor: pointer;
+}
 
 .bottom-container {
 	display: flex;
 	align-items: center;
+	margin-top: 5px;
 }
 
 .credits {
@@ -190,7 +200,7 @@ h4 {
 	border: 2px solid rgb(187 187 187);
 	background: none;
 	opacity: 0.7;
-	transition: opacity .2s ease-in-out, border-color .2s ease-in-out;
+	transition: opacity 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
 .bottom-container button:hover {
@@ -207,4 +217,24 @@ h4 {
 .icon-tabler-loader {
 	animation: rotate-360 infinite 0.6s linear;
 	margin-right: 10px;
+}
+
+summary {
+	opacity: 0.7;
+	cursor: pointer;
+	padding: 3px 0;
+	width: fit-content;
+}
+
+summary::marker {
+	color:#5500cc;
+}
+
+details[open] summary {
+	opacity: 1;
+}
+
+ul {
+	list-style: "- " outside;
+	padding-left: 13px;
 }

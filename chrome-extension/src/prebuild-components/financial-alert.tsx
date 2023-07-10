@@ -123,11 +123,18 @@ export default function FinancialAlert() {
 					</div>
 				</div>
 
+				<details className="feedback-container">
+					<summary tabIndex={-1}>View feedbacks</summary>
+					<ul className="feedback-list"></ul>
+				</details>
+
 				<div className="bottom-container">
 					<div className="credits">Powered by VigialnceDAO</div>
 
 					<button id="proceed-btn">Proceed</button>
-					<button id="close-btn">Close</button>
+					<button id="close-btn" autoFocus={true}>
+						Close
+					</button>
 				</div>
 			</div>
 		</div>

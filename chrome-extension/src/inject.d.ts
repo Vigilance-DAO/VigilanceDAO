@@ -25,6 +25,7 @@ interface ContractInfo {
 	creationDate: string | null;
 	name: string;
 	riskRating: RiskRating;
+	feedback: string[];
 }
 
 type ContractInfoJsonResponse = Overwrite<
@@ -65,4 +66,5 @@ interface FinancialAlertInfo {
 	transactionsIn30days: number;
 	cancelButtonClickListener: () => void;
 	proceedButtonClickListener: () => void;
+	feedback: string[];
 }

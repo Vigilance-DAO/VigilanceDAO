@@ -208,6 +208,9 @@ function populateFinancialAlertWithData(alertInfo) {
 	const transactionsIn24hoursElement = select(".transactions-in-day");
 	const transactionsIn30daysElement = select(".transactions-in-month");
 	const drainedAccountsValueElement = select(".drained-info .value");
+	const feedbackIconElement = select(".feedback-icon");
+	const feedbackContainerElement = select(".feedback-container");
+	const feedbackListElement = select(".feedback-list");
 
 	const proceedButton = select("#proceed-btn");
 	const closeButton = select("#close-btn");
@@ -239,6 +242,33 @@ function populateFinancialAlertWithData(alertInfo) {
 	// color is applied based on this property
 	drainedAccountsValueElement.dataset["priority"] =
 		alertInfo.drainedAccountsValue.toLowerCase();
+
+	// hide feedback-icon if feedback is empty
+	feedbackIconElement.classList.toggle(
+		"hidden",
+		alertInfo.feedback.length == 0
+	);
+	feedbackIconElement.addEventListener("click", () => {
+		if (!(feedbackContainerElement instanceof HTMLDetailsElement)) {
+			return;
+		}
+
+		feedbackContainerElement.open = !feedbackContainerElement.open;
+	});
+	feedbackContainerElement.classList.toggle(
+		"hidden",
+		alertInfo.feedback.length == 0
+	);
+
+	if (alertInfo.feedback.length != 0) {
+		feedbackListElement.innerHTML = alertInfo.feedback
+			.map((i) => `<li>${i}</li>`)
+			.join("");
+	}
+
+	// feedbackIconElement.dataset["tooltipText"] = alertInfo.feedback
+	// 	.map((item) => "- ".concat(item))
+	// 	.join("\n");
 
 	proceedButton.addEventListener("click", alertInfo.proceedButtonClickListener);
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
@@ -340,6 +370,7 @@ function truncateText(text) {
 						reject(new Error("Transaction cancelled by user."));
 					},
 					drainedAccountsValue: contractInfo.riskRating,
+					feedback: contractInfo.feedback,
 				});
 			})
 		).then(() => {
