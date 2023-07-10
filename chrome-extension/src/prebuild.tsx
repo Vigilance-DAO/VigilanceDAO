@@ -91,7 +91,6 @@ export function run() {
 			const component = componentModule.default;
 			const rendered = renderToStaticMarkup(component());
 			const baseName = pascalCaseToHypenedCase(component.name);
-			console.log(baseName);
 			const jsFile =
 				componentModule.config?.jsFile ||
 				"../prebuild-components/".concat(baseName.concat(".js"));

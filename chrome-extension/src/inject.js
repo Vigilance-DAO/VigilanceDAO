@@ -334,6 +334,8 @@ function truncateText(text) {
 					chainId,
 				});
 
+				await createFinancialAlertDialog();
+
 				const contractInfo = await fetchContractInfo({
 					address: to,
 					chain_id: chainId,
@@ -346,7 +348,7 @@ function truncateText(text) {
 				}
 
 				let contractDisplay = truncateText(to);
-				if (contractInfo.name) {
+				if (contractInfo.name && contractInfo.name != "NA") {
 					contractDisplay = contractDisplay.concat(
 						" (",
 						contractInfo.name,
@@ -354,7 +356,6 @@ function truncateText(text) {
 					);
 				}
 
-				await createFinancialAlertDialog();
 				populateFinancialAlertWithData({
 					createdOn: formatDate(contractInfo.creationDate),
 					contract: contractDisplay,

@@ -29,7 +29,6 @@ async function chromeRuntimeGetUrlWrapped(url) {
 				) {
 					// if event.data.for is available, only resolve it if it matches with relativeUrl
 					if (event.data.for && event.data.for != message.relativeUrl) {
-						console.error("data.for is undefined", event.data);
 						return "";
 					}
 					// Remove the event listener once the response is received
