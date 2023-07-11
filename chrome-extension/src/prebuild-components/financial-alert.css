@@ -163,7 +163,7 @@ h4 {
 	color: hsl(0, 100%, 52%);
 }
 .drained-info .value[data-priority="medium"] {
-	color: hsl(60, 100%, 52%);
+	color: hsl(37, 100%, 52%);
 }
 .drained-info .value[data-priority="low"] {
 	color: hsl(115, 100%, 42%);
