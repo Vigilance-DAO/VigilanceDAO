@@ -133,7 +133,7 @@ export default function FinancialAlert() {
 
 					<button id="proceed-btn">Proceed</button>
 					<button id="close-btn" autoFocus={true}>
-						Close
+						Cancel
 					</button>
 				</div>
 			</div>
