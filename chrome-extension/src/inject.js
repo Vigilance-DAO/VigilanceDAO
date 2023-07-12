@@ -39,23 +39,32 @@ function fetchContractInfo(basicInfo) {
 				const d = {
 					userCount24hours: 0,
 					userCount30days: 0,
-					creationDate: null,
-					feedback: [],
-					name: "NA",
-					riskRating: "MEDIUM",
+					creationDate: data.creationDate || null,
+					feedback: Array.isArray(data.feedback) ? data.feedback : [],
+					name: typeof data.name == "string" ? data.name : "NA",
+					riskRating: data.riskRating || "MEDIUM",
 				};
 
 				if (data.userCount24hours) {
-					d.userCount24hours =
-						typeof data.userCount24hours == "string"
-							? parseInt(data.userCount24hours)
-							: data.userCount24hours;
+					let value = 0;
+					if (typeof data.userCount24hours == "number") {
+						value = data.userCount24hours;
+					} else if (typeof data.userCount24hours == "string") {
+						value = parseInt(data.userCount24hours);
+						if (Number.isNaN(value)) value = 0;
+					}
+
+					d.userCount24hours = value;
 				}
 				if (data.userCount30days) {
-					d.userCount30days =
-						typeof data.userCount30days == "string"
-							? parseInt(data.userCount30days)
-							: data.userCount30days;
+					let value = 0;
+					if (typeof data.userCount30days == "number") {
+						value = data.userCount30days;
+					} else if (typeof data.userCount30days == "string") {
+						value = parseInt(data.userCount30days);
+						if (Number.isNaN(value)) value = 0;
+					}
+					d.userCount30days = value;
 				}
 
 				return d;
