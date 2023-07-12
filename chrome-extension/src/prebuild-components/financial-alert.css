@@ -20,10 +20,13 @@
 	border-radius: var(--inner-border-radius);
 	position: relative;
 	background: hsl(265, 100%, 92%);
-	font-family: Roboto;
 	width: 470px;
 	overflow: hidden;
 	margin: var(--border);
+}
+
+.container * {
+	font-family: "X_Roboto", sans-serif;
 }
 
 .container .loading-screen {
