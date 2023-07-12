@@ -149,7 +149,7 @@ async function createFinancialAlertDialog() {
 		financialAlertDialog.appendChild(div);
 	}
 
-	const shadowRoot = div.attachShadow({ mode: "open" });
+	const shadowRoot = div.shadowRoot || div.attachShadow({ mode: "open" });
 	shadowRoot.innerHTML = financialAlertDialogInnerHtml;
 
 	financialAlertDialog.className = "____vigilance-dao-dialog____";
@@ -373,10 +373,12 @@ function truncateText(text) {
 					proceedButtonClickListener: () => {
 						console.log("proceed btn clicked");
 						financialAlertDialog.close();
+						document.body.removeChild(financialAlertDialog);
 						continueRequest();
 					},
 					cancelButtonClickListener: () => {
 						financialAlertDialog.close();
+						document.body.removeChild(financialAlertDialog);
 						reject(new Error("Transaction cancelled by user."));
 					},
 					drainedAccountsValue: contractInfo.riskRating,
