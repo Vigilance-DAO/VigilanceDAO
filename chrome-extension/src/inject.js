@@ -275,10 +275,6 @@ function populateFinancialAlertWithData(alertInfo) {
 			.join("");
 	}
 
-	// feedbackIconElement.dataset["tooltipText"] = alertInfo.feedback
-	// 	.map((item) => "- ".concat(item))
-	// 	.join("\n");
-
 	proceedButton.addEventListener("click", alertInfo.proceedButtonClickListener);
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
 
