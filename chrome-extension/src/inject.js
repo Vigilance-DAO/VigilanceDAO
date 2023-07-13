@@ -96,6 +96,24 @@ const FINANCIAL_ALERT_INNER_DIV_SELECTOR = `div#${FINANCIAL_ALERT_INNER_DIV_ID}`
 const FINANCIAL_ALERT_IS_LOADING = "isLoading";
 let financialAlertDialogInnerHtml = "";
 
+function getFontLinks() {
+	const link1 = document.createElement("link");
+	link1.rel = "preconnect";
+	link1.href = "https://fonts.googleapis.com";
+
+	const link2 = document.createElement("link");
+	link2.rel = "preconnect";
+	link2.href = "https://fonts.gstatic.com";
+	link2.crossOrigin = "";
+
+	const link3 = document.createElement("link");
+	link3.rel = "stylesheet";
+	link3.href =
+		"https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap";
+
+	return [link1, link2, link3];
+}
+
 /**
  * Creates the financial alert dialog and displays a loader inside
  */
@@ -105,6 +123,11 @@ async function createFinancialAlertDialog() {
 	const OUTER_BORDER_RADIUS = INNER_BORDER_RADIUS + BORDER_WIDTH;
 
 	if (financialAlertDialogInnerHtml == "") {
+		const fontLinks = getFontLinks();
+		document.head.appendChild(fontLinks[0]);
+		document.head.appendChild(fontLinks[1]);
+		document.head.appendChild(fontLinks[2]);
+
 		financialAlertDialog.style.borderRadius =
 			OUTER_BORDER_RADIUS.toString().concat("px");
 		financialAlertDialog.style.zIndex = "10000";
@@ -121,15 +144,13 @@ async function createFinancialAlertDialog() {
 		/**
 		 * @type {string[]}
 		 */
-		const innerHTMLParts = new Array(3).fill("");
-		// part 0 -> fonts
-		// part 1 -> css variables
-		// part 2 -> financial-alert component content
+		const innerHTMLParts = new Array(2).fill("");
+		// part 0 -> css variables
+		// part 1 -> financial-alert component content
 
-		innerHTMLParts[0] = `<style>${await getFonts()}</style>`;
-		innerHTMLParts[1] = `<style>:host { --border: ${BORDER_WIDTH}px; --inner-border-radius: ${INNER_BORDER_RADIUS}px; }</style>`;
+		innerHTMLParts[0] = `<style>:host { --border: ${BORDER_WIDTH}px; --inner-border-radius: ${INNER_BORDER_RADIUS}px; }</style>`;
 		const url = await chromeRuntimeGetUrlWrapped("static/financial-alert.html");
-		innerHTMLParts[2] = await fetch(url)
+		innerHTMLParts[1] = await fetch(url)
 			.then((response) => response.text())
 			.catch((e) => {
 				console.error("Error while loading html from financial-alert.html", e);
