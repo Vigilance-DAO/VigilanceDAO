@@ -361,9 +361,14 @@ function truncateText(text) {
 				});
 
 				await createFinancialAlertDialog();
+				if (window._ethers == undefined) {
+					console.warn("window._ethers is undefined.");
+					continueRequest();
+					return;
+				}
 
 				const contractInfo = await fetchContractInfo({
-					address: to,
+					address: window._ethers.utils.getAddress(to),
 					chain_id: chainId,
 				});
 
