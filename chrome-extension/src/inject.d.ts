@@ -1,5 +1,16 @@
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
+import { ethers } from "ethers";
+
+declare global {
+	interface Window {
+		/**
+		 * Provided by `ethers` npm package or the referenced `ethers.umd.min.js` file.
+		 */
+		_ethers?: typeof ethers;
+	}
+}
+
 interface ETH_SendTransactionRequestParamsItem {
 	gas: string;
 	value: string;

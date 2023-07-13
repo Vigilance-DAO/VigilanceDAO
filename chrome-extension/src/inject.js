@@ -7,16 +7,16 @@ const ContractInfoAPIURL =
 	"https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com/contract-info";
 
 /**
- * @param {MetaMaskRequest} params
- * @returns {params is ETH_SendTransactionRequest}
+ * @param {import("./inject").MetaMaskRequest} params
+ * @returns {params is import("./inject").ETH_SendTransactionRequest}
  */
 function isSendTransactionRequest(params) {
 	return params.method == "eth_sendTransaction";
 }
 
 /**
- * @param {BasicContractInfo} basicInfo
- * @returns {Promise<ContractInfo | null>}
+ * @param {import("./inject").BasicContractInfo} basicInfo
+ * @returns {Promise<import("./inject").ContractInfo | null>}
  */
 function fetchContractInfo(basicInfo) {
 	console.log("fetchContractInfo", basicInfo);
@@ -30,11 +30,12 @@ function fetchContractInfo(basicInfo) {
 		.then((response) => response.json())
 		.then(
 			/**
-			 * @param {ContractInfoJsonResponse} data
+			 * @param {import("./inject").ContractInfoJsonResponse} data
 			 */
 			(data) => {
+				console.log("contract info fetched", data);
 				/**
-				 * @type {ContractInfo}
+				 * @type {import("./inject").ContractInfo}
 				 */
 				const d = {
 					userCount24hours: 0,
@@ -67,6 +68,7 @@ function fetchContractInfo(basicInfo) {
 					d.userCount30days = value;
 				}
 
+				console.log("contract info formatted", d);
 				return d;
 			}
 		)
@@ -193,7 +195,7 @@ async function createFinancialAlertDialog() {
 }
 
 /**
- * @param {FinancialAlertInfo} alertInfo
+ * @param {import("./inject").FinancialAlertInfo} alertInfo
  */
 function populateFinancialAlertWithData(alertInfo) {
 	console.log("populateFinancialAlertWithData", alertInfo);
@@ -336,7 +338,7 @@ function truncateText(text) {
 	// @ts-expect-error
 	const metamaskRequest = window.ethereum.request;
 	/**
-	 * @param {MetaMaskRequest} params
+	 * @param {import("./inject").MetaMaskRequest} params
 	 */
 	// @ts-expect-error
 	window.ethereum.request = (params) => {
