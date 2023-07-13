@@ -95,7 +95,7 @@ export default function FinancialAlert() {
 						</div>
 					</div>
 					<div className="item drained-info">
-						<h4>Drained accounts</h4>
+						<h4>Risk</h4>
 						<span>
 							<span className="value" data-priority>
 								———{/* {"HIGH"} */}
