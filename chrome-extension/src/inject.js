@@ -1,7 +1,7 @@
 // @ts-check
 const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
-const { getFonts, chromeRuntimeGetUrlWrapped } = require("./fonts");
+const { chromeRuntimeGetUrlWrapped } = require("./fonts");
 
 const ContractInfoAPIURL =
 	"https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com/contract-info";
@@ -363,14 +363,17 @@ function truncateText(text) {
 				});
 
 				await createFinancialAlertDialog();
+				console.log("reciever's address (provided by metamask)", to);
 				if (window._ethers == undefined) {
 					console.warn("window._ethers is undefined.");
 					continueRequest();
 					return;
 				}
 
+				const checksumAddress = window._ethers.utils.getAddress(to);
+				console.log("reciever's address (checksum)", checksumAddress);
 				const contractInfo = await fetchContractInfo({
-					address: window._ethers.utils.getAddress(to),
+					address: checksumAddress,
 					chain_id: chainId,
 				});
 
@@ -380,7 +383,7 @@ function truncateText(text) {
 					return;
 				}
 
-				let contractDisplay = truncateText(to);
+				let contractDisplay = truncateText(checksumAddress);
 				if (contractInfo.name && contractInfo.name != "NA") {
 					contractDisplay = contractDisplay.concat(
 						" (",
@@ -397,12 +400,12 @@ function truncateText(text) {
 					proceedButtonClickListener: () => {
 						console.log("proceed btn clicked");
 						financialAlertDialog.close();
-						document.body.removeChild(financialAlertDialog);
+						financialAlertDialog.remove();
 						continueRequest();
 					},
 					cancelButtonClickListener: () => {
 						financialAlertDialog.close();
-						document.body.removeChild(financialAlertDialog);
+						financialAlertDialog.remove();
 						reject(new Error("Transaction cancelled by user."));
 					},
 					drainedAccountsValue: contractInfo.riskRating,
