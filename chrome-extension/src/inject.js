@@ -329,6 +329,8 @@ function truncateText(text) {
 	return text.slice(0, 4).concat("...", text.slice(-4));
 }
 
+const SUPPORTED_CHAINS = ["1", "137"];
+
 (function () {
 	if (window.ethereum == undefined) {
 		console.warn("Metamask extension is not installed");
@@ -361,6 +363,11 @@ function truncateText(text) {
 					"data": data,
 					chainId,
 				});
+				
+				if (!SUPPORTED_CHAINS.includes(chainId)) {
+					continueRequest();
+					return;
+				}
 
 				await createFinancialAlertDialog();
 				console.log("reciever's address (provided by metamask)", to);
