@@ -81,8 +81,15 @@ function validateUnknownFinancialReport(
 	}
 }
 
-const TARGET_GUILD_NAME = "sahithyan's server";
-const TARGET_CHANNEL_NAME = "lkfj";
+const TARGET_GUILD_NAME = process.env.DISCORD_TARGET_GUILD_NAME || "sahithyan's server";
+const TARGET_CHANNEL_NAME = process.env.DISCORD_TARGET_CHANNEL_NAME || "lkfj";
+
+if (TARGET_GUILD_NAME == "") {
+	console.error("env.DISCORD_TARGET_GUILD_NAME is set to '' (empty string)");
+}
+if (TARGET_CHANNEL_NAME == "") {
+	console.error("env.DISCORD_TARGET_CHANNEL_NAME is set to '' (empty string)");
+}
 
 /**
  * phishing -> Phishing
