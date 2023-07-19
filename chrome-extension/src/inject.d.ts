@@ -39,6 +39,23 @@ interface ContractInfo {
 	feedback: string[];
 }
 
+interface FortaApiLabelItem {
+	label: {
+		label: string,
+		entity: string,
+		metadata: string[],
+	},
+	createdAt: string
+}
+
+interface FortaApiResonseData {
+	data: {
+		labels: {
+			labels: FortaApiLabelItem[]
+		}
+	}
+}
+
 type ContractInfoJsonResponse = Overwrite<
 	ContractInfo,
 	{

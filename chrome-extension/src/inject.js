@@ -5,6 +5,8 @@ const { chromeRuntimeGetUrlWrapped } = require("./fonts");
 
 const ContractInfoAPIURL =
 	"https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com/contract-info";
+	
+const FortaAPIUrl = "https://api.forta.network/graphql";
 
 /**
  * @param {import("./inject").MetaMaskRequest} params
@@ -20,58 +22,123 @@ function isSendTransactionRequest(params) {
  */
 function fetchContractInfo(basicInfo) {
 	console.log("fetchContractInfo", basicInfo);
-	return fetch(ContractInfoAPIURL, {
+
+	const contractInfoApiFetch = fetch(ContractInfoAPIURL, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(basicInfo),
-	})
-		.then((response) => response.json())
-		.then(
-			/**
-			 * @param {import("./inject").ContractInfoJsonResponse} data
-			 */
-			(data) => {
-				console.log("contract info fetched", data);
-				/**
-				 * @type {import("./inject").ContractInfo}
-				 */
-				const d = {
-					userCount24hours: 0,
-					userCount30days: 0,
-					creationDate: data.creationDate || null,
-					feedback: Array.isArray(data.feedback) ? data.feedback : [],
-					name: typeof data.name == "string" ? data.name : "NA",
-					riskRating: data.riskRating || "MEDIUM",
-				};
-
-				if (data.userCount24hours) {
-					let value = 0;
-					if (typeof data.userCount24hours == "number") {
-						value = data.userCount24hours;
-					} else if (typeof data.userCount24hours == "string") {
-						value = parseInt(data.userCount24hours);
-						if (Number.isNaN(value)) value = 0;
-					}
-
-					d.userCount24hours = value;
-				}
-				if (data.userCount30days) {
-					let value = 0;
-					if (typeof data.userCount30days == "number") {
-						value = data.userCount30days;
-					} else if (typeof data.userCount30days == "string") {
-						value = parseInt(data.userCount30days);
-						if (Number.isNaN(value)) value = 0;
-					}
-					d.userCount30days = value;
-				}
-
-				console.log("contract info formatted", d);
-				return d;
+	}).then(
+		/**
+		 * @returns {Promise<import("./inject").ContractInfo>}
+		 */
+		async (response) => {
+			if (response.ok) {
+				return response.json();
 			}
-		)
+			throw await response.text();
+		}
+	);
+
+	const fortaApiFetch = fetch(FortaAPIUrl, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			query: `query Labels($input: LabelsInput) {
+  labels(input: $input) {
+    labels {
+      label {
+        label
+        entity
+        metadata
+      }
+      createdAt
+    }
+  }
+}`,
+			variables: {
+				"input": {
+					"labels": ["scammer"],
+					"entities": [basicInfo.address],
+				},
+			},
+		}),
+	}).then(
+		/**
+		 * @returns {Promise<import("./inject").FortaApiResonseData>}
+		 */
+		async (response) => {
+			if (response.ok) {
+				return response.json();
+			}
+			throw await response.text();
+		}
+	);
+
+	return Promise.allSettled([contractInfoApiFetch, fortaApiFetch])
+		.then((resolvedArr) => {
+			if (resolvedArr[0].status == "rejected") {
+				console.error("request to /contract-info failed");
+				return null;
+			}
+
+			const data = resolvedArr[0].value;
+			console.log("contract info fetched", data);
+
+			let fortaApiResult = null;
+			resolvedArr[1].status == "fulfilled"
+				? resolvedArr[1].value
+				: resolvedArr[1].reason;
+			if (resolvedArr[1].status == "fulfilled") {
+				fortaApiResult = resolvedArr[1].value;
+			} else {
+				console.error("request to Forta API failed", resolvedArr[1].reason);
+			}
+
+			/**
+			 * @type {import("./inject").ContractInfo}
+			 */
+			const d = {
+				userCount24hours: 0,
+				userCount30days: 0,
+				creationDate: data.creationDate || null,
+				feedback: Array.isArray(data.feedback) ? data.feedback : [],
+				name: typeof data.name == "string" ? data.name : "NA",
+				riskRating: data.riskRating || "MEDIUM",
+			};
+
+			if (data.userCount24hours) {
+				let value = 0;
+				if (typeof data.userCount24hours == "number") {
+					value = data.userCount24hours;
+				} else if (typeof data.userCount24hours == "string") {
+					value = parseInt(data.userCount24hours);
+					if (Number.isNaN(value)) value = 0;
+				}
+
+				d.userCount24hours = value;
+			}
+			if (data.userCount30days) {
+				let value = 0;
+				if (typeof data.userCount30days == "number") {
+					value = data.userCount30days;
+				} else if (typeof data.userCount30days == "string") {
+					value = parseInt(data.userCount30days);
+					if (Number.isNaN(value)) value = 0;
+				}
+				d.userCount30days = value;
+			}
+			if (fortaApiResult && fortaApiResult.data.labels.labels.length > 0) {
+				// labelled as scammer by Forta
+				d.feedback.push("Labelled as scammer by Forta");
+			}
+
+			console.log("contract info formatted", d);
+			return d;
+		})
 		.catch((error) => {
 			console.error(error);
 			return null;
