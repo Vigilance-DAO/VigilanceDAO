@@ -163,8 +163,9 @@ app.post("/submit-contract-report", async (req, res) => {
 			{
 				title: "Contract Report Received",
 				description: [
-					`*Report type*: ${fraudTypeDisplayText(reportBody.fraudType)}`,
-					`*Report description*: ${reportBody.info}`,
+					`**Reported address**: ${reportBody.address}`.concat(reportBody.name ? ` (${reportBody.name})` : ""),
+					`**Report type**: ${fraudTypeDisplayText(reportBody.fraudType)}`,
+					`**Report description**: ${reportBody.info}`,
 				].join("\n"),
 			},
 		],

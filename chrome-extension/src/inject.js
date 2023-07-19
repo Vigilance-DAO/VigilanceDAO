@@ -155,7 +155,7 @@ function fetchContractInfo(basicInfo) {
  * @param {import("../../server/src/types").ContractReport} report
  * @returns {Promise<string | undefined>} string --> error message, undefined --> successful
  */
-function submitFinancialReport(report) {
+function submitContractReport(report) {
 	return fetch(env.host.concat("/submit-contract-report"), {
 		method: "POST",
 		headers: {
@@ -517,7 +517,8 @@ function populateFinancialAlertWithData(alertInfo) {
 			return;
 		}
 
-		submitFinancialReport({
+		submitContractReport({
+			...alertInfo.reportBasicBody,
 			fraudType: fraudTypeSelectElement.value,
 			info,
 		});
@@ -613,7 +614,10 @@ const SUPPORTED_CHAINS = ["1", "137"];
 				}
 
 				let contractDisplay = truncateText(checksumAddress);
-				if (contractInfo.name && contractInfo.name != "NA") {
+				const shouldIncludeContractInfoName =
+					contractInfo.name && contractInfo.name != "NA";
+
+				if (shouldIncludeContractInfoName) {
 					contractDisplay = contractDisplay.concat(
 						" (",
 						contractInfo.name,
@@ -639,6 +643,11 @@ const SUPPORTED_CHAINS = ["1", "137"];
 					},
 					drainedAccountsValue: contractInfo.riskRating,
 					feedback: contractInfo.feedback,
+					reportBasicBody: {
+						address: checksumAddress,
+						chainId,
+						name: shouldIncludeContractInfoName ? contractInfo.name : undefined,
+					},
 				});
 			})
 		).then(() => {

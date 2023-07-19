@@ -1,6 +1,7 @@
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 import { ethers } from "ethers";
+import { ContractReport } from "../../server/src/types";
 
 declare global {
 	interface Window {
@@ -92,7 +93,8 @@ interface FinancialAlertInfo {
 	drainedAccountsValue: RiskRating;
 	transactionsIn24hours: number;
 	transactionsIn30days: number;
+	feedback: string[];
+	reportBasicBody: Omit<ContractReport, "fraudType" | "info">;
 	cancelButtonClickListener: () => void;
 	proceedButtonClickListener: () => void;
-	feedback: string[];
 }
