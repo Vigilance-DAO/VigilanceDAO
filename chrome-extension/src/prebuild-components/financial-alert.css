@@ -192,7 +192,7 @@ h4 {
 	font-weight: 700;
 }
 
-.bottom-container button {
+button {
 	margin-left: 5px;
 	border-radius: 3px;
 	padding: 5px 10px;
@@ -206,7 +206,7 @@ h4 {
 	transition: opacity 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
-.bottom-container button:hover {
+button:hover {
 	opacity: 1;
 	border-color: hsl(265deg 94% 75%);
 }
@@ -240,4 +240,62 @@ details[open] summary {
 ul {
 	list-style: "- " outside;
 	padding-left: 13px;
+}
+
+#report-form {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+#report-form h2 {
+	margin: 5px 0;
+}
+
+#report-form div[data-show-if] {
+	margin-top: 6px;
+}
+
+#report-form label {
+	font-weight: 500;
+	display: block;
+	margin-bottom: 4px;
+}
+
+select {
+	border-radius: 4px;
+	padding: 4px 6px;
+	width: 100%;
+}
+
+select, option {
+	cursor: pointer;
+}
+
+#report-form select,
+#report-form textarea {
+	background-color: hsl(265 100% 90%);
+}
+
+#report-form textarea {
+	width: 100%;
+	border-radius: 4px;
+	padding: 2px 4px;
+	resize: vertical;
+	font-size: .9em;
+}
+
+#report-form button {
+	margin-left: auto;
+}
+
+.form-response-message.error {
+	color: hsl(0, 100%, 52%);
+}
+
+.form-response-message.success {
+	color: hsl(133deg 100% 33%)
+}
+
+textarea:invalid {
+	color: hsl(0, 100%, 52%);
 }

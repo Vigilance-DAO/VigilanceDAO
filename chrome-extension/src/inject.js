@@ -8,6 +8,12 @@ const ContractInfoAPIURL =
 	
 const FortaAPIUrl = "https://api.forta.network/graphql";
 
+const env = {
+	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
+	// For developement
+	// host: "http://localhost:4000",
+};
+
 /**
  * @param {import("./inject").MetaMaskRequest} params
  * @returns {params is import("./inject").ETH_SendTransactionRequest}
@@ -142,6 +148,40 @@ function fetchContractInfo(basicInfo) {
 		.catch((error) => {
 			console.error(error);
 			return null;
+		});
+}
+
+/**
+ * @param {import("../../server/src/types").ContractReport} report
+ * @returns {Promise<string | undefined>} string --> error message, undefined --> successful
+ */
+function submitFinancialReport(report) {
+	return fetch(env.host.concat("/submit-contract-report"), {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			report,
+		}),
+	})
+		.then((response) => {
+			if (response.ok) {
+				return;
+			}
+			return response.text();
+		})
+		.then(
+			(value) => (
+				console.log("submitFinancialReport return value", value), value
+			)
+		)
+		.catch((err) => {
+			console.log("submitFinancialReport error", err);
+			if (err instanceof Error) {
+				return `${err.name}: ${err.message}`;
+			}
+			return "Unknown error occured";
 		});
 }
 
@@ -312,7 +352,19 @@ function populateFinancialAlertWithData(alertInfo) {
 	const feedbackListElement = select(".feedback-list");
 
 	const proceedButton = select("#proceed-btn");
+	const reportButton = select("#report-btn");
 	const closeButton = select("#close-btn");
+
+	const formElement = select("#report-form");
+	const fraudTypeSelectElement = select("select[name=fraud-type]");
+	const phishingInfoSectionContainer = select("div[data-show-if=phishing]");
+	const phishingInfoElement = select("textarea[name=phishing-info]");
+	const financialLossInfoSectionContainer = select(
+		"div[data-show-if=financial-loss]"
+	);
+	const financialLossInfoElement = select("textarea[name=financial-loss-info]");
+	const formResponseMessageElement = select(".form-response-message");
+	const formSubmitButton = select("button.submit");
 
 	let formattedTransactionsIn30days = alertInfo.transactionsIn30days.toString();
 	if (alertInfo.transactionsIn30days >= 1000) {
@@ -367,6 +419,109 @@ function populateFinancialAlertWithData(alertInfo) {
 
 	proceedButton.addEventListener("click", alertInfo.proceedButtonClickListener);
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
+	reportButton.addEventListener("click", () => {
+		formElement.classList.toggle("hidden");
+	});
+
+	if (!(formElement instanceof HTMLFormElement)) {
+		console.error(formElement);
+		throw new Error(
+			"formElement is expected to be a form element."
+		);
+	}
+
+	if (!(fraudTypeSelectElement instanceof HTMLSelectElement)) {
+		console.error(fraudTypeSelectElement);
+		throw new Error(
+			"fraudTypeSelectElement is expected to be a select element."
+		);
+	}
+	if (!(financialLossInfoElement instanceof HTMLTextAreaElement)) {
+		console.error(financialLossInfoElement);
+		throw new Error(
+			"financialLossInfoElement is expected to be a textarea element."
+		);
+	}
+	if (!(phishingInfoElement instanceof HTMLTextAreaElement)) {
+		console.error(phishingInfoElement);
+		throw new Error(
+			"phishingInfoElement is expected to be a textarea element."
+		);
+	}
+	if (!(formSubmitButton instanceof HTMLButtonElement)) {
+		console.error(formSubmitButton);
+		throw new Error(
+			"formSubmitButton is expected to be a button element."
+		);
+	}
+
+	/**
+	 * @param {import("../../server/src/types").ContractReport_FraudType} sectionId
+	 */
+	function displayInfoSectionInForm(sectionId) {
+		if (sectionId != "phishing" && sectionId != "financial-loss") {
+			console.error(
+				"displayInfoSectionInForm: invalid value for sectionId",
+				sectionId
+			);
+			return;
+		}
+
+		phishingInfoSectionContainer.classList.toggle(
+			"hidden",
+			// false,
+			sectionId != "phishing"
+		);
+		financialLossInfoSectionContainer.classList.toggle(
+			"hidden",
+			// false
+			sectionId != "financial-loss"
+		);
+	}
+	
+	/**
+	 * @param {string} message
+	 * @param {"error" | "success"} type
+	 */
+	function showFormResponseMessage(message, type) {
+		formResponseMessageElement.classList.toggle("error", type == "error");
+		formResponseMessageElement.classList.toggle("success", type == "success");
+		
+		formResponseMessageElement.innerText = message;
+	}
+
+	displayInfoSectionInForm(fraudTypeSelectElement.value);
+
+	fraudTypeSelectElement.addEventListener("change", () => {
+		displayInfoSectionInForm(fraudTypeSelectElement.value);
+	});
+
+	formElement.addEventListener("submit", (event) => {
+		event.preventDefault();
+
+		let info = "";
+		// phishingInfoElement.value;
+		switch(fraudTypeSelectElement.value) {
+			case "financial-loss":
+				info = financialLossInfoElement.value;
+				break;
+			case "phishing":
+				info = phishingInfoElement.value;
+				break;
+			default:
+				console.warn("unknown value for fraud type", fraudTypeSelectElement.value);
+		}
+		
+		if (info == "") {
+			showFormResponseMessage("Provide some information about the fraud", "error");
+			return;
+		}
+
+		submitFinancialReport({
+			fraudType: fraudTypeSelectElement.value,
+			info,
+		});
+	});
 
 	containerElement.dataset[FINANCIAL_ALERT_IS_LOADING] = `${false}`;
 }

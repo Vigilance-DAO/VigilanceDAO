@@ -132,10 +132,49 @@ export default function FinancialAlert() {
 					<div className="credits">Powered by VigialnceDAO</div>
 
 					<button id="proceed-btn">Proceed</button>
+					<button id="report-btn">Report</button>
 					<button id="close-btn" autoFocus={true}>
 						Cancel
 					</button>
 				</div>
+
+				<form id="report-form" className="hidden">
+					<h2>Report</h2>
+					<div>
+						<label>Fraud type</label>
+						<select name="fraud-type" defaultValue="phishing">
+							<option value="phishing">Phishing</option>
+							<option value="financial-loss">Financial Loss</option>
+						</select>
+					</div>
+
+					<div data-show-if="phishing" className="hidden">
+						<label>
+							Which legitimate contract is being imitated by this contract? and
+							How does it trick people?
+						</label>
+						<textarea
+							name="phishing-info"
+							rows={4}
+							placeholder="This address is trying to imitate uniswap.org. The owner of this address prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet."
+						/>
+					</div>
+					<div data-show-if="financial-loss" className="hidden">
+						<label htmlFor="">
+							How does this contract lead to a financial loss?
+						</label>
+						<textarea
+							name="financial-loss-info"
+							rows={4}
+							placeholder="The address tries to look like a legitimate NFT site and claims to drop free NFTs to users. Upon interaction with the site, the website automatically trigger Approve token transactions to drain connected wallet."
+						/>
+					</div>
+
+					<div className="bottom-container">
+						<div className="form-response-message"></div>
+						<button className="submit">Submit</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	);
