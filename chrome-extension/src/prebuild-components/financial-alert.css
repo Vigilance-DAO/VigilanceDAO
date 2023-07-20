@@ -295,7 +295,3 @@ select, option {
 .form-response-message.success {
 	color: hsl(133deg 100% 33%)
 }
-
-textarea:invalid {
-	color: hsl(0, 100%, 52%);
-}

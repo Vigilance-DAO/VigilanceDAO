@@ -199,6 +199,29 @@ function querySelector(shadowRoot, selector) {
 	return element;
 }
 
+/**
+ * Calling this function with "disable" --> disables auto focusing on dialogs that maybe showing already.
+ * "enable" --> reverses it.
+ * @param {"disable" | "enable"} value
+ */
+function toggleOtherDialogs(value) {
+	const dialogs = document.querySelectorAll("dialog[open], [role=dialog]");
+
+	for (let i = 0; i < dialogs.length; i++) {
+		const element = dialogs.item(i);
+		if (element == null || element == undefined) {
+			continue;
+		}
+
+		console.log(`setting inert=${value == "disable"}`, "on", element);
+		if (value == "disable") {
+			element.setAttribute("inert", "");
+		} else {
+			element.removeAttribute("inert");
+		}
+	}
+}
+
 const financialAlertDialog = document.createElement("dialog");
 const FINANCIAL_ALERT_INNER_DIV_ID = "FINANCIAL_ALERT_INNER_DIV_ID";
 const FINANCIAL_ALERT_INNER_DIV_SELECTOR = `div#${FINANCIAL_ALERT_INNER_DIV_ID}`;
@@ -239,16 +262,18 @@ async function createFinancialAlertDialog() {
 
 		financialAlertDialog.style.borderRadius =
 			OUTER_BORDER_RADIUS.toString().concat("px");
-		financialAlertDialog.style.zIndex = "10000";
-		financialAlertDialog.style.position = "absolute";
 		financialAlertDialog.style.top = "10px";
 		financialAlertDialog.style.right = "clamp(10px, 3vw, 30px)";
 		financialAlertDialog.style.left = "auto";
 		financialAlertDialog.style.height = "fit-content";
 		financialAlertDialog.style.border = "none";
 		financialAlertDialog.style.padding = "0";
+		financialAlertDialog.style.marginTop = "0";
 		financialAlertDialog.style.background =
 			"linear-gradient(to bottom, hsl(265, 100%, 40%), hsl(265, 94%, 19%))";
+		financialAlertDialog.style.overflow = "hidden";
+
+		financialAlertDialog.className = "____vigilance-dao-dialog____";
 
 		/**
 		 * @type {string[]}
@@ -282,7 +307,6 @@ async function createFinancialAlertDialog() {
 	const shadowRoot = div.shadowRoot || div.attachShadow({ mode: "open" });
 	shadowRoot.innerHTML = financialAlertDialogInnerHtml;
 
-	financialAlertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(financialAlertDialog);
 
 	const select = querySelector.bind(null, shadowRoot);
@@ -298,6 +322,7 @@ async function createFinancialAlertDialog() {
 		event.target.remove();
 	});
 
+	toggleOtherDialogs("disable");
 	financialAlertDialog.show();
 }
 
@@ -631,14 +656,15 @@ const SUPPORTED_CHAINS = ["1", "137"];
 					transactionsIn24hours: contractInfo.userCount24hours || 0,
 					transactionsIn30days: contractInfo.userCount30days || 0,
 					proceedButtonClickListener: () => {
-						console.log("proceed btn clicked");
 						financialAlertDialog.close();
 						financialAlertDialog.remove();
+						toggleOtherDialogs("enable");
 						continueRequest();
 					},
 					cancelButtonClickListener: () => {
 						financialAlertDialog.close();
 						financialAlertDialog.remove();
+						toggleOtherDialogs("enable");
 						reject(new Error("Transaction cancelled by user."));
 					},
 					drainedAccountsValue: contractInfo.riskRating,
