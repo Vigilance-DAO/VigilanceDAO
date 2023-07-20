@@ -100,7 +100,7 @@ function fraudTypeDisplayText(fraudType: ContractReport_FraudType): string {
 		.split("-")
 		.map((word) => {
 			// capitalize first letter
-			return word.charAt(0).toUpperCase().concat(fraudType.slice(1));
+			return word.charAt(0).toUpperCase().concat(word.slice(1));
 		})
 		.join(" ");
 }
