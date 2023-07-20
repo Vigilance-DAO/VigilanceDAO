@@ -304,7 +304,7 @@ const CLOSE_ICON = `<svg class="icon icon-tabler icon-tabler-x" width="100%" hei
 /**
  * Displays a Vigilance DAO logo in the bottom-right corner of the window.
  */
-function displayVerifiedAlert() {
+async function displayVerifiedAlert() {
 	if (alertVerifiedContainer) return;
 
 	alertVerifiedContainer = document.createElement("div");
@@ -315,7 +315,7 @@ function displayVerifiedAlert() {
 
 	innerHTMLParts[0] = `
 	<style>
-		${getFonts()}
+		${await getFonts()}
 		:host {
 			z-index: 10000;
 			position: fixed;
