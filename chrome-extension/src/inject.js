@@ -222,6 +222,33 @@ function toggleOtherDialogs(value) {
 	}
 }
 
+/**
+ * @param {"auto" | "reverse-auto"} action
+ */
+function toggleBodyScrollY(action) {
+	if (action == "auto") {
+		const oldOverflowY = document.body.style.overflowY;
+		if (oldOverflowY != "auto") {
+			document.body.dataset.oldOverflowY = oldOverflowY;
+
+			const styleAttributeContent = document.body.getAttribute("style") || "";
+			document.body.setAttribute(
+				"style",
+				styleAttributeContent.concat(";overflow-y: auto !important;")
+			);
+		}
+		return;
+	}
+	if (action == "reverse-auto") {
+		const oldOverflowY = document.body.dataset.oldOverflowY;
+		if (oldOverflowY == undefined) return;
+
+		document.body.style.overflowY = oldOverflowY;
+		document.body.removeAttribute("data-old-overflow-y");
+		return;
+	}
+}
+
 const financialAlertDialog = document.createElement("dialog");
 const FINANCIAL_ALERT_INNER_DIV_ID = "FINANCIAL_ALERT_INNER_DIV_ID";
 const FINANCIAL_ALERT_INNER_DIV_SELECTOR = `div#${FINANCIAL_ALERT_INNER_DIV_ID}`;
@@ -262,6 +289,7 @@ async function createFinancialAlertDialog() {
 
 		financialAlertDialog.style.borderRadius =
 			OUTER_BORDER_RADIUS.toString().concat("px");
+		financialAlertDialog.style.zIndex = "20000";
 		financialAlertDialog.style.top = "10px";
 		financialAlertDialog.style.right = "clamp(10px, 3vw, 30px)";
 		financialAlertDialog.style.left = "auto";
@@ -361,6 +389,8 @@ function populateFinancialAlertWithData(alertInfo) {
 		return;
 	}
 
+	toggleBodyScrollY("auto");
+
 	const select = querySelector.bind(null, shadowRoot);
 
 	const containerElement = select(".container");
@@ -450,9 +480,7 @@ function populateFinancialAlertWithData(alertInfo) {
 
 	if (!(formElement instanceof HTMLFormElement)) {
 		console.error(formElement);
-		throw new Error(
-			"formElement is expected to be a form element."
-		);
+		throw new Error("formElement is expected to be a form element.");
 	}
 
 	if (!(fraudTypeSelectElement instanceof HTMLSelectElement)) {
@@ -475,9 +503,7 @@ function populateFinancialAlertWithData(alertInfo) {
 	}
 	if (!(formSubmitButton instanceof HTMLButtonElement)) {
 		console.error(formSubmitButton);
-		throw new Error(
-			"formSubmitButton is expected to be a button element."
-		);
+		throw new Error("formSubmitButton is expected to be a button element.");
 	}
 
 	/**
@@ -503,7 +529,7 @@ function populateFinancialAlertWithData(alertInfo) {
 			sectionId != "financial-loss"
 		);
 	}
-	
+
 	/**
 	 * @param {string} message
 	 * @param {"error" | "success"} type
@@ -511,7 +537,7 @@ function populateFinancialAlertWithData(alertInfo) {
 	function showFormResponseMessage(message, type) {
 		formResponseMessageElement.classList.toggle("error", type == "error");
 		formResponseMessageElement.classList.toggle("success", type == "success");
-		
+
 		formResponseMessageElement.innerText = message;
 	}
 
@@ -526,7 +552,7 @@ function populateFinancialAlertWithData(alertInfo) {
 
 		let info = "";
 		// phishingInfoElement.value;
-		switch(fraudTypeSelectElement.value) {
+		switch (fraudTypeSelectElement.value) {
 			case "financial-loss":
 				info = financialLossInfoElement.value;
 				break;
@@ -534,11 +560,17 @@ function populateFinancialAlertWithData(alertInfo) {
 				info = phishingInfoElement.value;
 				break;
 			default:
-				console.warn("unknown value for fraud type", fraudTypeSelectElement.value);
+				console.warn(
+					"unknown value for fraud type",
+					fraudTypeSelectElement.value
+				);
 		}
-		
+
 		if (info == "") {
-			showFormResponseMessage("Provide some information about the fraud", "error");
+			showFormResponseMessage(
+				"Provide some information about the fraud",
+				"error"
+			);
 			return;
 		}
 
@@ -659,12 +691,15 @@ const SUPPORTED_CHAINS = ["1", "137"];
 						financialAlertDialog.close();
 						financialAlertDialog.remove();
 						toggleOtherDialogs("enable");
+						toggleBodyScrollY("reverse-auto");
+						
 						continueRequest();
 					},
 					cancelButtonClickListener: () => {
 						financialAlertDialog.close();
 						financialAlertDialog.remove();
 						toggleOtherDialogs("enable");
+						toggleBodyScrollY("reverse-auto");
 						reject(new Error("Transaction cancelled by user."));
 					},
 					drainedAccountsValue: contractInfo.riskRating,
