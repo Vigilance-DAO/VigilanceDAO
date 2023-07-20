@@ -578,6 +578,12 @@ function populateFinancialAlertWithData(alertInfo) {
 			...alertInfo.reportBasicBody,
 			fraudType: fraudTypeSelectElement.value,
 			info,
+		}).then((v) => {
+			if (v == undefined) {
+				showFormResponseMessage("Successfully submitted", "success");
+			} else {
+				showFormResponseMessage(v, "error");
+			}
 		});
 	});
 
