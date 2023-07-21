@@ -13,7 +13,7 @@ let domain = "";
 mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
 
 const env = {
-	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
+	host: "https://api.vigilancedao.org",
 	alertPeriod: 4 * 30 * 86400 * 1000,
 };
 

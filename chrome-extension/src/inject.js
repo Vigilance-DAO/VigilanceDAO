@@ -3,16 +3,16 @@ const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { chromeRuntimeGetUrlWrapped } = require("./fonts");
 
-const ContractInfoAPIURL =
-	"https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com/contract-info";
 	
 const FortaAPIUrl = "https://api.forta.network/graphql";
 
 const env = {
-	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
+	host: "https://api.vigilancedao.org"
 	// For developement
 	// host: "http://localhost:4000",
 };
+
+const ContractInfoAPIURL = env.host.concat("/contract-info");
 
 /**
  * @param {import("./inject").MetaMaskRequest} params
@@ -723,24 +723,34 @@ const SUPPORTED_CHAINS = ["1", "137"];
 	};
 })();
 
-// (async () => {
-	// FOR TESTING
-// 	if (location.hostname != "sahithyandev.github.io") {
-// 		return;
-// 	}
-// 	await createFinancialAlertDialog();
+// FOR TESTING
+(async () => {
+	if (location.hostname != "sahithyan.dev") {
+		return;
+	}
+	await createFinancialAlertDialog();
 
-// 	await new Promise((resolve) => {
-// 		setTimeout(resolve, 5000);
-// 	});
+	await new Promise((resolve) => {
+		setTimeout(resolve, 1000);
+	});
 
-// 	populateFinancialAlertWithData({
-// 		contract: "Uniswap V3 Router 0x00...34244 [>]",
-// 		createdOn: formatDate(new Date().toString()),
-// 		drainedAccountsValue: "HIGH",
-// 		transactionsIn24hours: 102,
-// 		transactionsIn30days: 1000,
-// 		cancelButtonClickListener: () => {},
-// 		proceedButtonClickListener: () => {},
-// 	});
-// })();
+	populateFinancialAlertWithData({
+		contract: "Uniswap V3 Router 0x00...34244 [>]",
+		createdOn: formatDate(new Date().toString()),
+		drainedAccountsValue: "HIGH",
+		transactionsIn24hours: 102,
+		transactionsIn30days: 1000,
+		feedback: [
+			"Odit ab blanditiis corporis adipisci asperiores dolorem fugiat.",
+			"Vero modi accusamus suscipit pariatur voluptas fugiat.",
+			"Voluptatem porro suscipit qui.",
+		],
+		reportBasicBody: {
+			address: "0x2ef4a574b72e1f555185afa8a09c6d1a8ac4025c",
+			chainId: "137",
+			name: "Sahithyan Testing"
+		},
+		cancelButtonClickListener: () => {},
+		proceedButtonClickListener: () => {},
+	});
+})();
