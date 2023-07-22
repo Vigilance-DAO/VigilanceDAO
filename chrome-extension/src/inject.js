@@ -340,15 +340,7 @@ async function createFinancialAlertDialog() {
 	const select = querySelector.bind(null, shadowRoot);
 
 	const containerElement = select(".container");
-	const loadingScreenElement = select(".loading-screen");
 	containerElement.dataset[FINANCIAL_ALERT_IS_LOADING] = `${true}`;
-
-	loadingScreenElement.addEventListener("animationend", (event) => {
-		if (!(event.target instanceof HTMLElement)) {
-			return;
-		}
-		event.target.remove();
-	});
 
 	toggleOtherDialogs("disable");
 	financialAlertDialog.show();

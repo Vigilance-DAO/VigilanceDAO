@@ -217,7 +217,7 @@ button:hover {
 	}
 }
 
-.icon-tabler-loader {
+.container[data-is-loading="true"] .icon-tabler-loader {
 	animation: rotate-360 infinite 0.6s linear;
 	margin-right: 10px;
 }
@@ -230,7 +230,7 @@ summary {
 }
 
 summary::marker {
-	color:#5500cc;
+	color: #5500cc;
 }
 
 details[open] summary {
@@ -267,7 +267,8 @@ select {
 	width: 100%;
 }
 
-select, option {
+select,
+option {
 	cursor: pointer;
 }
 
@@ -293,5 +294,5 @@ select, option {
 }
 
 .form-response-message.success {
-	color: hsl(133deg 100% 33%)
+	color: hsl(133deg 100% 33%);
 }
