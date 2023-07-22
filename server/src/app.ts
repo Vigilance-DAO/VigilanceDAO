@@ -67,7 +67,7 @@ app.post("/contract-info", async (req, res) => {
 	// 	creationDate: new Date((new Date().getTime() - 86400000)),
 	// 	name: 'Dummy',
 	// });
-	res.json(output);
+	res.json({...output, timestamp: new Date()});
   } catch (err) {
     console.log("get contract details", err);
 	sendMessage(`Error: /contract-info API:\nAddress: ${address}\nChain ID: ${chain_id}\nError: ${err}`)
@@ -201,9 +201,10 @@ async function getCreationDate(client: PoolClient, address: string, network: str
     var contractData = await client.query(query, [address]);  
     
     if(contractData.rowCount == 0){
-      const query1 = 'INSERT INTO "ContractAddresses"("address") VALUES($1)';
-      await client.query(query1, [address]);
-      contractData = await client.query(query, [address]);
+		console.log('inserting new contract address', address);	
+		const query1 = 'INSERT INTO "ContractAddresses"("address") VALUES($1)';
+		await client.query(query1, [address]);
+		contractData = await client.query(query, [address]);
     }
     
 	let { riskRating, feedback } = getRiskRating(contractData.rows[0]);
