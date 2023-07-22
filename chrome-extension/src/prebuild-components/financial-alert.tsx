@@ -129,7 +129,7 @@ export default function FinancialAlert() {
 				</details>
 
 				<div className="bottom-container">
-					<div className="credits">Powered by VigialnceDAO</div>
+					<div className="credits">Powered by VigialnceDAO Beta</div>
 
 					<button id="proceed-btn">Proceed</button>
 					<button id="report-btn">Report</button>
