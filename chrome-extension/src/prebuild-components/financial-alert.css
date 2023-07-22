@@ -11,6 +11,8 @@
 
 * {
 	box-sizing: border-box;
+	color: #010101;
+	font-family: "Roboto", sans-serif;
 }
 
 .container {
@@ -23,10 +25,6 @@
 	width: 470px;
 	overflow: hidden;
 	margin: var(--border);
-}
-
-.container * {
-	font-family: "Roboto", sans-serif;
 }
 
 .container .loading-screen {
@@ -182,6 +180,7 @@ h4 {
 	display: flex;
 	align-items: center;
 	margin-top: 5px;
+	padding-bottom: 2px;
 }
 
 .credits {
@@ -204,6 +203,10 @@ button {
 	background: none;
 	opacity: 0.7;
 	transition: opacity 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+button:focus,
+button:focus-visible {
+	outline: 1.4px solid #410b77
 }
 
 button:hover {
