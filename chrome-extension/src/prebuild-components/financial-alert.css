@@ -2,7 +2,7 @@
 	/* Will be set from javascript */
 	/* --border: 10px; */
 	/* --inner-border-radius: 10px; */
-	font-size: 16px;
+	font-size: 14px;
 }
 
 .hidden {
@@ -16,7 +16,7 @@
 .container {
 	--icon-size: 70px;
 
-	padding: 10px;
+	padding: .5em;
 	border-radius: var(--inner-border-radius);
 	position: relative;
 	background: hsl(265, 100%, 92%);
@@ -55,7 +55,7 @@
 }
 
 .container[data-is-loading="false"] .data-screen {
-	padding: 15px 8px 0;
+	padding: 0.5em 8px 0;
 	height: auto;
 	opacity: 1;
 	transition: height 0ms 0ms, opacity 600ms 0ms;
@@ -71,7 +71,7 @@
 }
 
 .basic-info h2 {
-	margin: 0 0 16px;
+	margin: 0 0 1em;
 	grid-area: heading;
 	font-size: 1.5em;
 }
@@ -99,18 +99,18 @@
 	flex-direction: row;
 	gap: 5px;
 	flex-wrap: nowrap;
-	margin: 15px 0;
+	margin: 0.9375em 0;
 }
 .financial-info .item {
 	background: hsla(263, 77%, 88%, 1);
-	padding: 10px 0 16px;
+	padding: 0.625em 0 1em;
 }
 h4 {
 	text-align: center;
 	color: hsl(264, 29%, 53%);
 	font-size: 1.1em;
 	font-weight: 700;
-	margin: 0 0 12px;
+	margin: 0 0 .5em;
 }
 
 .transaction-info {
@@ -195,10 +195,10 @@ h4 {
 button {
 	margin-left: 5px;
 	border-radius: 3px;
-	padding: 5px 10px;
+	padding: .2em .6em;
 	font-weight: 500;
 	cursor: pointer;
-	font-size: 1em;
+	font-size: .9em;
 	line-height: 19px;
 	border: 2px solid rgb(187 187 187);
 	background: none;
