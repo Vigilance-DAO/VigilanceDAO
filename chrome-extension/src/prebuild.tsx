@@ -5,6 +5,31 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import * as Alert from "./prebuild-components/alert";
 import * as Index from "./prebuild-components/index";
+import * as FinancialAlert from "./prebuild-components/financial-alert";
+
+const UPPERCASE_REGEX = /[A-Z]/g;
+function isUpperCase(char: string): boolean {
+	return UPPERCASE_REGEX.test(char);
+}
+
+/**
+ * @example FinancialAlert -> financial-alert
+ */
+function pascalCaseToHypenedCase(str: string): string {
+	let newStr = "";
+
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charAt(i);
+
+		if (i != 0 && isUpperCase(char)) {
+			newStr += "-";
+		}
+
+		newStr += char.toLowerCase();
+	}
+
+	return newStr;
+}
 
 interface PrebuildComponentModule {
 	default: () => JSX.Element;
@@ -17,7 +42,11 @@ interface PrebuildComponentModule {
 	};
 }
 
-const components: readonly PrebuildComponentModule[] = [Alert, Index] as const;
+const components: readonly PrebuildComponentModule[] = [
+	Alert,
+	Index,
+	FinancialAlert,
+] as const;
 
 const template = (
 	content: string,
@@ -61,7 +90,7 @@ export function run() {
 		components.map(async (componentModule) => {
 			const component = componentModule.default;
 			const rendered = renderToStaticMarkup(component());
-			const baseName = component.name.toLowerCase();
+			const baseName = pascalCaseToHypenedCase(component.name);
 			const jsFile =
 				componentModule.config?.jsFile ||
 				"../prebuild-components/".concat(baseName.concat(".js"));
