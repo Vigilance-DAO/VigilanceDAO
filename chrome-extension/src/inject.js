@@ -686,18 +686,9 @@ const SUPPORTED_CHAINS = ["1", "137"];
 					transactionsIn24hours: contractInfo.userCount24hours || 0,
 					transactionsIn30days: contractInfo.userCount30days || 0,
 					proceedButtonClickListener: () => {
-						financialAlertDialog.close();
-						financialAlertDialog.remove();
-						toggleOtherDialogs("enable");
-						toggleBodyScrollY("reverse-auto");
-						
 						continueRequest();
 					},
 					cancelButtonClickListener: () => {
-						financialAlertDialog.close();
-						financialAlertDialog.remove();
-						toggleOtherDialogs("enable");
-						toggleBodyScrollY("reverse-auto");
 						reject(new Error("Transaction cancelled by user."));
 					},
 					drainedAccountsValue: contractInfo.riskRating,
@@ -709,9 +700,17 @@ const SUPPORTED_CHAINS = ["1", "137"];
 					},
 				});
 			})
-		).then(() => {
-			return metamaskRequest({ ...params });
-		});
+		)
+			.then(() => {
+				return metamaskRequest({ ...params });
+			})
+			.finally(() => {
+				// remove financial alert
+				financialAlertDialog.close();
+				financialAlertDialog.remove();
+				toggleOtherDialogs("enable");
+				toggleBodyScrollY("reverse-auto");
+			});
 	};
 })();
 
