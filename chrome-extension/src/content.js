@@ -13,7 +13,7 @@ let domain = "";
 mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
 
 const env = {
-	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
+	host: "https://api.vigilancedao.org",
 	alertPeriod: 4 * 30 * 86400 * 1000,
 };
 
@@ -155,6 +155,12 @@ function trackVisitedDomain(data) {
 	})
 }
 
+/**
+ * We can't use inject.js as a content script because content scripts wouldn't
+ * have access to window.ethereum or any other additional APIs.
+ * To learn more:
+ * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#content_script_environment:~:text=However%2C%20content%20scripts,the%20redefined%20version.
+ */
 const addScriptTagInPage = async () => {
 	const script = window.document.createElement("script");
 	let url = chrome.runtime?.getURL("inject.js");
@@ -298,7 +304,7 @@ const CLOSE_ICON = `<svg class="icon icon-tabler icon-tabler-x" width="100%" hei
 /**
  * Displays a Vigilance DAO logo in the bottom-right corner of the window.
  */
-function displayVerifiedAlert() {
+async function displayVerifiedAlert() {
 	if (alertVerifiedContainer) return;
 
 	alertVerifiedContainer = document.createElement("div");
@@ -309,7 +315,7 @@ function displayVerifiedAlert() {
 
 	innerHTMLParts[0] = `
 	<style>
-		${getFonts()}
+		${await getFonts()}
 		:host {
 			z-index: 10000;
 			position: fixed;
@@ -454,7 +460,7 @@ async function createAlertDialog(alertInfo) {
 			alertDialog.close();
 		}
 	});
-	alertDialog.className = "____vigilance-dao-alert-dialog____";
+	alertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(alertDialog);
 	alertDialog.showModal();
 }
@@ -582,3 +588,26 @@ function toggle() {
 	//     console.log('message cb', response);
 	// });
 }
+
+window.addEventListener("message", (event) => {
+	if (
+		event.source != window ||
+		event.data == undefined ||
+		typeof event.data.reason != "string"
+	) {
+		return;
+	}
+
+	if (
+		event.data.reason == "runtime-get-url" &&
+		typeof event.data.relativeUrl == "string"
+	) {
+		window.postMessage(
+			{
+				for: event.data.relativeUrl,
+				response: chrome.runtime.getURL(event.data.relativeUrl),
+			},
+			"*"
+		);
+	}
+});
