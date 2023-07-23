@@ -3,6 +3,12 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
+// ! For production uncomment these lines
+console.log = function(){};
+console.debug = function(){};
+console.error = function(){};
+console.warn = function(){};
+
 try {
 	importScripts("./psl.min.js" /*, and so on */);
 } catch (e) {
@@ -675,8 +681,7 @@ chrome.action.onClicked.addListener(function (tab) {
 // so the below functions proxies the msg between index.html and content.js
 // Look for `chrome.runtime.onMessage.addListener` in the code
 // to see how the msgs are being recieved and sent
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-	console.log("msg in background", request, sender);
+async function processMsg(request, sender, sendResponse) {
 	if (sender.tab == undefined) {
 		console.error("sender", sender);
 		throw new Error("sender.tab is undefined");
@@ -727,7 +732,12 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 		if (currentTab.id == undefined) return;
 		chrome.tabs.remove(currentTab.id);
 	}
-	
+	return true;
+}
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+	console.log("msg in background", request, sender);
+	processMsg(request, sender, sendResponse)
 	return true;
 });
 

@@ -12,7 +12,7 @@
     "dev:content": "nodemon --exec \"browserify src/content.js -o build/content.js\" --watch src/content.js",
     "build:inject": "browserify src/inject.js -o build/inject.js",
     "dev:inject": "nodemon --exec \"browserify src/inject.js -o build/inject.js\" --watch src/inject.js",
-    "release": "yarn build && yarn build:content && yarn build:inject"
+    "release": "yarn build && yarn build:content && yarn build:inject && cp -r assets/ build/static/"
   },
   "keywords": [],
   "author": "",

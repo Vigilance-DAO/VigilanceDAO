@@ -3,6 +3,11 @@ const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { chromeRuntimeGetUrlWrapped } = require("./fonts");
 
+// ! For production uncomment these lines
+console.log = function(){};
+console.debug = function(){};
+console.error = function(){};
+console.warn = function(){};
 	
 const FortaAPIUrl = "https://api.forta.network/graphql";
 
@@ -608,6 +613,7 @@ function truncateText(text) {
 }
 
 const SUPPORTED_CHAINS = ["1", "137"];
+const ERROR_MSG = "Transaction cancelled by user.";
 
 (function () {
 	if (window.ethereum == undefined) {
@@ -622,10 +628,10 @@ const SUPPORTED_CHAINS = ["1", "137"];
 	 */
 	// @ts-expect-error
 	window.ethereum.request = (params) => {
-		return /** @type {Promise<void>} */ (
+		return /** @type {Promise<bool>} */ (
 			new Promise(async (continueRequest, reject) => {
 				if (window.ethereum == undefined || !isSendTransactionRequest(params)) {
-					continueRequest();
+					continueRequest(false);
 					return;
 				}
 
@@ -643,108 +649,132 @@ const SUPPORTED_CHAINS = ["1", "137"];
 				});
 				
 				if (!SUPPORTED_CHAINS.includes(chainId)) {
-					continueRequest();
+					continueRequest(false);
 					return;
 				}
 
-				await createFinancialAlertDialog();
-				console.log("reciever's address (provided by metamask)", to);
-				if (window._ethers == undefined) {
-					console.warn("window._ethers is undefined.");
-					continueRequest();
-					return;
-				}
+				try {
+					await createFinancialAlertDialog();
+					console.log("reciever's address (provided by metamask)", to);
+					if (window._ethers == undefined) {
+						console.warn("window._ethers is undefined.");
+						continueRequest(false);
+						return;
+					}
 
-				const checksumAddress = window._ethers.utils.getAddress(to);
-				console.log("reciever's address (checksum)", checksumAddress);
-				const contractInfo = await fetchContractInfo({
-					address: checksumAddress,
-					chain_id: chainId,
-				});
-
-				if (contractInfo == null) {
-					// TODO decide what to do at this point
-					continueRequest();
-					return;
-				}
-
-				let contractDisplay = truncateText(checksumAddress);
-				const shouldIncludeContractInfoName =
-					contractInfo.name && contractInfo.name != "NA";
-
-				if (shouldIncludeContractInfoName) {
-					contractDisplay = contractDisplay.concat(
-						" (",
-						contractInfo.name,
-						")"
-					);
-				}
-
-				populateFinancialAlertWithData({
-					createdOn: formatDate(contractInfo.creationDate),
-					contract: contractDisplay,
-					transactionsIn24hours: contractInfo.userCount24hours || 0,
-					transactionsIn30days: contractInfo.userCount30days || 0,
-					proceedButtonClickListener: () => {
-						continueRequest();
-					},
-					cancelButtonClickListener: () => {
-						reject(new Error("Transaction cancelled by user."));
-					},
-					drainedAccountsValue: contractInfo.riskRating,
-					feedback: contractInfo.feedback,
-					reportBasicBody: {
+					const checksumAddress = window._ethers.utils.getAddress(to);
+					console.log("reciever's address (checksum)", checksumAddress);
+					const contractInfo = await fetchContractInfo({
 						address: checksumAddress,
-						chainId,
-						name: shouldIncludeContractInfoName ? contractInfo.name : undefined,
-					},
-				});
+						chain_id: chainId,
+					});
+
+					if (contractInfo == null) {
+						// TODO decide what to do at this point
+						continueRequest(false);
+						return;
+					}
+
+					let contractDisplay = truncateText(checksumAddress);
+					const shouldIncludeContractInfoName =
+						contractInfo.name && contractInfo.name != "NA";
+
+					if (shouldIncludeContractInfoName) {
+						contractDisplay = contractDisplay.concat(
+							" (",
+							contractInfo.name,
+							")"
+						);
+					}
+
+					populateFinancialAlertWithData({
+						createdOn: formatDate(contractInfo.creationDate),
+						contract: contractDisplay,
+						transactionsIn24hours: contractInfo.userCount24hours || 0,
+						transactionsIn30days: contractInfo.userCount30days || 0,
+						proceedButtonClickListener: () => {
+							continueRequest(true);
+						},
+						cancelButtonClickListener: () => {
+							financialAlertDialog.close();
+							financialAlertDialog.remove();
+							toggleOtherDialogs("enable");
+							toggleBodyScrollY("reverse-auto");
+							reject(new Error(ERROR_MSG));
+						},
+						drainedAccountsValue: contractInfo.riskRating,
+						feedback: contractInfo.feedback,
+						reportBasicBody: {
+							address: checksumAddress,
+							chainId,
+							name: shouldIncludeContractInfoName ? contractInfo.name : undefined,
+						},
+					});
+				} catch (error) {
+					console.error('error processing tx', error);
+					financialAlertDialog.close();
+					financialAlertDialog.remove();
+					toggleOtherDialogs("enable");
+					toggleBodyScrollY("reverse-auto");
+					continueRequest(false);
+				}
 			})
 		)
-			.then(() => {
-				return metamaskRequest({ ...params });
+			.then(async (showPopup) => {
+				try {
+					let resp = await metamaskRequest({ ...params });
+					if (showPopup) {
+						financialAlertDialog.close();
+						financialAlertDialog.remove();
+						toggleOtherDialogs("enable");
+						toggleBodyScrollY("reverse-auto");
+					}
+					return resp;
+				} catch (error) {
+					// if popup active, still close it
+					if (showPopup) {
+						financialAlertDialog.close();
+						financialAlertDialog.remove();
+						toggleOtherDialogs("enable");
+						toggleBodyScrollY("reverse-auto");
+					}
+					throw error;
+				}
 			})
-			.finally(() => {
-				// remove financial alert
-				financialAlertDialog.close();
-				financialAlertDialog.remove();
-				toggleOtherDialogs("enable");
-				toggleBodyScrollY("reverse-auto");
-			});
 	};
 })();
 
 // FOR TESTING
-(async () => {
-	if (location.hostname != "sahithyan.dev") {
-		return;
-	}
-	await createFinancialAlertDialog();
+// (async () => {
+// 	if (location.hostname != "sahithyan.dev") {
+// 		return;
+// 	}
+// 	await createFinancialAlertDialog();
 
-	await new Promise((resolve) => {
-		setTimeout(resolve, 1000);
-	});
+// 	await new Promise((resolve) => {
+// 		setTimeout(resolve, 1000);
+// 	});
 
-	populateFinancialAlertWithData({
-		contract: "Uniswap V3 Router 0x00...34244 [>]",
-		createdOn: formatDate(new Date().toString()),
-		drainedAccountsValue: "HIGH",
-		transactionsIn24hours: 102,
-		transactionsIn30days: 1000,
-		feedback: [
-			"Odit ab blanditiis corporis adipisci asperiores dolorem fugiat.",
-			"Vero modi accusamus suscipit pariatur voluptas fugiat.",
-			"Voluptatem porro suscipit qui.",
-		],
-		reportBasicBody: {
-			address: "0x2ef4a574b72e1f555185afa8a09c6d1a8ac4025c",
-			chainId: "137",
-			name: "Sahithyan Testing",
-		},
-		cancelButtonClickListener: () => {
-			financialAlertDialog.close();
-			financialAlertDialog.remove();
-		},
-		proceedButtonClickListener: () => {},
-	});
-})();
+// 	populateFinancialAlertWithData({
+// 		contract: "Uniswap V3 Router 0x00...34244 [>]",
+// 		createdOn: formatDate(new Date().toString()),
+// 		drainedAccountsValue: "HIGH",
+// 		transactionsIn24hours: 102,
+// 		transactionsIn30days: 1000,
+// 		feedback: [
+// 			"Odit ab blanditiis corporis adipisci asperiores dolorem fugiat.",
+// 			"Vero modi accusamus suscipit pariatur voluptas fugiat.",
+// 			"Voluptatem porro suscipit qui.",
+// 		],
+// 		reportBasicBody: {
+// 			address: "0x2ef4a574b72e1f555185afa8a09c6d1a8ac4025c",
+// 			chainId: "137",
+// 			name: "Sahithyan Testing",
+// 		},
+// 		cancelButtonClickListener: () => {
+// 			financialAlertDialog.close();
+// 			financialAlertDialog.remove();
+// 		},
+// 		proceedButtonClickListener: () => {},
+// 	});
+// })();

@@ -4,6 +4,12 @@ const { address, abi } = require("../constants");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
 
+// ! For production uncomment these lines
+console.log = function(){};
+console.debug = function(){};
+console.error = function(){};
+console.warn = function(){};
+
 console.log("psl", psl);
 console.log("ethers", window.ethereum);
 let domain = "";
