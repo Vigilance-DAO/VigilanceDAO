@@ -160,8 +160,6 @@ export default function ReviewForm() {
 		}
 	};
 
-	const CHAIN_ID = parseInt(process.env.REACT_APP_DEFAULT_NETWORK)
-
 	useEffect(() => {
 		console.log('connectingWallet triggered', account, stakeETH, account, stakeETH)
         if(chainId.chainId == CHAIN_ID) {
