@@ -161,37 +161,31 @@ export default function ReviewForm() {
 	};
 
 	useEffect(() => {
-		console.log(
-			"connectingWallet triggered",
-			account,
-			stakeETH,
-			account,
-			chainId,
-			CHAIN_ID
-		);
-		if (account.loading) {
-			setButtonTxt("Connecting...");
-			setButtonDisabled(true);
-		} else if(chainId.chainId == CHAIN_ID) {
-			if (stakeETH.loading) {
-				setButtonTxt("loading...");
-				setButtonDisabled(true);
-			} else {
-				setButtonDisabled(false);
-				if (account.account && stakeETH.stakeETH == 0) {
-					setButtonTxt("loading...");
-					setButtonDisabled(true);
-					getStakeAmount();
-				} else if (account.account && stakeETH.stakeETH != 0) {
-					setButtonTxt("Report");
-					setButtonDisabled(false);
-				}
-			}
-		}
-	}, [account, stakeETH]);
+		console.log('connectingWallet triggered', account, stakeETH, account, stakeETH)
+        if(chainId.chainId == CHAIN_ID) {
+            if(account.loading) {
+                setButtonTxt("Connecting...")
+                setButtonDisabled(true)
+            } else if(stakeETH.loading){
+                setButtonTxt('loading...')
+                setButtonDisabled(true)
+            } else {
+                setButtonDisabled(false)
+                if(account.account && stakeETH.stakeETH == 0) {
+                    setButtonTxt('loading...')
+                    setButtonDisabled(true)
+                    getStakeAmount()
+                } else if(account.account && stakeETH.stakeETH != 0) {
+                    setButtonTxt("Report")
+                    setButtonDisabled(false)
+                }
+            }
+        }
+
+    }, [account, stakeETH])
 
 	useEffect(() => {
-		console.log("chainId changed", chainId);
+		console.log('chainId triggered', chainId, CHAIN_ID, account)
         if(chainId.loading) {
             setButtonTxt("Switching...")
             setButtonDisabled(true)
@@ -200,13 +194,13 @@ export default function ReviewForm() {
         } else if(chainId.chainId == CHAIN_ID && account.account) {
             setButtonDisabled(false)
             if (account.account && stakeETH.stakeETH == 0) {
-				setButtonTxt("loading...");
-				setButtonDisabled(true);
-				getStakeAmount();
-			} else if (account.account && stakeETH.stakeETH != 0) {
-				setButtonTxt("Report");
-				setButtonDisabled(false);
-			}
+              setButtonTxt("loading...");
+              setButtonDisabled(true);
+              getStakeAmount();
+            } else if (account.account && stakeETH.stakeETH != 0) {
+              setButtonTxt("Report");
+              setButtonDisabled(false);
+            }
         }
     }, [chainId])
 
@@ -243,7 +237,9 @@ export default function ReviewForm() {
 	async function handleButtonClick() {
 		if (!account.account) {
 			connectWallet();
-		} else if (buttonTxt == "Report") {
+		} else if(buttonTxt == 'Switch Network') {
+            switchNetwork()
+        } else if (buttonTxt == "Report") {
 			reportDomain();
 		} else if(buttonTxt == 'Switch Network') {
             connectWallet()
@@ -313,6 +309,7 @@ export default function ReviewForm() {
 						rules={[{ required: true }]}
 					>
 						<TextArea
+							style={{lineHeight: 1.3}}
 							rows={5}
 							value={fraudInfo.explanation}
 							onChange={(event) =>
@@ -323,7 +320,7 @@ export default function ReviewForm() {
 								"How? This website uses original logos and similar design as Uniswap. It prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet.",
 							].join("\n")}
 						/>
-						<span>Use this template message</span>
+						{/* <span>Use this template message</span> */}
 					</Form.Item>
 				) : null}
 
@@ -344,7 +341,7 @@ export default function ReviewForm() {
 							onChange={(event) =>
 								onFraudInfoChange("explanation", event.target.value)
 							}
-							placeholder="e.g. The website tries to look like a legitimate NFT site and claims to drop free NFTs to users. Upon interaction with the site, the website automatically trigger Approve token transactions to drain connected wallet."
+							placeholder="Example: The website tries to look like a legitimate NFT site and claims to drop free NFTs to users. Upon interaction with the site, the website automatically trigger Approve token transactions to drain connected wallet."
 						/>
 					</Form.Item>
 				) : null}

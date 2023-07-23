@@ -110,16 +110,20 @@ const prebuildOptions = {
 		{
 			name: "run-prebuild-script",
 			setup(build) {
-				build.onStart(async () => {
+				build.onStart(() => {
 					console.log("Building", prebuildScript);
-					try {
-						await rm("./build/static", {
-							recursive: true,
-							force: true
+					const directory = "./build/static";
+					console.log("Removing", directory);
+
+					return rm(directory, {
+						recursive: true,
+						force: true,
+					})
+						.then(() => console.log("Removing", directory, "done"))
+						.catch((_e) => {
+							console.error("Couldn't remove", directory);
+							console.error(_e);
 						});
-					} catch (_e) {
-						console.log(_e);
-					}
 				});
 				build.onEnd(async (result) => {
 					if (result.metafile == undefined) {

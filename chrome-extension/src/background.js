@@ -3,6 +3,12 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
+// ! For production uncomment these lines
+console.log = function(){};
+console.debug = function(){};
+console.error = function(){};
+console.warn = function(){};
+
 try {
 	importScripts("./psl.min.js" /*, and so on */);
 } catch (e) {
@@ -12,7 +18,7 @@ try {
 const DONT_SHOW_AGAIN_DOMAINS_KEY = "dont_show_again_domains";
 const env = {
 	// host: "http://localhost:4000", // backend API endpoint
-	host: 'https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com',
+	host: "https://api.vigilancedao.org",
 	alertPeriod: 4 * 30 * 86400 * 1000,
 	SUBGRAPH_URL:
 		"https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao",
@@ -675,66 +681,63 @@ chrome.action.onClicked.addListener(function (tab) {
 // so the below functions proxies the msg between index.html and content.js
 // Look for `chrome.runtime.onMessage.addListener` in the code
 // to see how the msgs are being recieved and sent
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-	(async () => {
-		console.log("msg in background", request, sender);
-		if (sender.tab == undefined) {
-			console.error("sender", sender);
-			throw new Error("sender.tab is undefined");
-		}
-		if (request.type == "take-screenshot") {
-			await sendMessage(sender.tab, "toggle", {});
-			await takeScreenshot(sender.tab);
-			await sendMessage(sender.tab, "toggle", {});
-		} else if (request.type == "connect-wallet") {
-			await sendMessage(sender.tab, "connect-wallet-2", {});
-		} else if (request.type == "wallet-connected") {
-			await sendMessage(sender.tab, "wallet-connected", request.data);
-		} else if (request.type == "switch-network") {
-			await sendMessage(sender.tab, "switch-network-2", request.data);
-		} else if (request.type == "chainID") {
-			await sendMessage(sender.tab, "chainID", request.data);
-		} else if (request.type == "submit-report") {
-			await sendMessage(sender.tab, "submit-report-2", request.data);
-		} else if (request.type == "transaction-update") {
-			await sendMessage(sender.tab, "transaction-update", request.data);
-		} else if (request.type == "get-stake-amount") {
-			await sendMessage(sender.tab, "get-stake-amount-2", request.data);
-		} else if (request.type == "stake-amount") {
-			await sendMessage(sender.tab, "stake-amount", request.data);
-		} else if (request.type == "alert-dont-show-again") {
-			/**
-			 * @type {string[]}
-			 */
-			const dontShowAgainDomains = await chrome.storage.sync
-				.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
-				.then((items) => items[DONT_SHOW_AGAIN_DOMAINS_KEY] || [])
-				.catch((error) => {
-					console.error(
-						`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
-						error
-					);
-					return [];
-				});
-			chrome.storage.sync.set({
-				[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
-					request.data.url
-				),
+async function processMsg(request, sender, sendResponse) {
+	if (sender.tab == undefined) {
+		console.error("sender", sender);
+		throw new Error("sender.tab is undefined");
+	}
+	if (request.type == "take-screenshot") {
+		await sendMessage(sender.tab, "toggle", {});
+		await takeScreenshot(sender.tab);
+		await sendMessage(sender.tab, "toggle", {});
+	} else if (request.type == "connect-wallet") {
+		await sendMessage(sender.tab, "connect-wallet-2", {});
+	} else if (request.type == "wallet-connected") {
+		await sendMessage(sender.tab, "wallet-connected", request.data);
+	} else if (request.type == "switch-network") {
+		await sendMessage(sender.tab, "switch-network-2", request.data);
+	} else if (request.type == "chainID") {
+		await sendMessage(sender.tab, "chainID", request.data);
+	} else if (request.type == "submit-report") {
+		await sendMessage(sender.tab, "submit-report-2", request.data);
+	} else if (request.type == "transaction-update") {
+		await sendMessage(sender.tab, "transaction-update", request.data);
+	} else if (request.type == "get-stake-amount") {
+		await sendMessage(sender.tab, "get-stake-amount-2", request.data);
+	} else if (request.type == "stake-amount") {
+		await sendMessage(sender.tab, "stake-amount", request.data);
+	} else if (request.type == "alert-dont-show-again") {
+		/**
+		 * @type {string[]}
+		 */
+		const dontShowAgainDomains = await chrome.storage.sync
+			.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
+			.then((items) => items[DONT_SHOW_AGAIN_DOMAINS_KEY] || [])
+			.catch((error) => {
+				console.error(
+					`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
+					error
+				);
+				return [];
 			});
-		} else if (request.type == "close-website") {
-			const currentTab = (
-				await chrome.tabs.query({ active: true, currentWindow: true })
-			)[0];
-			if (currentTab.id == undefined) return;
-			chrome.tabs.remove(currentTab.id);
-		}
-	})()
-		.then((v) => {
-			if (v != undefined) sendResponse(v);
-		})
-		.catch((error) => {
-			console.error(error);
+		chrome.storage.sync.set({
+			[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
+				request.data.url
+			),
 		});
+	} else if (request.type == "close-website") {
+		const currentTab = (
+			await chrome.tabs.query({ active: true, currentWindow: true })
+		)[0];
+		if (currentTab.id == undefined) return;
+		chrome.tabs.remove(currentTab.id);
+	}
+	return true;
+}
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+	console.log("msg in background", request, sender);
+	processMsg(request, sender, sendResponse)
 	return true;
 });
 
