@@ -51,20 +51,27 @@ jobs:
           npm run release  
           zip -r chrome-extension.zip build
 
-      - name: Install webstore cli
-        run: |-
-          npm install -g chrome-webstore-upload-cli
+      # - name: Install webstore cli
+      #   run: |-
+      #     npm install -g chrome-webstore-upload-cli
 
-      - name: Upload step
-        run: |-
-          cd chrome-extension
-          chrome-webstore-upload upload --source chrome-extension.zip --extension-id ${{ env.EXTENSION_ID }} --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }}
+      # # acc: vedik....@gm... : Vigilance-dao
+      # - name: Upload step
+      #   run: |-
+      #     cd chrome-extension
+      #     chrome-webstore-upload upload --source chrome-extension.zip --extension-id ${{ env.EXTENSION_ID }} --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }}
 
-      - uses: wemogy/next-version-action@2.0.2
-        id: release-version
+      # - uses: wemogy/next-version-action@2.0.2
+      #   id: release-version
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     projects: 'Single'
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          projects: 'Single'
+          path: chrome-extension\public\manifest.json
 
       - name: Create Pre-Release
         id: create_release
@@ -72,8 +79,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.release-version.outputs.next-version }}
-          release_name: Release ${{  steps.release-version.outputs.next-version }}
+          tag_name: ${{ steps.package-version.outputs.current-version }}
+          release_name: Release ${{  steps.package-version.outputs.current-version }}
           draft: false
           prerelease: true
 
