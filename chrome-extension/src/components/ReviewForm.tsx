@@ -77,6 +77,7 @@ function InfoIconContainer(props: { disabled?: boolean }) {
 }
 export default function ReviewForm() {
 	const { web3Hooks } = useContext(Context);
+	const CHAIN_ID = parseInt(process.env.REACT_APP_DEFAULT_NETWORK)
 	const {
 		connectWallet,
 		submitReport,
@@ -194,16 +195,25 @@ export default function ReviewForm() {
             setButtonTxt("Switch Network")
         } else if(chainId.chainId == CHAIN_ID && account.account) {
             setButtonDisabled(false)
-            setButtonTxt("Report")
+            if (account.account && stakeETH.stakeETH == 0) {
+              setButtonTxt("loading...");
+              setButtonDisabled(true);
+              getStakeAmount();
+            } else if (account.account && stakeETH.stakeETH != 0) {
+              setButtonTxt("Report");
+              setButtonDisabled(false);
+            }
         }
-    }, [chainId, account])
+    }, [chainId])
 
 	useEffect(() => {
 		console.log("reportTxInfo", reportTxInfo);
 		if (reportTxInfo.loading) {
 			setButtonTxt("Submitting...");
 			setButtonDisabled(true);
-		} else if (account.account) {
+		} else if(buttonTxt == 'Switch Network') {
+            connectWallet()
+        } else if (account.account) {
 			setButtonDisabled(false);
 			setButtonTxt("Report");
 		}
@@ -233,6 +243,8 @@ export default function ReviewForm() {
             switchNetwork()
         } else if (buttonTxt == "Report") {
 			reportDomain();
+		} else if(buttonTxt == 'Switch Network') {
+            connectWallet()
 		} else {
 			alert(`Setting not available: ${buttonTxt}`);
 		}
@@ -306,7 +318,7 @@ export default function ReviewForm() {
 								onFraudInfoChange("explanation", event.target.value)
 							}
 							placeholder={[
-								"This website is trying to imitate uniswap.org.",
+								"E.g. This website is trying to imitate uniswap.org.",
 								"How? This website uses original logos and similar design as Uniswap. It prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet.",
 							].join("\n")}
 						/>
@@ -359,32 +371,31 @@ export default function ReviewForm() {
 				<div style={{ display: "flex" }}>
 					{chainId.chainId != CHAIN_ID && account.account?
 						<div>
-						<p style={{paddingRight: '25px', paddingBlock: '2px', color: 'red', fontWeight: '600', fontSize: '13px'}}>Incorrect Network</p>
+							<p style={{paddingRight: '25px', paddingBlock: '2px', color: 'red', fontWeight: '600', fontSize: '13px'}}>Incorrect Network</p>
 						</div>
 						:
 						<div>
-					{account.account ? (
-						<Tooltip
-							title="This is required to create a report. If deemed correct, you get your stake back along with additional rewards. If incorrect, entire stake is slashed."
-							style={{ cursor: "pointer" }}
-						>
-							<Button
-								disabled={true}
-								style={{
-									background: "white",
-									color: "black",
-									cursor: "pointer !important",
-								}}
-							>
-								<b style={{ paddingRight: "5px" }}>STAKE:</b>{" "}
-								{stakeETH.stakeETH} MATIC
-							</Button>
-						</Tooltip>
-					) : (
-						<></>
-					)}
-					</div>
-                    }
+							{account.account ?
+								<Tooltip
+									title="This is required to create a report. If deemed correct, you get your stake back along with additional rewards. If incorrect, entire stake is slashed."
+									style={{ cursor: "pointer" }}
+								>
+									<Button
+										disabled={true}
+										style={{
+											background: "white",
+											color: "black",
+											cursor: "pointer !important",
+										}}
+									>
+										<b style={{ paddingRight: "5px" }}>STAKE:</b>{" "}
+										{stakeETH.stakeETH} MATIC
+									</Button>
+								</Tooltip>
+								: <></>
+							}
+						</div>
+					}
 					<Button
 						type="primary"
 						onClick={handleButtonClick}

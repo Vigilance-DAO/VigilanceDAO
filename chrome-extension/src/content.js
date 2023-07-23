@@ -252,6 +252,7 @@ async function connectWallet() {
 	// const provider = await detectEthereumProvider()
 	if (provider) {
 		// Prompt user for account connections
+		await checkNetwork();
 		await provider.request({ method: 'eth_requestAccounts' });
 		const account = provider.selectedAddress;
 		onAccountChange(account);
