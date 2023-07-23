@@ -67,20 +67,32 @@ jobs:
       #     token: ${{ secrets.GITHUB_TOKEN }}
       #     projects: 'Single'
 
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-        with:
-          path: chrome-extension\public\manifest.json
+      # - name: get-npm-version
+      #   id: package-version
+      #   uses: martinbeentjes/npm-get-version-action@v1.3.1
+      #   with:
+      #     path: chrome-extension\public\manifest.json
 
-      - name: Create Pre-Release
+      - name: Read manifest.json
+        id: set_version
+        run: |
+          content=`cat ./chrome-extension/public/manifest.json`
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=manifestJson::$content"
+
+      - name: Get current version
+        run: echo "${{fromJson(steps.set_version.outputs.manifestJson).version}}""
+      
+      - name: Create Pre-Release 
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.package-version.outputs.current-version }}
-          release_name: Release ${{  steps.package-version.outputs.current-version }}
+          tag_name: ${{fromJson(steps.set_version.outputs.manifestJson).version}}
+          release_name: Release ${{fromJson(steps.set_version.outputs.manifestJson).version}}
           draft: false
           prerelease: true
 
