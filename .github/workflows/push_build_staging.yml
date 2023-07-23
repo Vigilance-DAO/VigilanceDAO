@@ -76,14 +76,12 @@ jobs:
       - name: Read manifest.json
         id: set_version
         run: |
-          content=`cat ./chrome-extension/public/manifest.json`
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          echo "::set-output name=manifestJson::$content"
+          echo 'MANIFEST_JSON<<EOF' >> $GITHUB_ENV
+          cat ./chrome-extension/public/manifest.json >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
 
       - name: Get current version
-        run: echo "${{fromJson(steps.set_version.outputs.manifestJson).version}}""
+        run: echo '${{ fromJson(env.MANIFEST_JSON).version }}'
       
       - name: Create Pre-Release 
         id: create_release
@@ -91,8 +89,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{fromJson(steps.set_version.outputs.manifestJson).version}}
-          release_name: Release ${{fromJson(steps.set_version.outputs.manifestJson).version}}
+          tag_name: ${{ fromJson(env.MANIFEST_JSON).version }}
+          release_name: Release ${{ fromJson(env.MANIFEST_JSON).version }}
           draft: false
           prerelease: true
 
