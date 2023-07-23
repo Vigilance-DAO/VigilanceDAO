@@ -30,7 +30,7 @@ export default function FinancialAlert() {
 					<path d="M6 12l-3 0"></path>
 					<path d="M7.75 7.75l-2.15 -2.15"></path>
 				</svg>
-				<span>Gathering data about receiver...</span>
+				<span>Analysing risk...</span>
 			</div>
 			<div className="data-screen">
 				<div className="basic-info">
@@ -74,7 +74,31 @@ export default function FinancialAlert() {
 
 				<div className="financial-info">
 					<div className="item transaction-info">
-						<h4>Transactions</h4>
+						<h4>
+							Popularity
+							<abbr title="Transaction count of the contract">
+								<span>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="tip icon icon-tabler icon-tabler-info-circle"
+										width="12"
+										height="12"
+										viewBox="0 0 24 24"
+										strokeWidth="2"
+										stroke="currentColor"
+										fill="none"
+										strokeLinecap="round"
+										strokeLinejoin="round"
+									>
+										<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+										<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>
+										<path d="M12 9h.01"></path>
+										<path d="M11 12h1v4h1"></path>
+									</svg>
+								</span>
+							</abbr>
+							
+						</h4>
 						<div className="transaction-info-item">
 							<span className="transactions-in-day">0{/* {"101"} */}</span>
 							<span>24 hours</span>
@@ -104,8 +128,8 @@ export default function FinancialAlert() {
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="icon icon-tabler icon-tabler-info-circle"
-									width="24"
-									height="24"
+									width="12"
+									height="12"
 									viewBox="0 0 24 24"
 									strokeWidth="2"
 									stroke="currentColor"
@@ -124,24 +148,24 @@ export default function FinancialAlert() {
 				</div>
 
 				<details className="feedback-container">
-					<summary tabIndex={-1}>View feedbacks</summary>
+					<summary tabIndex={-1}>Risks</summary>
 					<ul className="feedback-list"></ul>
 				</details>
 
 				<div className="bottom-container">
-					<div className="credits">Powered by VigialnceDAO Beta</div>
+					<div className="credits">Powered by <a className="hero-link" href="https://vigilancedao.org">VigilanceDAO <span>Beta</span></a></div>
 
-					<button id="proceed-btn">Proceed</button>
+					<button id="proceed-btn" className="active-btn" autoFocus={true}>Proceed</button>
 					<button id="report-btn">Report</button>
-					<button id="close-btn" autoFocus={true}>
+					<button id="close-btn">
 						Cancel
 					</button>
 				</div>
 
 				<form id="report-form" className="hidden">
 					<h2>Report</h2>
-					<div>
-						<label>Fraud type</label>
+					<div className="select-div">
+						<label>Fraud type:</label>
 						<select name="fraud-type" defaultValue="phishing">
 							<option value="phishing">Phishing</option>
 							<option value="financial-loss">Financial Loss</option>
@@ -150,13 +174,13 @@ export default function FinancialAlert() {
 
 					<div data-show-if="phishing" className="hidden">
 						<label>
-							Which legitimate contract is being imitated by this contract? and
+							Which legitimate project is being imitated by this contract? and
 							How does it trick people?
 						</label>
 						<textarea
 							name="phishing-info"
 							rows={4}
-							placeholder="This address is trying to imitate uniswap.org. The owner of this address prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet."
+							placeholder="Example: This address is trying to imitate uniswap.org. The owner of this address prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet."
 						/>
 					</div>
 					<div data-show-if="financial-loss" className="hidden">
@@ -172,7 +196,7 @@ export default function FinancialAlert() {
 
 					<div className="bottom-container">
 						<div className="form-response-message"></div>
-						<button className="submit">Submit</button>
+						<button className="submit active-btn">Submit</button>
 					</div>
 				</form>
 			</div>

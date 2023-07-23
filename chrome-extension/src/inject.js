@@ -715,36 +715,36 @@ const SUPPORTED_CHAINS = ["1", "137"];
 })();
 
 // FOR TESTING
-//(async () => {
-//	if (location.hostname != "sahithyan.dev") {
-//		return;
-//	}
-//	await createFinancialAlertDialog();
+(async () => {
+	if (location.hostname != "sahithyan.dev") {
+		return;
+	}
+	await createFinancialAlertDialog();
 
-//	await new Promise((resolve) => {
-//		setTimeout(resolve, 1000);
-//	});
+	await new Promise((resolve) => {
+		setTimeout(resolve, 1000);
+	});
 
-//	populateFinancialAlertWithData({
-//		contract: "Uniswap V3 Router 0x00...34244 [>]",
-//		createdOn: formatDate(new Date().toString()),
-//		drainedAccountsValue: "HIGH",
-//		transactionsIn24hours: 102,
-//		transactionsIn30days: 1000,
-//		feedback: [
-//			"Odit ab blanditiis corporis adipisci asperiores dolorem fugiat.",
-//			"Vero modi accusamus suscipit pariatur voluptas fugiat.",
-//			"Voluptatem porro suscipit qui.",
-//		],
-//		reportBasicBody: {
-//			address: "0x2ef4a574b72e1f555185afa8a09c6d1a8ac4025c",
-//			chainId: "137",
-//			name: "Sahithyan Testing",
-//		},
-//		cancelButtonClickListener: () => {
-//			financialAlertDialog.close();
-//			financialAlertDialog.remove();
-//		},
-//		proceedButtonClickListener: () => {},
-//	});
-// })();
+	populateFinancialAlertWithData({
+		contract: "Uniswap V3 Router 0x00...34244 [>]",
+		createdOn: formatDate(new Date().toString()),
+		drainedAccountsValue: "HIGH",
+		transactionsIn24hours: 102,
+		transactionsIn30days: 1000,
+		feedback: [
+			"Odit ab blanditiis corporis adipisci asperiores dolorem fugiat.",
+			"Vero modi accusamus suscipit pariatur voluptas fugiat.",
+			"Voluptatem porro suscipit qui.",
+		],
+		reportBasicBody: {
+			address: "0x2ef4a574b72e1f555185afa8a09c6d1a8ac4025c",
+			chainId: "137",
+			name: "Sahithyan Testing",
+		},
+		cancelButtonClickListener: () => {
+			financialAlertDialog.close();
+			financialAlertDialog.remove();
+		},
+		proceedButtonClickListener: () => {},
+	});
+})();

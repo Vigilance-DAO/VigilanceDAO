@@ -84,6 +84,7 @@ export default function ReviewForm() {
 		stakeETH,
 		account,
 		chainId,
+		switchNetwork,
 		reportTxInfo,
 	} = web3Hooks;
 
@@ -158,32 +159,44 @@ export default function ReviewForm() {
 		}
 	};
 
+	const CHAIN_ID = parseInt(process.env.REACT_APP_DEFAULT_NETWORK)
+
 	useEffect(() => {
-		console.log(
-			"connectingWallet triggered",
-			account,
-			stakeETH,
-			account,
-			stakeETH
-		);
-		if (account.loading) {
-			setButtonTxt("Connecting...");
-			setButtonDisabled(true);
-		} else if (stakeETH.loading) {
-			setButtonTxt("loading...");
-			setButtonDisabled(true);
-		} else {
-			setButtonDisabled(false);
-			if (account.account && stakeETH.stakeETH == 0) {
-				setButtonTxt("loading...");
-				setButtonDisabled(true);
-				getStakeAmount();
-			} else if (account.account && stakeETH.stakeETH != 0) {
-				setButtonTxt("Report");
-				setButtonDisabled(false);
-			}
-		}
-	}, [account, stakeETH]);
+		console.log('connectingWallet triggered', account, stakeETH, account, stakeETH)
+        if(chainId.chainId == CHAIN_ID) {
+            if(account.loading) {
+                setButtonTxt("Connecting...")
+                setButtonDisabled(true)
+            } else if(stakeETH.loading){
+                setButtonTxt('loading...')
+                setButtonDisabled(true)
+            } else {
+                setButtonDisabled(false)
+                if(account.account && stakeETH.stakeETH == 0) {
+                    setButtonTxt('loading...')
+                    setButtonDisabled(true)
+                    getStakeAmount()
+                } else if(account.account && stakeETH.stakeETH != 0) {
+                    setButtonTxt("Report")
+                    setButtonDisabled(false)
+                }
+            }
+        }
+
+    }, [account, stakeETH])
+
+	useEffect(() => {
+		console.log('chainId triggered', chainId, CHAIN_ID, account)
+        if(chainId.loading) {
+            setButtonTxt("Switching...")
+            setButtonDisabled(true)
+        } else if(chainId.chainId != CHAIN_ID && account.account) {
+            setButtonTxt("Switch Network")
+        } else if(chainId.chainId == CHAIN_ID && account.account) {
+            setButtonDisabled(false)
+            setButtonTxt("Report")
+        }
+    }, [chainId, account])
 
 	useEffect(() => {
 		console.log("reportTxInfo", reportTxInfo);
@@ -216,7 +229,9 @@ export default function ReviewForm() {
 	async function handleButtonClick() {
 		if (!account.account) {
 			connectWallet();
-		} else if (buttonTxt == "Report") {
+		} else if(buttonTxt == 'Switch Network') {
+            switchNetwork()
+        } else if (buttonTxt == "Report") {
 			reportDomain();
 		} else {
 			alert(`Setting not available: ${buttonTxt}`);
@@ -284,6 +299,7 @@ export default function ReviewForm() {
 						rules={[{ required: true }]}
 					>
 						<TextArea
+							style={{lineHeight: 1.3}}
 							rows={5}
 							value={fraudInfo.explanation}
 							onChange={(event) =>
@@ -294,7 +310,7 @@ export default function ReviewForm() {
 								"How? This website uses original logos and similar design as Uniswap. It prompts users to connect wallet and then automatically triggers Approve transactions to drain users wallet.",
 							].join("\n")}
 						/>
-						<span>Use this template message</span>
+						{/* <span>Use this template message</span> */}
 					</Form.Item>
 				) : null}
 
@@ -315,7 +331,7 @@ export default function ReviewForm() {
 							onChange={(event) =>
 								onFraudInfoChange("explanation", event.target.value)
 							}
-							placeholder="The website tries to look like a legitimate NFT site and claims to drop free NFTs to users. Upon interaction with the site, the website automatically trigger Approve token transactions to drain connected wallet."
+							placeholder="Example: The website tries to look like a legitimate NFT site and claims to drop free NFTs to users. Upon interaction with the site, the website automatically trigger Approve token transactions to drain connected wallet."
 						/>
 					</Form.Item>
 				) : null}
@@ -341,6 +357,12 @@ export default function ReviewForm() {
 
 				<Evidence fileList={fileList} setFileList={setFileList}></Evidence>
 				<div style={{ display: "flex" }}>
+					{chainId.chainId != CHAIN_ID && account.account?
+						<div>
+						<p style={{paddingRight: '25px', paddingBlock: '2px', color: 'red', fontWeight: '600', fontSize: '13px'}}>Incorrect Network</p>
+						</div>
+						:
+						<div>
 					{account.account ? (
 						<Tooltip
 							title="This is required to create a report. If deemed correct, you get your stake back along with additional rewards. If incorrect, entire stake is slashed."
@@ -361,6 +383,8 @@ export default function ReviewForm() {
 					) : (
 						<></>
 					)}
+					</div>
+                    }
 					<Button
 						type="primary"
 						onClick={handleButtonClick}

@@ -22,11 +22,11 @@ const { Panel } = Collapse;
 const links = [
 	{
 		heading: "How does it work?",
-		link: "https://vigilancedao.notion.site/Introduction-56c27e27bebd4f1999ae90412934c93e",
+		link: "https://docs.vigilancedao.org/v1",
 	},
 	{
 		heading: "How to report websites?",
-		link: "https://vigilancedao.notion.site/Report-domains-2bbc4b4fc530452287187e3948b90c80",
+		link: "https://docs.vigilancedao.org/v1/tutorial/how-to-report-and-protect-others",
 	},
 ];
 
