@@ -1,7 +1,7 @@
 import { ethers, upgrades } from "hardhat";
 const { getTopDomains } = require("./domains/helper.js");
 async function main() {
-  const domains = (await getTopDomains()).slice(0, 10000);
+  const domains = (await getTopDomains()).slice(0, 1000);
   const governanceBadgeNFT = await ethers.getContractFactory(
     "GovernanceBadgeNFT"
   );
@@ -42,9 +42,15 @@ async function main() {
 
   const tx = await token.transferOwnership(reportDomain.address);
   await tx.wait();
-  console.log(domains.length);
-  const validate = await reportDomain.defaultDomain(domains[0]);
-  await validate.wait();
+  let slice;
+  let validate;
+  for (let i = 0; i < domains.length; ) {
+    slice = domains.slice(i, i + 100);
+    validate = await reportDomain.defaultDomain(slice);
+    await validate.wait();
+    i += 100;
+    console.log("validated", i);
+  }
   console.log("validated");
 }
 

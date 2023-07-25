@@ -13,7 +13,7 @@ async function getTopDomains() {
         data.push(parsed.sld);
       }
       counter++;
-      if (data.length === 10000) {
+      if (data.length === 1000) {
         csvStream.end();
       }
     });

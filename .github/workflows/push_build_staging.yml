@@ -1,0 +1,106 @@
+name: Build & Upload release
+
+on:
+  push:
+    branches: [ "staging" ]
+
+  workflow_dispatch:
+    inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+        tags:
+          description: 'Test scenario tags'  
+
+# Tests have been split into various categories to reduce runtime and ensure rough 15-20min to complete all tests
+jobs:
+  build-publish:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        node-version: [16.14.0]
+    env:
+      EXTENSION_ID: olgmmbfdmfbnihhcfhalglddbjobgpli
+    steps:
+      - name: "Checkout this repo"
+        uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: "Setup .env"
+        run: |
+          cd chrome-extension
+          touch .env
+          echo 'REACT_APP_SUPPORTED_NETWORKS=80001' >> .env
+          echo 'REACT_APP_DEFAULT_NETWORK=80001' >> .env
+          echo 'REACT_APP_WEB3_STORAGE_KEY=${{secrets.REACT_APP_WEB3_STORAGE_KEY}}' >> .env
+          echo 'REACT_APP_THEGRAPH_URL=https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao' >> .env
+
+      - name: "Install node_modules"
+        run: |
+          cd chrome-extension
+          npm install
+
+      - name: "Create release build"
+        run: |
+          cd chrome-extension
+          npm run release  
+          zip -r chrome-extension.zip build
+
+      # - name: Install webstore cli
+      #   run: |-
+      #     npm install -g chrome-webstore-upload-cli
+
+      # # acc: vedik....@gm... : Vigilance-dao
+      # - name: Upload step
+      #   run: |-
+      #     cd chrome-extension
+      #     chrome-webstore-upload upload --source chrome-extension.zip --extension-id ${{ env.EXTENSION_ID }} --client-id ${{ secrets.CI_GOOGLE_CLIENT_ID }} --client-secret ${{ secrets.CI_GOOGLE_CLIENT_SECRET }} --refresh-token ${{ secrets.CI_GOOGLE_REFRESH_TOKEN }}
+
+      # - uses: wemogy/next-version-action@2.0.2
+      #   id: release-version
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     projects: 'Single'
+
+      # - name: get-npm-version
+      #   id: package-version
+      #   uses: martinbeentjes/npm-get-version-action@v1.3.1
+      #   with:
+      #     path: chrome-extension\public\manifest.json
+
+      - name: Read manifest.json
+        id: set_version
+        run: |
+          echo 'MANIFEST_JSON<<EOF' >> $GITHUB_ENV
+          cat ./chrome-extension/public/manifest.json >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Get current version
+        run: echo '${{ fromJson(env.MANIFEST_JSON).version }}'
+      
+      - name: Create Pre-Release 
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ fromJson(env.MANIFEST_JSON).version }}
+          release_name: Release ${{ fromJson(env.MANIFEST_JSON).version }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ./chrome-extension/chrome-extension.zip
+          asset_name: chrome-extension.zip
+          asset_content_type: application/zip
