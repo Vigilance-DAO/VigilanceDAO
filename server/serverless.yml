@@ -52,8 +52,8 @@ functions:
           caching:
             enabled: true
             cacheKeyParameters:
-              - name: integration.request.header.address
-                mappedFrom: method.request.body.address
+              - name: integration.request.header.domain
+                mappedFrom: method.request.body.domain
     
   contract-info:
     handler: src/handler.handler
@@ -69,6 +69,14 @@ functions:
                 mappedFrom: method.request.body.address
               - name: integration.request.header.chain_id
                 mappedFrom: method.request.body.chain_id
+  
+  submit-contract-report:
+    handler: src/handler.handler
+    events:
+      - http:
+          path: '/submit-contract-report'
+          method: POST
+          cors: true
 
 package:
   individually: true
