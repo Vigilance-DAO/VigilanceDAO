@@ -101,7 +101,7 @@ function App() {
         <Button
           variant="solid"
           as="a"
-          href="https://github.com/VenkatTeja/VigilanceDAO/releases/"
+          href="https://chrome.google.com/webstore/detail/web3-vigilance-browser-se/olgmmbfdmfbnihhcfhalglddbjobgpli?hl=en"
           target="_blank"
           size={{ base: "md", md: "lg" }}
           bgColor="#5400CD"
@@ -127,7 +127,7 @@ function App() {
           size={{ base: "md", md: "lg" }}
           as="a"
           target="_blank"
-          href="https://vigilancedao.notion.site/vigilancedao/Introduction-56c27e27bebd4f1999ae90412934c93e"
+          href="https://docs.vigilancedao.org/"
           borderColor="#5400CD"
           borderStyle="solid"
           borderWidth="0.1rem"
