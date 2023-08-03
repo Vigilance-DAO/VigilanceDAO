@@ -1,14 +1,18 @@
 import React from "react";
 // import "./App.css";
 // import AppBar from '@mui/material/AppBar';
-import { Button, Flex, HStack, Image, Stack, Text } from "@chakra-ui/react";
+import { Button, Flex, HStack, Image, Stack, Text, ButtonGroup, Icon, IconButton, Link } from "@chakra-ui/react";
 import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 // import ellipse from "./assets/ellipse1.svg";
 import ellipse from "./assets/ellipse-bottom-left.svg";
 import gradient from "./assets/gradient.png";
 import polygon_blockchain_logo from "./assets/polygon_blockchain_logo.svg";
+import { FaDiscord } from 'react-icons/fa';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import { useNavigate } from "react-router-dom";
 
 function App() {
+  const navigate = useNavigate();
   return (
     <Flex
       direction="column"
@@ -146,6 +150,20 @@ function App() {
         >
           See how it works
         </Button>
+      </Stack>
+      <Stack style={{marginTop: '50px'}}>
+        <ButtonGroup
+          gap='1'
+          style={{zIndex: 10000}}
+        >
+        <Link href='https://twitter.com/VigilanceDao' isExternal>
+          {/* <TwitterIcon color /> */}
+          <Icon as={TwitterIcon} color='white' boxSize={6} />
+        </Link>
+        <Link href='https://discord.gg/xUSf2zdYmD' isExternal>
+          <Icon as={FaDiscord} color='white' boxSize={6} />
+        </Link>
+        </ButtonGroup>
       </Stack>
       {/* <Stack
         direction={{ base: "row", md: "row" }}
