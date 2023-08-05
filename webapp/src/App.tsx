@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // import "./App.css";
 // import AppBar from '@mui/material/AppBar';
 import { Button, Flex, HStack, Image, Stack, Text, ButtonGroup, Icon, IconButton, Link } from "@chakra-ui/react";
@@ -10,9 +10,17 @@ import polygon_blockchain_logo from "./assets/polygon_blockchain_logo.svg";
 import { FaDiscord } from 'react-icons/fa';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import { useNavigate } from "react-router-dom";
+var mixpanel = require('mixpanel-browser');
+
 
 function App() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    mixpanel.init(process.env.REACT_APP_MIXPANEL);
+    mixpanel.track('Open Landing Page');
+  }, [])
+
   return (
     <Flex
       direction="column"
