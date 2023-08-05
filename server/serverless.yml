@@ -11,13 +11,16 @@ custom:
   serverless-offline:
     httpPort: 4000
     noPrependStageInUrl: true
+  apiGatewayCaching:
+    enabled: true
+    ttlInSeconds: 3600
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs16.x
   region: ap-northeast-1
   memorySize: 512
-  timeout: 10
+  timeout: 180
   logRetentionInDays: 90
   logs:
     httpApi: true
@@ -26,13 +29,54 @@ provider:
     cors: true
 
 functions:
-  app:
+  # app:
+  #   handler: src/handler.handler
+  #   # reservedConcurrency: 100
+  #   events:
+  #     - http:
+  #         path: '/{proxy+}'
+  #         method: '*'
+  #         caching:
+  #           enabled: true
+  #           cacheKeyParameters:
+  #             - name: integration.request.header.bodyValue
+  #               mappedFrom: method.request.body
+    
+  domain-info:
     handler: src/handler.handler
-    # reservedConcurrency: 100
     events:
-      - httpApi:
-          path: '/{proxy+}'
-          method: '*'
+      - http:
+          path: '/domain-info'
+          method: POST
+          cors: true
+          caching:
+            enabled: true
+            cacheKeyParameters:
+              - name: integration.request.header.domain
+                mappedFrom: method.request.body.domain
+    
+  contract-info:
+    handler: src/handler.handler
+    events:
+      - http:
+          path: '/contract-info'
+          method: POST
+          cors: true
+          caching:
+            enabled: true
+            cacheKeyParameters:
+              - name: integration.request.header.address
+                mappedFrom: method.request.body.address
+              - name: integration.request.header.chain_id
+                mappedFrom: method.request.body.chain_id
+  
+  submit-contract-report:
+    handler: src/handler.handler
+    events:
+      - http:
+          path: '/submit-contract-report'
+          method: POST
+          cors: true
 
 package:
   individually: true
@@ -41,3 +85,29 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-bundle
   - serverless-offline
+  - serverless-api-gateway-caching
+
+
+# domain-info:
+#     handler: src/handler.handler
+#     events:
+#       - http:
+#           path: '/domain-info'
+#           method: POST
+#           caching:
+#             enabled: true
+#             cacheKeyParameters:
+#               - name: integration.request.header.bodyValue
+#                 mappedFrom: method.request.body
+  
+#   contract-info:
+#     handler: src/handler.handler
+#     events:
+#       - http:
+#           path: '/contract-info'
+#           method: POST
+#           caching:
+#             enabled: true
+#             cacheKeyParameters:
+#               - name: integration.request.header.bodyValue
+#                 mappedFrom: method.request.body

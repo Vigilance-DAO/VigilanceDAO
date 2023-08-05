@@ -11,3 +11,4 @@ package-lock.json
 yarn.lock
 
 chrome-extension-build/static/*
+

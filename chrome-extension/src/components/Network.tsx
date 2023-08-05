@@ -51,6 +51,10 @@ function NetworkSelector() {
         if(account.account) {
             let len = account.account.length
             let network = chainInfo.find(item => item.chainId == chainId.chainId)
+            if (!network || !network.shortName) {
+                setNetwork('Incorrect network')
+                return;
+            }
             setNetwork(`${account.account.substring(0, 3)}...${account.account.substring(len-3, len)} | ${network?.shortName}`)
             if(items.length == 2) {
                 items.push({

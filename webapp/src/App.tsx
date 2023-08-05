@@ -1,14 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 // import "./App.css";
 // import AppBar from '@mui/material/AppBar';
-import { Button, Flex, HStack, Image, Stack, Text } from "@chakra-ui/react";
+import { Button, Flex, HStack, Image, Stack, Text, ButtonGroup, Icon, IconButton, Link } from "@chakra-ui/react";
 import ArrowOutwardIcon from "@mui/icons-material/ArrowOutward";
 // import ellipse from "./assets/ellipse1.svg";
 import ellipse from "./assets/ellipse-bottom-left.svg";
 import gradient from "./assets/gradient.png";
 import polygon_blockchain_logo from "./assets/polygon_blockchain_logo.svg";
+import { FaDiscord } from 'react-icons/fa';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import { useNavigate } from "react-router-dom";
+var mixpanel = require('mixpanel-browser');
+
 
 function App() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    mixpanel.init(process.env.REACT_APP_MIXPANEL);
+    mixpanel.track('Open Landing Page');
+  }, [])
+
   return (
     <Flex
       direction="column"
@@ -101,7 +113,7 @@ function App() {
         <Button
           variant="solid"
           as="a"
-          href="https://github.com/VenkatTeja/VigilanceDAO/releases/"
+          href="https://chrome.google.com/webstore/detail/web3-vigilance-browser-se/olgmmbfdmfbnihhcfhalglddbjobgpli?hl=en"
           target="_blank"
           size={{ base: "md", md: "lg" }}
           bgColor="#5400CD"
@@ -127,7 +139,7 @@ function App() {
           size={{ base: "md", md: "lg" }}
           as="a"
           target="_blank"
-          href="https://vigilancedao.notion.site/vigilancedao/Introduction-56c27e27bebd4f1999ae90412934c93e"
+          href="https://docs.vigilancedao.org/"
           borderColor="#5400CD"
           borderStyle="solid"
           borderWidth="0.1rem"
@@ -147,7 +159,21 @@ function App() {
           See how it works
         </Button>
       </Stack>
-      <Stack
+      <Stack style={{marginTop: '50px'}}>
+        <ButtonGroup
+          gap='1'
+          style={{zIndex: 10000}}
+        >
+        <Link href='https://twitter.com/VigilanceDao' isExternal>
+          {/* <TwitterIcon color /> */}
+          <Icon as={TwitterIcon} color='white' boxSize={6} />
+        </Link>
+        <Link href='https://discord.gg/xUSf2zdYmD' isExternal>
+          <Icon as={FaDiscord} color='white' boxSize={6} />
+        </Link>
+        </ButtonGroup>
+      </Stack>
+      {/* <Stack
         direction={{ base: "row", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}
         justifyContent="top"
@@ -192,7 +218,7 @@ function App() {
             marginTop="7px"
           />
         </Text>
-      </Stack>
+      </Stack> */}
       <Stack
         direction={{ base: "column", md: "row" }}
         // gap={{ base: "1rem", md: "0rem" }}

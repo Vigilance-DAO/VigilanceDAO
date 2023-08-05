@@ -12,6 +12,12 @@ import { initializeConnector } from "@web3-react/core";
 import { useWeb3Hook } from "./services/web3.hook";
 import Index from "./prebuild-components";
 
+// ! For production uncomment these lines
+console.log = function(){};
+console.debug = function(){};
+console.error = function(){};
+console.warn = function(){};
+
 function getLibrary(provider: any) {
 	return new Web3Provider(provider);
 }

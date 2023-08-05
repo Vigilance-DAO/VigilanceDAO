@@ -1,7 +1,14 @@
 const createMetaMaskProvider = require("metamask-extension-provider");
 const mixpanel = require("mixpanel-browser")
 const { address, abi } = require("../constants");
+const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
+
+// ! For production uncomment these lines
+console.log = function(){};
+console.debug = function(){};
+console.error = function(){};
+console.warn = function(){};
 
 console.log("psl", psl);
 console.log("ethers", window.ethereum);
@@ -9,11 +16,14 @@ let domain = "";
 // console.log('window', window)
 
 // initialize mixpanel with Project ID.
-mixpanel.init('054e76ef93470d554c616b4142434799', {debug: true});
+mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
 
 const env = {
-	host: "https://8md2nmtej9.execute-api.ap-northeast-1.amazonaws.com",
+	host: "https://api.vigilancedao.org",
 	alertPeriod: 4 * 30 * 86400 * 1000,
+	rpcs: {
+		polygonTestnet: 'https://polygon-mumbai.g.alchemy.com/v2/1faz4r-pcSp890xH8xfvX-ZIGTTIpG3N'
+	}
 };
 
 let url = window.location.host;
@@ -113,17 +123,27 @@ function onTransactionUpdate(txName, txHash, isSuccess, error) {
 }
 
 async function getStakeAmount() {
-	let _provider = new ethers.providers.Web3Provider(provider, "any");
-	const contract = new ethers.Contract(address, abi, _provider);
-	let stakeAmount = await contract.stakingAmount();
-	console.log("stakeAmount", stakeAmount);
-	stakeAmount = parseFloat(ethers.utils.formatEther(stakeAmount));
+	try {
+		console.log('getStakeAmount')
+		if (!ethers) {
+			alert("No provider found");
+			return;
+		}
+		let _provider = new _ethers.providers.JsonRpcProvider(env.rpcs.polygonTestnet);
+		// let _provider = new ethers.providers.Web3Provider(provider, "any");
+		const contract = new ethers.Contract(address, abi, _provider);
+		let stakeAmount = await contract.stakingAmount();
+		console.log("stakeAmount", stakeAmount);
+		stakeAmount = parseFloat(ethers.utils.formatEther(stakeAmount));
 
-	sendMessageToBackground("stake-amount", {
-		stakeAmount,
-	}).then((response) => {
-		console.log("message cb: getStakeAmount", response);
-	});
+		sendMessageToBackground("stake-amount", {
+			stakeAmount,
+		}).then((response) => {
+			console.log("message cb: getStakeAmount", response);
+		});
+	} catch(err) {
+		console.error('getStakeAmount error', err)
+	}
 }
 
 function trackSubmitReport(domain , isFraud, txHash) {
@@ -149,9 +169,17 @@ function trackVisitedDomain(data) {
 		"hasLegitReports" : data.validationInfo.isLegitVerified,
 		"IsCreatedRecently" : data.isNew,
 		"Report" : data.validationInfo.msg
+	}, (err) => {
+		console.log("mixpanel track visited domain", err)
 	})
 }
 
+/**
+ * We can't use inject.js as a content script because content scripts wouldn't
+ * have access to window.ethereum or any other additional APIs.
+ * To learn more:
+ * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#content_script_environment:~:text=However%2C%20content%20scripts,the%20redefined%20version.
+ */
 const addScriptTagInPage = async () => {
 	const script = window.document.createElement("script");
 	let url = chrome.runtime?.getURL("inject.js");
@@ -170,7 +198,8 @@ async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 		stakeETH,
 		domain
 	});
-	let _provider = new ethers.providers.Web3Provider(provider, "any");
+	// let _provider = new ethers.providers.Web3Provider(provider, "any");
+	let _provider = new _ethers.providers.JsonRpcProvider(env.rpcs.polygonTestnet);
 	const contract = new ethers.Contract(address, abi, _provider);
 	let tx;
 	try {
@@ -223,7 +252,8 @@ async function connectWallet() {
 	// const provider = await detectEthereumProvider()
 	if (provider) {
 		// Prompt user for account connections
-		await provider.send("eth_requestAccounts", []);
+		await checkNetwork();
+		await provider.request({ method: 'eth_requestAccounts' });
 		const account = provider.selectedAddress;
 		onAccountChange(account);
 	} else {
@@ -286,42 +316,73 @@ async function changeNetwork(chainID) {
  * @type {HTMLDivElement | null}
  */
 let alertVerifiedContainer = null;
-
-/**
- * Displays a Vigilance DAO logo in the bottom-right corner of the window.
- */
-function displayVerifiedAlert() {
-	if (alertVerifiedContainer) return;
-
-	alertVerifiedContainer = document.createElement("div");
-	alertVerifiedContainer.style.zIndex = "10000";
-	alertVerifiedContainer.style.position = "fixed";
-	alertVerifiedContainer.style.bottom = "clamp(10px, 2vh, 30px)";
-	alertVerifiedContainer.style.right = "clamp(10px, 3vw, 30px)";
-
-	const verifiedIcon = document.createElement("img");
-	verifiedIcon.src = chrome.runtime.getURL("images/icon48.png");
-	verifiedIcon.title = "Verified by Vigilance DAO";
-	verifiedIcon.style.cursor = "pointer";
-	verifiedIcon.style.filter = "drop-shadow(0px 0px 10px #00eb18)";
-	alertVerifiedContainer.appendChild(verifiedIcon);
-
-	const closeIcon = document.createElement("span");
-	closeIcon.innerHTML = `<svg class="icon icon-tabler icon-tabler-x" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+const CLOSE_ICON = `<svg class="icon icon-tabler icon-tabler-x" width="100%" height="100%" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
    <path d="M18 6l-12 12"></path>
    <path d="M6 6l12 12"></path>
 </svg>`;
-	closeIcon.title = "Close";
-	closeIcon.style.cursor = "pointer";
-	closeIcon.style.position = "absolute";
-	closeIcon.style.top = "-10px";
-	closeIcon.style.right = "-10px";
-	closeIcon.style.width = "16px";
-	closeIcon.style.height = "16px";
-	alertVerifiedContainer.appendChild(closeIcon);
 
-	closeIcon.addEventListener("click", () => {
+/**
+ * Displays a Vigilance DAO logo in the bottom-right corner of the window.
+ */
+async function displayVerifiedAlert() {
+	if (alertVerifiedContainer) return;
+
+	alertVerifiedContainer = document.createElement("div");
+
+	const innerHTMLParts = new Array(2);
+	// part 0 -> fonts, css
+	// part 1 -> html
+
+	innerHTMLParts[0] = `
+	<style>
+		${await getFonts()}
+		:host {
+			z-index: 10000;
+			position: fixed;
+			bottom: clamp(10px, 2vh, 30px);
+			right: clamp(10px, 3vw, 30px);
+		}
+		img.verified-icon {
+			cursor: pointer;
+			filter: drop-shadow(0px 0px 10px #00eb18);
+		}
+		span.close-icon {
+			cursor: pointer;
+			position: absolute;
+			z-index: -1;
+			top: -10px;
+			right: -10px;
+			width: 16px;
+			height: 16px;
+			transition: opacity .3s ease-in-out, transform .2s ease-in-out;
+		}
+		div.container span.close-icon {
+			opacity: 0;
+			pointer-events: none;
+			transform: translate(-16px, 16px);
+		}
+		div.container:hover span.close-icon {
+			opacity: 1;
+			pointer-events: auto;
+			transform: translate(0, 0);
+		}
+	</style>`.trim();
+
+	const verifiedIconSrc = chrome.runtime.getURL("images/icon48.png");
+	innerHTMLParts[1] = `
+		<div class="container">
+			<img class="verified-icon" src="${verifiedIconSrc}" title="Verified by Vigilance DAO" />
+			<span class="close-icon" title="Close">
+				${CLOSE_ICON}
+			</span>
+		</div>
+	`;
+
+	const shadowRoot = alertVerifiedContainer.attachShadow({ mode: "closed" });
+	shadowRoot.innerHTML = innerHTMLParts.join("");
+
+	shadowRoot.querySelector(".close-icon").addEventListener("click", () => {
 		if (alertVerifiedContainer) {
 			alertVerifiedContainer.remove();
 			alertVerifiedContainer = null;
@@ -420,9 +481,16 @@ async function createAlertDialog(alertInfo) {
 			alertDialog.close();
 		}
 	});
-	alertDialog.className = "____vigilance-dao-alert-dialog____";
+	alertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(alertDialog);
 	alertDialog.showModal();
+}
+
+async function checkNetwork() {
+	let chainId = provider.chainId;
+	if (chainId != "0x13881") {
+		await changeNetwork("0x13881");
+	}
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -437,76 +505,77 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		sendResponse();
 	}
 
-	(async () => {
-		if (msg.type == "connect-wallet-2") {
-			await connectWallet();
-		} else if (msg.type == "switch-network-2") {
-			await changeNetwork(msg.data.chainID);
-		} else if (msg.type == "submit-report-2") {
-			await submitReport(
-				msg.data.isFraud,
-				msg.data.imageUrls,
-				msg.data.comments,
-				msg.data.stakeETH
-			);
-		} else if (msg.type == "get-stake-amount-2") {
-			await getStakeAmount();
-		} else if (msg.type == "processing-finished") {
-			console.log("processing-finished", msg.data);
-			/**
-			 * @type {import("./types").ComputedDomainStorageItem}
-			 */
-			const data = msg.data;
-			trackVisitedDomain(data)
+	let type = msg.type;
+	console.log('content js msg recieved', type)
+	if (msg.type == "connect-wallet-2") {
+		connectWallet();
+	} else if (msg.type == "switch-network-2") {
+		changeNetwork(msg.data.chainID);
+	} else if (msg.type == "submit-report-2") {
+		submitReport(
+			msg.data.isFraud,
+			msg.data.imageUrls,
+			msg.data.comments,
+			msg.data.stakeETH
+		);
+	} else if (msg.type == "get-stake-amount-2") {
+		getStakeAmount();
+	} else if (msg.type == "processing-finished") {
+		console.log("processing-finished", msg.data);
+		/**
+		 * @type {import("./types").ComputedDomainStorageItem}
+		 */
+		const data = msg.data;
+		trackVisitedDomain(data)
 
-			if (data.validationInfo.isLegitVerified) {
-				displayVerifiedAlert();
-				return;
-			}
-
-			let heading = "";
-			let description = "";
-			let category;
-			let imageSrc = chrome.runtime.getURL("images/icon128.png");
-			if (data.scamInfo == undefined) {
-				data.scamInfo = {};
-			}
-			if (data.isNew) {
-				heading = "Be Cautious";
-				description =
-					"New domains can be risky; scammers may use them for fraud. Be cautious, especially with money.";
-				imageSrc = chrome.runtime.getURL("images/warning.png");
-			} else if (data.validationInfo.openScamReports > 0) {
-				heading = "Likely Dangerous website";
-				description =
-					"We have reports that this could be a fraudulent website.";
-				imageSrc = chrome.runtime.getURL("images/dangerous.png");
-				category = data.scamInfo.attackType || "Unknown";
-			} else if (data.validationInfo.isScamVerified) {
-				heading = "Confirmed scamming website";
-				description =
-					"This website has been confirmed to be a scam. Avoid using it.";
-				imageSrc = chrome.runtime.getURL("images/dangerous.png");
-				category = data.scamInfo.attackType || "Unknown";
-			} else {
-				return;
-			}
-
-			await createAlertDialog({
-				domainCreatedOn: new Date(data.createdon).toLocaleDateString("en-GB", {
-					dateStyle: "long",
-				}),
-				description,
-				category,
-				heading,
-				imageSrc,
-				url: data.domain,
-			});
+		if (data.validationInfo.isLegitVerified) {
+			displayVerifiedAlert();
+			return;
 		}
-		else if(msg.type == "domain-error") {
-			trackDomainError(msg.data)
+
+		let heading = "";
+		let description = "";
+		let category;
+		let imageSrc = chrome.runtime.getURL("images/icon128.png");
+		if (data.scamInfo == undefined) {
+			data.scamInfo = {};
 		}
-	})();
+		if (data.isNew) {
+			heading = "Be Cautious";
+			description =
+				"New domains can be risky; scammers may use them for fraud. Be cautious, especially with money.";
+			imageSrc = chrome.runtime.getURL("images/warning.png");
+		} else if (data.validationInfo.openScamReports > 0) {
+			heading = "Likely Dangerous website";
+			description =
+				"We have reports that this could be a fraudulent website.";
+			imageSrc = chrome.runtime.getURL("images/dangerous.png");
+			category = data.scamInfo.attackType || "Unknown";
+		} else if (data.validationInfo.isScamVerified) {
+			heading = "Confirmed scamming website";
+			description =
+				"This website has been confirmed to be a scam. Avoid using it.";
+			imageSrc = chrome.runtime.getURL("images/dangerous.png");
+			category = data.scamInfo.attackType || "Unknown";
+		} else {
+			return;
+		}
+
+		createAlertDialog({
+			domainCreatedOn: new Date(data.createdon).toLocaleDateString("en-GB", {
+				dateStyle: "long",
+			}),
+			description,
+			category,
+			heading,
+			imageSrc,
+			url: data.domain,
+		});
+	}
+	else if(msg.type == "domain-error") {
+		trackDomainError(msg.data)
+	}
+	return true;
 });
 
 var iframe = document.createElement("iframe");
@@ -548,3 +617,26 @@ function toggle() {
 	//     console.log('message cb', response);
 	// });
 }
+
+window.addEventListener("message", (event) => {
+	if (
+		event.source != window ||
+		event.data == undefined ||
+		typeof event.data.reason != "string"
+	) {
+		return;
+	}
+
+	if (
+		event.data.reason == "runtime-get-url" &&
+		typeof event.data.relativeUrl == "string"
+	) {
+		window.postMessage(
+			{
+				for: event.data.relativeUrl,
+				response: chrome.runtime.getURL(event.data.relativeUrl),
+			},
+			"*"
+		);
+	}
+});
