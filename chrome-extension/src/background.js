@@ -765,3 +765,16 @@ function takeScreenshot(tab) {
 		);
 	});
 }
+
+/**
+ * @param {chrome.runtime.InstalledDetails} details
+ */
+function onInstalled(details) {
+	chrome.tabs.create({
+		url: `https://vigilancedao.org/extension-installed?reason=${details.reason}`
+	})
+}
+
+chrome.runtime.onInstalled.addListener(
+	onInstalled
+);
