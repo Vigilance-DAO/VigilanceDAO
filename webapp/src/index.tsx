@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 // import Navigation from './Navigation';
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useMatches } from "react-router-dom";
 import { configureChains, createClient, chain, WagmiConfig } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
@@ -15,6 +15,7 @@ import Cases from "pages/cases/Cases";
 import Navbar from "Navbar";
 import { theme } from "./theme/theme";
 import Fonts from "theme/Fonts";
+import ExtensionInstalled from "./pages/extensionInstalled";
 
 const { chains, provider } = configureChains(
   [chain.polygonMumbai],
@@ -44,6 +45,7 @@ root.render(
               <Route path="/" element={<App />} />
               <Route path="/cases" element={<Cases />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/extension-installed" element={<ExtensionInstalled />} />
             </Routes>
           </Box>
         </ChakraProvider>
