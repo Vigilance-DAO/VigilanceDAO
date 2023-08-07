@@ -18,7 +18,7 @@ import React, { useState } from "react";
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useScroll } from "framer-motion";
 import { ExpandMore } from "@mui/icons-material";
@@ -26,6 +26,8 @@ import polygon_icon from "assets/polygon_logo_wo_text.svg";
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { address, isConnected } = useAccount();
   const [selectedPolygonValue, setSelectedPolygonValue] =
     useState("Polygon Mumbai");
@@ -39,6 +41,11 @@ function Navbar() {
   }
 
   const mobileNav = useDisclosure();
+
+  console.log("location", location);
+  if (location.pathname == "/extension-installed") {
+    return null;
+  }
   
   const CasesButton: typeof Button = (props) => {
 		return (
