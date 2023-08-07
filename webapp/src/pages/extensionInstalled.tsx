@@ -66,7 +66,7 @@ export default function ExtensionInstalled() {
 					<Button
 						variant="solid"
 						as="a"
-						href="https://chrome.google.com/webstore/detail/web3-vigilance-browser-se/olgmmbfdmfbnihhcfhalglddbjobgpli?hl=en"
+						href="https://discord.gg/jEvsRffm"
 						target="_blank"
 						size={{ base: "md", md: "lg" }}
 						bgColor="#5400CD"
