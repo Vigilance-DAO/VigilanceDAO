@@ -133,6 +133,12 @@ async function getDomainRegistrationDate(storageInfo, url) {
 
 		return new Date(itemInStorage.createdon);
 	} else {
+		sendEvent({
+			eventName: "fetch-domain-info",
+			eventData: {
+				url,
+			},
+		});
 		try {
 			// fetch from our backend
 			const rawResponse = await fetch(`${env.host}/domain-info`, {
@@ -384,6 +390,12 @@ async function fetchDomainInfo(simplifiedUrl) {
 		}
 	}
 
+	sendEvent({
+		eventName: "fetch-domain-info",
+		eventData: {
+			url: simplifiedUrl,
+		},
+	});
 	// fetch /domain-info endpoint
 	const response = await fetch(`${env.host}/domain-info`, {
 		method: "POST",
