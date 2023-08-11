@@ -3,6 +3,8 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
+import { sendEvent } from "./utils";
+
 // ! For production uncomment these lines
 console.log = function(){};
 console.debug = function(){};
@@ -773,15 +775,12 @@ function takeScreenshot(tab) {
 	});
 }
 
-/**
- * @param {chrome.runtime.InstalledDetails} details
- */
-function onInstalled(details) {
-	chrome.tabs.create({
-		url: `https://vigilancedao.org/extension-installed?reason=${details.reason}`
-	})
-}
+chrome.runtime.onInstalled.addListener((details) => {
+	sendEvent({
+		eventName: "install",
+	});
 
-chrome.runtime.onInstalled.addListener(
-	onInstalled
-);
+	chrome.tabs.create({
+		url: `https://vigilancedao.org/extension-installed?reason=${details.reason}`,
+	});
+});
