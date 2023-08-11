@@ -18,3 +18,12 @@ export interface DomainScamInfo {
 export interface DomainInfo extends BasicDomainInfo {
 	scamInfo?: DomainScamInfo;
 }
+
+export interface TrackingEvent {
+	eventName: string;
+	userId?: string;
+	accountId?: string;
+	eventData?: Record<string, unknown>;
+}
+
+export const COOKIE_USER_ID = "user-id";
