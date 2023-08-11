@@ -12,6 +12,8 @@ function createUserId() {
 	return randomUUID();
 }
 
+const _1year = 756864000000;
+
 export default async function (
 	req: Request<{}, unknown, TrackingEvent>,
 	res: Response
@@ -23,16 +25,18 @@ export default async function (
 	if (typeof _userId == "undefined") {
 		// create new
 		userId = createUserId();
-		res.cookie(COOKIE_USER_ID, userId, {
-			sameSite: "lax",
-			domain: "vigilancedao.org",
-		});
 	} else if (typeof _userId == "string") {
 		userId = _userId;
 	} else {
 		res.status(400).send("cookie missing");
 		return;
 	}
+
+	res.cookie(COOKIE_USER_ID, userId, {
+		sameSite: "lax",
+		domain: "vigilancedao.org",
+		maxAge: _1year,
+	});
 
 	mixpanel.people.set(userId, {});
 	mixpanel.track(eventName, others);
