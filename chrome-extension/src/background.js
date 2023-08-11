@@ -196,6 +196,7 @@ function getUrl(tab) {
 		console.debug("bg current url", _url);
 		console.debug("bg current tab", tab);
 
+		// @ts-expect-error
 		var parsed = psl.parse(_url.hostname);
 		if (parsed.error) {
 			throw new Error(parsed.error.message);
@@ -681,6 +682,11 @@ chrome.action.onClicked.addListener(function (tab) {
 // so the below functions proxies the msg between index.html and content.js
 // Look for `chrome.runtime.onMessage.addListener` in the code
 // to see how the msgs are being recieved and sent
+/**
+ * @param {{ type: string; data: unknown; }} request
+ * @param {chrome.runtime.MessageSender} sender
+ * @param {(response?: any) => void} sendResponse
+ */
 async function processMsg(request, sender, sendResponse) {
 	if (sender.tab == undefined) {
 		console.error("sender", sender);
@@ -722,6 +728,7 @@ async function processMsg(request, sender, sendResponse) {
 			});
 		chrome.storage.sync.set({
 			[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
+				// @ts-expect-error
 				request.data.url
 			),
 		});
