@@ -116,15 +116,28 @@ function Navbar() {
   );
   return (
     <HStack
+      position="sticky"
+      top="0"
+      backdropFilter="auto"
+      backdropBlur="0.5rem"
+      boxShadow="md"
+      bgColor="rgba(255,255,255,0.0)"
       height="10vh"
-      position="absolute"
-      width="100%"
+      // position="absolute"
+      minWidth="100%"
+      maxWidth="100%"
       color="white"
       paddingInline={{ base: "1rem", md: "3rem", lg: "4rem", xl: "6rem" }}
       paddingY={{ md: "1.5rem", lg: "2rem", xl: "3rem" }}
       justifyContent="space-between"
       zIndex={10}
       spacing="0rem"
+      borderStyle="solid"
+      borderTop="0rem"
+      borderRight="0rem"
+      borderLeft="0rem"
+      borderBottom="1rem"
+      borderColor="red.100"
     >
       <Text
         as="a"
