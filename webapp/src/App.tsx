@@ -8,9 +8,11 @@ var mixpanel = require("mixpanel-browser");
 
 function App() {
   useEffect(() => {
-    mixpanel.init(process.env.REACT_APP_MIXPANEL);
-    mixpanel.track("Open Landing Page");
-  }, []);
+    mixpanel.init(process.env.REACT_APP_MIXPANEL, {
+      track_pageview: true
+    });
+    mixpanel.track('Open Landing Page');
+  }, [])
 
   return (
     <Flex

@@ -18,7 +18,7 @@ import React, { useState } from "react";
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useScroll } from "framer-motion";
 import { ExpandMore } from "@mui/icons-material";
@@ -26,6 +26,8 @@ import polygon_icon from "assets/polygon_logo_wo_text.svg";
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { address, isConnected } = useAccount();
   const [selectedPolygonValue, setSelectedPolygonValue] =
     useState("Polygon Mumbai");
@@ -39,6 +41,47 @@ function Navbar() {
   }
 
   const mobileNav = useDisclosure();
+
+  console.log("location", location);
+  if (location.pathname == "/extension-installed") {
+    return null;
+  }
+  
+  const CasesButton: typeof Button = (props) => {
+		return (
+			<Button
+				variant="link"
+				colorScheme="white"
+				_hover={{
+					textDecoration: "none",
+				}}
+				onClick={() => {
+					navigate("/cases");
+				}}
+				// colorScheme="red"
+				size={{ base: "xs", md: "md", lg: "lg" }}
+				{...props}
+			>
+				Cases
+			</Button>
+		);
+	};
+  
+  const NavMenuButton: typeof MenuButton = (props) => {
+		return (
+			<MenuButton
+				bg="whiteAlpha.300"
+				_hover={{ bg: "whiteAlpha.200" }}
+				_active={{ bg: "whiteAlpha.200" }}
+				as={Button}
+				rightIcon={<ExpandMore />}
+        style={{ color: "inherit" }}
+				{...props}
+			>
+				{selectedPolygonValue}
+			</MenuButton>
+		);
+	};
 
   const MobileNavContent = (
     <VStack
@@ -62,30 +105,9 @@ function Navbar() {
         justifySelf="self-start"
         onClick={mobileNav.onClose}
       />
-      <Button
-        variant="link"
-        colorScheme="white"
-        _hover={{
-          textDecoration: "none",
-        }}
-        onClick={() => {
-          navigate("/cases");
-        }}
-        // colorScheme="red"
-        size={{ base: "xs", md: "md", lg: "lg" }}
-      >
-        Cases
-      </Button>
+      <CasesButton />
       <Menu>
-        <MenuButton
-          bg="whiteAlpha.300"
-          _hover={{ bg: "whiteAlpha.200" }}
-          _active={{ bg: "whiteAlpha.200" }}
-          as={Button}
-          rightIcon={<ExpandMore />}
-        >
-          {selectedPolygonValue}
-        </MenuButton>
+        <NavMenuButton />
         <MenuList
           bg="#2c2d40"
           boxShadow="none"
@@ -152,33 +174,11 @@ function Navbar() {
         VigilanceDAO
       </Text>
       <HStack spacing="1rem">
-        <Button
-          variant="link"
-          colorScheme="white"
-          _hover={{
-            textDecoration: "none",
-          }}
-          onClick={() => {
-            navigate("/cases");
-          }}
-          display={{ base: "none", md: "flex" }}
-          // colorScheme="red"
-          size={{ base: "xs", md: "md", lg: "lg" }}
-        >
-          Cases
-        </Button>
+        <CasesButton display={{base:"none", md: "flex"}} />
 
         <Box display={{ base: "none", md: "flex" }}>
           <Menu>
-            <MenuButton
-              bg="whiteAlpha.300"
-              _hover={{ bg: "whiteAlpha.200" }}
-              _active={{ bg: "whiteAlpha.200" }}
-              as={Button}
-              rightIcon={<ExpandMore />}
-            >
-              {selectedPolygonValue}
-            </MenuButton>
+            <NavMenuButton />
             <MenuList
               bg="#2c2d40"
               paddingInline="0.5rem"
