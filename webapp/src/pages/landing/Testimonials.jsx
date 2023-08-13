@@ -26,7 +26,7 @@ function Testimonials() {
         fontSize={{ base: "2rem", md: "4rem" }}
         marginBottom={{ base: "1rem", md: "2rem" }}
       >
-        Testimonials
+        Voices of Web3 Users
       </Text>
       <Swiper
         navigation={true}

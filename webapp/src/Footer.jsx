@@ -65,8 +65,8 @@ function Footer() {
               </Link>
             </HStack>
             <Text color="white" align="left" fontSize="0.8rem">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              We are a community thats protects you online. We build tools 
+              to keep you safe from various Web3 fraudsters.
             </Text>
           </GridItem>
           <GridItem colSpan={{ base: 6, md: 1, xl: 1, "2xl": 2 }}></GridItem>
@@ -79,7 +79,7 @@ function Footer() {
                 _hover={{ fontWeight: "600", cursor: "pointer" }}
                 transition="0.1s"
                 target="_blank"
-                href={urls.Testnet}
+                href={urls.docs}
                 opacity="60%"
               >
                 Docs
@@ -90,7 +90,7 @@ function Footer() {
                 _hover={{ fontWeight: "600", cursor: "pointer" }}
                 transition="0.1s"
                 target="_blank"
-                href={urls["Integrate dApp"]}
+                href={urls.how}
                 opacity="60%"
               >
                 How it works?
@@ -101,7 +101,7 @@ function Footer() {
                 _hover={{ fontWeight: "600", cursor: "pointer" }}
                 transition="0.1s"
                 target="_blank"
-                href={urls["Vigilance Dao 101"]}
+                href={urls.report}
                 opacity="60%"
               >
                 How to report?
@@ -112,7 +112,7 @@ function Footer() {
                 _hover={{ fontWeight: "600", cursor: "pointer" }}
                 transition="0.1s"
                 target="_blank"
-                href={urls.Docs}
+                href={urls.howToFind}
                 opacity="60%"
               >
                 How to identify scams?
@@ -177,7 +177,7 @@ function Footer() {
             justifyContent="space-between"
             marginTop="1.5rem"
           >
-            <HStack spacing={{ base: "1rem", md: "2rem" }}>
+            {/* <HStack spacing={{ base: "1rem", md: "2rem" }}>
               <Text
                 fontSize={{ base: "xs", md: "sm" }}
                 as="a"
@@ -200,7 +200,7 @@ function Footer() {
               >
                 Privacy Policy
               </Text>
-            </HStack>
+            </HStack> */}
             <Text
               fontSize={{ base: "xs", md: "sm" }}
               as="a"
