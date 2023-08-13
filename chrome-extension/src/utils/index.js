@@ -16,3 +16,30 @@ export async function subgraphQuery(query) {
     throw new Error(`Could not query the subgraph ${error.message}`);
   }
 }
+
+/**
+ * @param {import("../../../important-types").TrackingEvent} event
+ */
+export async function sendEvent(event) {
+	return fetch("https://api.vigilancedao.org/event", {
+		method: "POST",
+		body: JSON.stringify(event),
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: "include",
+	})
+		.then(async (response) => {
+			if (!response.ok) {
+				console.error(
+					"sendEvent: response not ok",
+					response.status,
+					await response.text()
+				);
+			}
+		})
+		.catch((error) => {
+			console.warn("Error occured while sending event to server");
+			console.error(error);
+		});
+}

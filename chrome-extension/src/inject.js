@@ -2,6 +2,7 @@
 const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { chromeRuntimeGetUrlWrapped } = require("./fonts");
+const { sendEvent } = require("./utils");
 
 // ! For production uncomment these lines
 console.log = function(){};
@@ -33,6 +34,10 @@ function isSendTransactionRequest(params) {
  */
 function fetchContractInfo(basicInfo) {
 	console.log("fetchContractInfo", basicInfo);
+	
+	sendEvent({
+		eventName: "fetch-contract-info",
+	});
 
 	const contractInfoApiFetch = fetch(ContractInfoAPIURL, {
 		method: "POST",
@@ -161,6 +166,8 @@ function fetchContractInfo(basicInfo) {
  * @returns {Promise<string | undefined>} string --> error message, undefined --> successful
  */
 function submitContractReport(report) {
+	sendEvent({ eventName: "submit-contract-report" });
+
 	return fetch(env.host.concat("/submit-contract-report"), {
 		method: "POST",
 		headers: {
@@ -628,7 +635,7 @@ const ERROR_MSG = "Transaction cancelled by user.";
 	 */
 	// @ts-expect-error
 	window.ethereum.request = (params) => {
-		return /** @type {Promise<bool>} */ (
+		return /** @type {Promise<boolean>} */ (
 			new Promise(async (continueRequest, reject) => {
 				if (window.ethereum == undefined || !isSendTransactionRequest(params)) {
 					continueRequest(false);
@@ -778,4 +785,3 @@ const ERROR_MSG = "Transaction cancelled by user.";
 // 		proceedButtonClickListener: () => {},
 // 	});
 // })();
-

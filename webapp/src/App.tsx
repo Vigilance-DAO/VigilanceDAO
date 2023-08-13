@@ -17,7 +17,9 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    mixpanel.init(process.env.REACT_APP_MIXPANEL);
+    mixpanel.init(process.env.REACT_APP_MIXPANEL, {
+      track_pageview: true
+    });
     mixpanel.track('Open Landing Page');
   }, [])
 
