@@ -1,3 +1,4 @@
+import { API_ENDPOINT } from "../../constants";
 import axios from "axios";
 
 export async function subgraphQuery(query) {
@@ -21,7 +22,7 @@ export async function subgraphQuery(query) {
  * @param {import("../../../important-types").TrackingEvent} event
  */
 export async function sendEvent(event) {
-	return fetch("https://api.vigilancedao.org/event", {
+	return fetch(`${API_ENDPOINT}/event`, {
 		method: "POST",
 		body: JSON.stringify(event),
 		headers: {

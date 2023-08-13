@@ -3,6 +3,7 @@ const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { chromeRuntimeGetUrlWrapped } = require("./fonts");
 const { sendEvent } = require("./utils");
+const { API_ENDPOINT } = require("../constants");
 
 // ! For production uncomment these lines
 console.log = function(){};
@@ -13,7 +14,7 @@ console.warn = function(){};
 const FortaAPIUrl = "https://api.forta.network/graphql";
 
 const env = {
-	host: "https://api.vigilancedao.org"
+	host: API_ENDPOINT
 	// For developement
 	// host: "http://localhost:4000",
 };
@@ -45,6 +46,7 @@ function fetchContractInfo(basicInfo) {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(basicInfo),
+		credentials: "include",
 	}).then(
 		/**
 		 * @returns {Promise<import("./inject").ContractInfo>}
@@ -176,6 +178,7 @@ function submitContractReport(report) {
 		body: JSON.stringify({
 			report,
 		}),
+		credentials: "include",
 	})
 		.then((response) => {
 			if (response.ok) {

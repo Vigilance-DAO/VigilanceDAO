@@ -1,6 +1,6 @@
 const createMetaMaskProvider = require("metamask-extension-provider");
 const mixpanel = require("mixpanel-browser")
-const { address, abi } = require("../constants");
+const { address, abi, API_ENDPOINT } = require("../constants");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
 
@@ -19,7 +19,7 @@ let domain = "";
 mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
 
 const env = {
-	host: "https://api.vigilancedao.org",
+	host: API_ENDPOINT,
 	alertPeriod: 4 * 30 * 86400 * 1000,
 	rpcs: {
 		polygonTestnet: 'https://polygon-mumbai.g.alchemy.com/v2/1faz4r-pcSp890xH8xfvX-ZIGTTIpG3N'

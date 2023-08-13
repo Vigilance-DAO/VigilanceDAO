@@ -3,6 +3,7 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
+import { API_ENDPOINT, DOMAIN } from "../constants";
 import { sendEvent } from "./utils";
 
 // ! For production uncomment these lines
@@ -20,7 +21,7 @@ try {
 const DONT_SHOW_AGAIN_DOMAINS_KEY = "dont_show_again_domains";
 const env = {
 	// host: "http://localhost:4000", // backend API endpoint
-	host: "https://api.vigilancedao.org",
+	host: API_ENDPOINT,
 	alertPeriod: 4 * 30 * 86400 * 1000,
 	SUBGRAPH_URL:
 		"https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao",
@@ -148,6 +149,7 @@ async function getDomainRegistrationDate(storageInfo, url) {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({ domain: url }),
+				credentials: "include",
 			});
 			/**
 			 * @type {import("../../important-types").DomainInfo}
@@ -404,6 +406,7 @@ async function fetchDomainInfo(simplifiedUrl) {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({ domain: simplifiedUrl }),
+		credentials: "include",
 	});
 	/**
 	 * @type {import("../../important-types").DomainInfo}
@@ -788,11 +791,15 @@ function takeScreenshot(tab) {
 }
 
 chrome.runtime.onInstalled.addListener((details) => {
+	console.log('onInstalled', details);
 	sendEvent({
 		eventName: "install",
+		...details
 	});
-
-	chrome.tabs.create({
-		url: `https://vigilancedao.org/extension-installed?reason=${details.reason}`,
-	});
+	
+	if (details.reason == 'install') {
+		chrome.tabs.create({
+			url: `${DOMAIN}/extension-installed?reason=${details.reason}`,
+		});
+	}
 });

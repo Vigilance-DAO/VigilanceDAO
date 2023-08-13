@@ -4,7 +4,7 @@ import {ethers}  from 'ethers';
 import fetch from 'node-fetch';
 
 import { poolContracts } from "../db";
-const { sendMessage } = require('./telegramBot');
+const { sendMessage } = require('../telegramBot');
 
 enum Networks {
 	ETHEREUM_MAINNET = 'ETHEREUM_MAINNET',

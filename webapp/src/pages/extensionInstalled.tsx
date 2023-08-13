@@ -23,12 +23,14 @@ interface FeatureCardProps {
 }
 
 function FeatureCard(props: FeatureCardProps) {
-	return <Flex as="li" direction="column" background="#bfbfbf">
+	return (<Flex as="li" direction="column" background="#313479">
 		<Box height="240px">
-		<Image src={props.imageSrc} width="100%" height="auto" margin="auto"/>						
+			<Image src={props.imageSrc} width="100%" height="240px" margin="auto" objectFit={"cover"}/>						
 		</Box>
-		<Text>{props.description}</Text>
-	</Flex>
+		<Text style={{
+			"padding": '10px'
+		}}>{props.description}</Text>
+	</Flex>)
 }
 
 export default function ExtensionInstalled() {
@@ -43,7 +45,7 @@ export default function ExtensionInstalled() {
 					padding: "80px 0 70px",
 				}}
 			>
-				<Image src={logo} />
+				<Link href="https://vigilancedao.org"><Image src={logo} /></Link>
 				<Heading
 					as="h1"
 					style={{
@@ -55,6 +57,10 @@ export default function ExtensionInstalled() {
 				>
 					Thank you for installing our extension
 				</Heading>
+				<Text marginBottom={10}>
+					That's all Web3 Vigilants. The extension will notify you if you
+					interact with fraudsters.
+				</Text>
 				<Flex
 					gap="10px"
 					maxWidth="90%"
