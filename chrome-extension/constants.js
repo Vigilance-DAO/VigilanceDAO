@@ -412,7 +412,7 @@ const address = "0x68Db62ADCaADdb21cB000841f1F347A6d8bEED9b"
 // const API_ENDPOINT = "https://api.vigilancedao.org"
 const API_ENDPOINT = "http://127.0.0.1:4000"
 // const DOMAIN = 'https://vigilancedao.org'
-const DOMAIN = 'http://127.0.0.1:3000'
+const USER_ID_KEY = "user-id";
 
 module.exports = {
     abi, address,

@@ -1,4 +1,4 @@
-import { API_ENDPOINT } from "../../constants";
+import { API_ENDPOINT, USER_ID_KEY } from "../../constants";
 import axios from "axios";
 
 export async function subgraphQuery(query) {
@@ -20,23 +20,46 @@ export async function subgraphQuery(query) {
 
 /**
  * @param {import("../../../important-types").TrackingEvent} event
+ * @returns {Promise<void>}
  */
 export async function sendEvent(event) {
+	if (typeof chrome == "undefined" || chrome.storage == undefined) {
+		// means the function is called from an injected script
+		// in that instance, pass the event to content script
+		// and it will, then, send the event
+		const message = {
+			reason: "send-event",
+			event,
+		};
+
+		window.postMessage(message, "*");
+	}
+
+	const userId = await chrome.storage.sync
+		.get(USER_ID_KEY)
+		.then((result) => result[USER_ID_KEY])
+		.catch(console.error);
+	console.log("sendEvent userId", userId);
+	event.userId = userId;
+
 	return fetch(`${API_ENDPOINT}/event`, {
 		method: "POST",
 		body: JSON.stringify(event),
 		headers: {
 			"Content-Type": "application/json",
 		},
-		credentials: "include",
 	})
 		.then(async (response) => {
+			const body = await response.text();
 			if (!response.ok) {
-				console.error(
-					"sendEvent: response not ok",
-					response.status,
-					await response.text()
-				);
+				console.error("sendEvent: response not ok", response.status, body);
+				return;
+			}
+
+			if (userId != body) {
+				return chrome.storage.sync
+					.set({ [USER_ID_KEY]: body })
+					.then(() => console.log("saved", USER_ID_KEY, "=", body));
 			}
 		})
 		.catch((error) => {
