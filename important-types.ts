@@ -25,5 +25,3 @@ export interface TrackingEvent {
 	accountId?: string;
 	eventData?: Record<string, unknown>;
 }
-
-export const COOKIE_USER_ID = "user-id";
