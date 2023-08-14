@@ -2,11 +2,8 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-if (!TELEGRAM_TOKEN) {
-    throw new Error('No telegram token found. No failure messages will be sent.')
-}
 if (!TELEGRAM_CHAT_ID) {
-    throw new Error('No telegram chat id found. No failure messages will be sent.')
+	console.warn("No telegram chat id found. No failure messages will be sent.");
 }
 
 // Create a bot that uses 'polling' to fetch new updates
