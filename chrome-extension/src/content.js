@@ -3,6 +3,7 @@ const mixpanel = require("mixpanel-browser")
 const { address, abi, API_ENDPOINT } = require("../constants");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
+const { sendEvent } = require("./utils");
 
 // ! For production uncomment these lines
 console.log = function(){};
@@ -638,5 +639,11 @@ window.addEventListener("message", (event) => {
 			},
 			"*"
 		);
+		return;
+	}
+	
+	if (event.data.reason == "send-event" && typeof event.data.event != "undefined") {
+		sendEvent(event.data.event);
+		return;
 	}
 });
