@@ -20,13 +20,9 @@ export default async function (
 	req: Request<{}, unknown, TrackingEvent>,
 	res: Response
 ) {
-	const _userId = req.body.userId;
-	const { eventName, ...others } = req.body;
-	console.log("event", {
-		_userId,
-		eventName,
-		others,
-	});
+	const { eventName, userId: _userId, ...others } = req.body;
+	console.log("event", { eventName, _userId, ...others });
+
 	let userId: string;
 	if (typeof _userId == "undefined") {
 		// create new

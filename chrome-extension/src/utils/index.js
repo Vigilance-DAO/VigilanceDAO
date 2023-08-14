@@ -1,3 +1,4 @@
+// @ts-check
 import { API_ENDPOINT, USER_ID_KEY } from "../../constants";
 import axios from "axios";
 
@@ -33,6 +34,7 @@ export async function sendEvent(event) {
 		};
 
 		window.postMessage(message, "*");
+		return;
 	}
 
 	const userId = await chrome.storage.sync
