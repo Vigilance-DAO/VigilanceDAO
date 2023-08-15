@@ -3,7 +3,7 @@ const mixpanel = require("mixpanel-browser")
 const { address, abi, API_ENDPOINT } = require("../constants");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
-const { sendEvent } = require("./utils");
+const { sendEvent, trackEventInContentScript } = require("./utils");
 
 // ! For production uncomment these lines
 console.log = function(){};
@@ -98,7 +98,6 @@ function onUpdateChainID(chainId) {
 
 function onAccountChange(account) {
 	console.log("Account:", account);
-	mixpanel.identify(account);
 
 	sendMessageToBackground("wallet-connected", { account }).then((response) => {
 		console.log("message cb: onAccountChange", response);
@@ -148,31 +147,46 @@ async function getStakeAmount() {
 }
 
 function trackSubmitReport(domain , isFraud, txHash) {
-	mixpanel.track("Submit Report",{
-		"domain" : domain,
-		"isFraud" : isFraud,
-		"txHash" : txHash
-	})
+	return trackEventInContentScript({
+		eventName: "Submit Report",
+		eventData: {
+			domain,
+			isFraud,
+			txHash
+		}
+	});
 }
 
 function trackDomainError(data) {
-	mixpanel.track("Domain Error", {
-		"domain" : data.domain,
-		"error" : data.error
+	return trackEventInContentScript({
+		eventName: "Domain Error",
+		eventData: {
+			domain: data.domain,
+			error: data.error
+		},
 	})
 }
 
 function trackVisitedDomain(data) {
-	mixpanel.track("Visited Domain", {
-		"domain" : data.domain,
-		"createdOn" : data.createdon,
-		"hasScamReports" : data.validationInfo.isScamVerified,
-		"hasLegitReports" : data.validationInfo.isLegitVerified,
-		"IsCreatedRecently" : data.isNew,
-		"Report" : data.validationInfo.msg
-	}, (err) => {
-		console.log("mixpanel track visited domain", err)
-	})
+	return trackEventInContentScript({
+		eventName: "Visited Domain",
+		eventData: {
+			"domain": data.domain,
+			"createdOn": data.createdon,
+			"hasScamReports":
+				data.validationInfo == undefined
+					? undefined
+					: data.validationInfo.isScamVerified,
+			"hasLegitReports":
+				data.validationInfo == undefined
+					? undefined
+					: data.validationInfo.isLegitVerified,
+			"IsCreatedRecently": data.isNew,
+			"Report":
+				data.validationInfo == undefined ? undefined : data.validationInfo.msg,
+		},
+	});
+	// console.log("mixpanel track visited domain", err)
 }
 
 /**

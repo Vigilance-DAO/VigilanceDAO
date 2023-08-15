@@ -1,4 +1,5 @@
 // @ts-check
+import mixpanel from "mixpanel-browser";
 import { API_ENDPOINT, USER_ID_KEY } from "../../constants";
 import axios from "axios";
 
@@ -20,10 +21,54 @@ export async function subgraphQuery(query) {
 }
 
 /**
+ * null -> error occured
+ * undefined -> no user id saved
+ * string -> user id
+ */
+function getUserId() {
+	return chrome.storage.sync
+		.get(USER_ID_KEY)
+		.then(
+			/** @returns {string | undefined} */
+			(result) => {
+				return result[USER_ID_KEY];
+			}
+		)
+		.catch((err) => {
+			console.error("Failed to read user id", err);
+			return null;
+		});
+}
+
+/**
+ * Sends an event to Mixpanel. Can be used only in content.js
+ * @param {import("../../../important-types").TrackingEvent} event
+ * @returns {Promise<void>}
+ */
+export async function trackEventInContentScript(event) {
+	if (event == undefined) return;
+
+	const userId = await getUserId();
+	if (userId == null) return;
+	event.userId = userId;
+	console.log("trackEventFromContentScript", event);
+
+	mixpanel.identify(userId);
+	mixpanel.track(event.eventName, {
+		...event.eventData,
+		accountId: event.accountId,
+		userId: event.userId,
+	});
+}
+
+/**
+ * Sends an event to /event endpoint on the server
  * @param {import("../../../important-types").TrackingEvent} event
  * @returns {Promise<void>}
  */
 export async function sendEvent(event) {
+	if (event == undefined) return;
+	
 	if (typeof chrome == "undefined" || chrome.storage == undefined) {
 		// means the function is called from an injected script
 		// in that instance, pass the event to content script
@@ -37,12 +82,11 @@ export async function sendEvent(event) {
 		return;
 	}
 
-	const userId = await chrome.storage.sync
-		.get(USER_ID_KEY)
-		.then((result) => result[USER_ID_KEY])
-		.catch(console.error);
-	console.log("sendEvent userId", userId);
+	const userId = await getUserId();
+	if (userId == null) return;
+
 	event.userId = userId;
+	console.log("sendEvent event", event);
 
 	return fetch(`${API_ENDPOINT}/event`, {
 		method: "POST",
