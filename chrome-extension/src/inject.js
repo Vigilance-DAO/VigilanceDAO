@@ -622,6 +622,13 @@ function truncateText(text) {
 	return text.slice(0, 4).concat("...", text.slice(-4));
 }
 
+function removeFinancialAlert() {
+	financialAlertDialog.close();
+	financialAlertDialog.remove();
+	toggleOtherDialogs("enable");
+	toggleBodyScrollY("reverse-auto");
+}
+
 const SUPPORTED_CHAINS = ["1", "137"];
 const ERROR_MSG = "Transaction cancelled by user.";
 
@@ -640,6 +647,8 @@ const ERROR_MSG = "Transaction cancelled by user.";
 	window.ethereum.request = (params) => {
 		return /** @type {Promise<boolean>} */ (
 			new Promise(async (continueRequest, reject) => {
+				// continueRequest(true) ==> removes the alert
+
 				if (window.ethereum == undefined || !isSendTransactionRequest(params)) {
 					continueRequest(false);
 					return;
@@ -657,7 +666,7 @@ const ERROR_MSG = "Transaction cancelled by user.";
 					"data": data,
 					chainId,
 				});
-				
+
 				if (!SUPPORTED_CHAINS.includes(chainId)) {
 					continueRequest(false);
 					return;
@@ -706,10 +715,7 @@ const ERROR_MSG = "Transaction cancelled by user.";
 							continueRequest(true);
 						},
 						cancelButtonClickListener: () => {
-							financialAlertDialog.close();
-							financialAlertDialog.remove();
-							toggleOtherDialogs("enable");
-							toggleBodyScrollY("reverse-auto");
+							removeFinancialAlert();
 							reject(new Error(ERROR_MSG));
 						},
 						drainedAccountsValue: contractInfo.riskRating,
@@ -717,39 +723,23 @@ const ERROR_MSG = "Transaction cancelled by user.";
 						reportBasicBody: {
 							address: checksumAddress,
 							chainId,
-							name: shouldIncludeContractInfoName ? contractInfo.name : undefined,
+							name: shouldIncludeContractInfoName
+								? contractInfo.name
+								: undefined,
 						},
 					});
 				} catch (error) {
-					console.error('error processing tx', error);
-					financialAlertDialog.close();
-					financialAlertDialog.remove();
-					toggleOtherDialogs("enable");
-					toggleBodyScrollY("reverse-auto");
-					continueRequest(false);
+					console.error("error processing tx", error);
+					continueRequest(true);
 				}
 			})
 		)
-			.then(async (showPopup) => {
-				try {
-					let resp = await metamaskRequest({ ...params });
-					if (showPopup) {
-						financialAlertDialog.close();
-						financialAlertDialog.remove();
-						toggleOtherDialogs("enable");
-						toggleBodyScrollY("reverse-auto");
-					}
-					return resp;
-				} catch (error) {
-					// if popup active, still close it
-					if (showPopup) {
-						financialAlertDialog.close();
-						financialAlertDialog.remove();
-						toggleOtherDialogs("enable");
-						toggleBodyScrollY("reverse-auto");
-					}
-					throw error;
+			.then(async (shouldClosePopup) => {
+				if (shouldClosePopup) {
+					removeFinancialAlert();
 				}
+
+				return metamaskRequest({ ...params });
 			})
 	};
 })();
