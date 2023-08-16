@@ -35,9 +35,9 @@ function isSendTransactionRequest(params) {
  */
 function fetchContractInfo(basicInfo) {
 	console.log("fetchContractInfo", basicInfo);
-	
+
 	sendEvent({
-		eventName: "fetch-contract-info",
+		eventName: "Fetch /contract-info",
 	});
 
 	const contractInfoApiFetch = fetch(ContractInfoAPIURL, {
@@ -168,7 +168,7 @@ function fetchContractInfo(basicInfo) {
  * @returns {Promise<string | undefined>} string --> error message, undefined --> successful
  */
 function submitContractReport(report) {
-	sendEvent({ eventName: "submit-contract-report" });
+	sendEvent({ eventName: "Submit Contract Report", eventData: report });
 
 	return fetch(env.host.concat("/submit-contract-report"), {
 		method: "POST",
@@ -722,7 +722,7 @@ const ERROR_MSG = "Transaction cancelled by user.";
 								eventName: "Contract Alert Action",
 								eventData: {
 									contract: contractDisplay,
-									action: "Proceed"
+									action: "Proceed",
 								},
 							});
 							continueRequest(true);
@@ -732,7 +732,7 @@ const ERROR_MSG = "Transaction cancelled by user.";
 								eventName: "Contract Alert Action",
 								eventData: {
 									contract: contractDisplay,
-									action: "Cancel"
+									action: "Cancel",
 								},
 							});
 							removeFinancialAlert();
@@ -753,14 +753,13 @@ const ERROR_MSG = "Transaction cancelled by user.";
 					continueRequest(true);
 				}
 			})
-		)
-			.then(async (shouldClosePopup) => {
-				if (shouldClosePopup) {
-					removeFinancialAlert();
-				}
+		).then(async (shouldClosePopup) => {
+			if (shouldClosePopup) {
+				removeFinancialAlert();
+			}
 
-				return metamaskRequest({ ...params });
-			})
+			return metamaskRequest({ ...params });
+		});
 	};
 })();
 

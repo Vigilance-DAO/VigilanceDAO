@@ -135,7 +135,7 @@ async function getDomainRegistrationDate(storageInfo, url) {
 		return new Date(itemInStorage.createdon);
 	} else {
 		sendEvent({
-			eventName: "fetch-domain-info",
+			eventName: "Fetch /domain-info",
 			eventData: {
 				url,
 			},
@@ -393,7 +393,7 @@ async function fetchDomainInfo(simplifiedUrl) {
 	}
 
 	sendEvent({
-		eventName: "fetch-domain-info",
+		eventName: "Fetch /domain-info",
 		eventData: {
 			url: simplifiedUrl,
 		},
