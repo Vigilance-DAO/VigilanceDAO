@@ -1,16 +1,16 @@
 // @ts-check
 const createMetaMaskProvider = require("metamask-extension-provider");
-const mixpanel = require("mixpanel-browser")
+const mixpanel = require("mixpanel-browser");
 const { address, abi, API_ENDPOINT } = require("../constants");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
 const { sendEvent, trackEventInContentScript } = require("./utils");
 
 // ! For production uncomment these lines
-console.log = function(){};
-console.debug = function(){};
-console.error = function(){};
-console.warn = function(){};
+// console.log = function(){};
+// console.debug = function(){};
+// console.error = function(){};
+// console.warn = function(){};
 
 // @ts-expect-error
 console.log("psl", psl);
@@ -19,7 +19,7 @@ let domain = "";
 // console.log('window', window)
 
 // initialize mixpanel with Project ID.
-mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
+mixpanel.init(MIXPANEL_PROJECT_ID, { debug: true });
 
 const env = {
 	host: API_ENDPOINT,
@@ -624,6 +624,11 @@ async function createAlertDialog(alertInfo) {
 	alertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(alertDialog);
 	alertDialog.showModal();
+	
+	trackEventInContentScript({
+		eventName: "Domain Alert Shown",
+		eventData: alertInfo,
+	});
 }
 
 async function checkNetwork() {
