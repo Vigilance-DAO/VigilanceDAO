@@ -1,23 +1,25 @@
+// @ts-check
 const createMetaMaskProvider = require("metamask-extension-provider");
-const mixpanel = require("mixpanel-browser")
+const mixpanel = require("mixpanel-browser");
 const { address, abi, API_ENDPOINT } = require("../constants");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { getFonts } = require("./fonts");
-const { sendEvent } = require("./utils");
+const { sendEvent, trackEventInContentScript } = require("./utils");
 
 // ! For production uncomment these lines
-console.log = function(){};
-console.debug = function(){};
-console.error = function(){};
-console.warn = function(){};
+// console.log = function(){};
+// console.debug = function(){};
+// console.error = function(){};
+// console.warn = function(){};
 
+// @ts-expect-error
 console.log("psl", psl);
 console.log("ethers", window.ethereum);
 let domain = "";
 // console.log('window', window)
 
 // initialize mixpanel with Project ID.
-mixpanel.init(MIXPANEL_PROJECT_ID, {debug: true});
+mixpanel.init(MIXPANEL_PROJECT_ID, { debug: true });
 
 const env = {
 	host: API_ENDPOINT,
@@ -30,20 +32,40 @@ const env = {
 let url = window.location.host;
 
 /**
+ * @type {<E extends HTMLElement = HTMLElement>(shadowRoot: ShadowRoot, selector: string) => E}
+ */
+function querySelector(shadowRoot, selector) {
+	const element = shadowRoot.querySelector(selector);
+
+	if (element == null) {
+		throw new Error(`No element found for ${selector}`);
+	}
+
+	// @ts-expect-error
+	return element;
+}
+
+/**
  * @param {string} type a unique string
  * @param {unknown} data the payload
  * @returns {Promise<any>}
  */
-function sendMessageToBackground(type, data) {
+function sendMessageToBackground(type, data = undefined) {
 	return chrome.runtime.sendMessage({ type, data });
 }
 
 function closeInternetVigilance() {
-	document.getElementById("internetVigilanceBackdrop").style.display = "none";
+	const element = document.getElementById("internetVigilanceBackdrop");
+	if (element == null) return;
+	element.style.display = "none";
 }
 
 function closeInternetVigilanceWithNoMoreShow() {
-	document.getElementById("internetVigilanceBackdrop").style.display = "none";
+	const element = document.getElementById("internetVigilanceBackdrop");
+	if (element != null) {
+		element.style.display = "none";
+	}
+
 	chrome.storage.sync.get(
 		[url],
 		/**
@@ -71,23 +93,49 @@ function closeInternetVigilanceWithNoMoreShow() {
 	);
 }
 
+// @ts-expect-error
 let provider = createMetaMaskProvider();
-provider.on("chainChanged", (chainId) => {
-	console.log("chainChanged", chainId);
-	onUpdateChainID(parseInt(chainId));
-});
-provider.on("disconnect", (error) => {
-	console.log("disconnect", error);
-});
-provider.on("connect", (connectInfo) => {
-	console.log("connect", connectInfo);
-	onUpdateChainID(parseInt(connectInfo.chainId));
-});
-provider.on("accountsChanged", (accounts) => {
-	console.log("accountsChanged", accounts);
-	onAccountChange(accounts[0]);
-});
+provider.on(
+	"chainChanged",
+	/**
+	 * @param {string} chainId
+	 */
+	(chainId) => {
+		console.log("chainChanged", chainId);
+		onUpdateChainID(parseInt(chainId));
+	}
+);
+provider.on(
+	"disconnect",
+	/**
+	 * @param {unknown} error
+	 */
+	(error) => {
+		console.log("disconnect", error);
+	}
+);
+provider.on(
+	"connect",
+	/** @param {{ chainId: string; }} connectInfo */
+	(connectInfo) => {
+		console.log("connect", connectInfo);
+		onUpdateChainID(parseInt(connectInfo.chainId));
+	}
+);
+provider.on(
+	"accountsChanged",
+	/**
+	 * @param {string[]} accounts
+	 */
+	(accounts) => {
+		console.log("accountsChanged", accounts);
+		onAccountChange(accounts[0]);
+	}
+);
 
+/**
+ * @param {number} chainId
+ */
 function onUpdateChainID(chainId) {
 	sendMessageToBackground("chainID", {
 		chainId,
@@ -96,29 +144,33 @@ function onUpdateChainID(chainId) {
 	});
 }
 
+/**
+ * @param {string} account
+ */
 function onAccountChange(account) {
 	console.log("Account:", account);
-	mixpanel.identify(account);
 
 	sendMessageToBackground("wallet-connected", { account }).then((response) => {
 		console.log("message cb: onAccountChange", response);
 	});
 }
 
+/**
+ * @param {string} txName
+ * @param {undefined} txHash
+ * @param {boolean} isSuccess
+ * @param {string | null} error
+ */
 function onTransactionUpdate(txName, txHash, isSuccess, error) {
-	console.log("onTransactionUpdate:", {
+	const data = {
 		txName,
 		txHash,
 		isSuccess,
 		error,
-	});
+	};
 
-	sendMessageToBackground("transaction-update", {
-		txName,
-		txHash,
-		isSuccess,
-		error,
-	}).then((response) => {
+	console.log("onTransactionUpdate:", data);
+	sendMessageToBackground("transaction-update", data).then((response) => {
 		console.log("message cb: onTransactionUpdate", response);
 	});
 }
@@ -126,15 +178,19 @@ function onTransactionUpdate(txName, txHash, isSuccess, error) {
 async function getStakeAmount() {
 	try {
 		console.log('getStakeAmount')
+		// @ts-expect-error
 		if (!ethers) {
 			alert("No provider found");
 			return;
 		}
+		// @ts-expect-error
 		let _provider = new _ethers.providers.JsonRpcProvider(env.rpcs.polygonTestnet);
 		// let _provider = new ethers.providers.Web3Provider(provider, "any");
+		// @ts-expect-error
 		const contract = new ethers.Contract(address, abi, _provider);
 		let stakeAmount = await contract.stakingAmount();
 		console.log("stakeAmount", stakeAmount);
+		// @ts-expect-error
 		stakeAmount = parseFloat(ethers.utils.formatEther(stakeAmount));
 
 		sendMessageToBackground("stake-amount", {
@@ -147,32 +203,58 @@ async function getStakeAmount() {
 	}
 }
 
-function trackSubmitReport(domain , isFraud, txHash) {
-	mixpanel.track("Submit Report",{
-		"domain" : domain,
-		"isFraud" : isFraud,
-		"txHash" : txHash
-	})
+/**
+ * @param {string} domain
+ * @param {any} isFraud
+ * @param {any} txHash
+ */
+function trackSubmitReport(domain, isFraud, txHash) {
+	return trackEventInContentScript({
+		eventName: "Submit Report",
+		eventData: {
+			domain,
+			isFraud,
+			txHash,
+		},
+	});
 }
 
+/**
+ * @param {{ domain: any; error: any; }} data
+ */
 function trackDomainError(data) {
-	mixpanel.track("Domain Error", {
-		"domain" : data.domain,
-		"error" : data.error
-	})
+	return trackEventInContentScript({
+		eventName: "Domain Error",
+		eventData: {
+			domain: data.domain,
+			error: data.error,
+		},
+	});
 }
 
+/**
+ * @param {import("./types").ComputedDomainStorageItem} data
+ */
 function trackVisitedDomain(data) {
-	mixpanel.track("Visited Domain", {
-		"domain" : data.domain,
-		"createdOn" : data.createdon,
-		"hasScamReports" : data.validationInfo.isScamVerified,
-		"hasLegitReports" : data.validationInfo.isLegitVerified,
-		"IsCreatedRecently" : data.isNew,
-		"Report" : data.validationInfo.msg
-	}, (err) => {
-		console.log("mixpanel track visited domain", err)
-	})
+	return trackEventInContentScript({
+		eventName: "Visited Domain",
+		eventData: {
+			"domain": data.domain,
+			"createdOn": data.createdon,
+			"hasScamReports":
+				data.validationInfo == undefined
+					? undefined
+					: data.validationInfo.isScamVerified,
+			"hasLegitReports":
+				data.validationInfo == undefined
+					? undefined
+					: data.validationInfo.isLegitVerified,
+			"IsCreatedRecently": data.isNew,
+			"Report":
+				data.validationInfo == undefined ? undefined : data.validationInfo.msg,
+		},
+	});
+	// console.log("mixpanel track visited domain", err)
 }
 
 /**
@@ -191,20 +273,30 @@ const addScriptTagInPage = async () => {
 
 addScriptTagInPage();
 
+/**
+ * @param {any} isFraud
+ * @param {any} imageUrls
+ * @param {any} comments
+ * @param {string} stakeETH
+ */
 async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 	console.log("submitting report", {
 		isFraud,
 		imageUrls,
 		comments,
 		stakeETH,
-		domain
+		domain,
 	});
 	// let _provider = new ethers.providers.Web3Provider(provider, "any");
+	// @ts-expect-error
 	let _provider = new _ethers.providers.JsonRpcProvider(env.rpcs.polygonTestnet);
+	// @ts-expect-error
 	const contract = new ethers.Contract(address, abi, _provider);
 	let tx;
 	try {
+		// @ts-expect-error
 		let value = ethers.utils.hexValue(
+			// @ts-expect-error
 			ethers.utils.parseEther(stakeETH + "", 18)
 		);
 		// tx = await provider.send('report', [domain, isFraud, imageUrls, comments])
@@ -236,17 +328,21 @@ async function submitReport(isFraud, imageUrls, comments, stakeETH) {
 			if (status == 1 || status == 0) {
 				onTransactionUpdate("submit-report", tx, true, null);
 				clearInterval(interval);
-				trackSubmitReport(domain , isFraud, tx)
+				trackSubmitReport(domain, isFraud, tx);
 			}
 		}, 5000);
 	} catch (err) {
 		console.warn("error submit report", err);
-		let error = err.message || "Something went wrong";
+		let error = "Something went wrong";
+		if (err instanceof Error && typeof err.message == "string") {
+			error = err.message;
+		}
 		onTransactionUpdate("submit-report", tx, false, error);
 	}
 }
 
 async function connectWallet() {
+	// @ts-expect-error
 	console.log("connect wallet", ethers);
 	console.log("provider", provider);
 	// const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
@@ -264,8 +360,14 @@ async function connectWallet() {
 
 async function checkDomain() {
 	console.log(url);
+	// @ts-expect-error
 	var parsed = psl.parse(url);
-	console.log("parsed url", parsed);
+	console.log("checkDomain parsed url", parsed);
+
+	if (parsed.error || parsed.domain == null) {
+		return;
+	}
+
 	url = parsed.domain;
 	domain = url;
 	let count = 0;
@@ -277,20 +379,24 @@ async function checkDomain() {
 			 */
 			function (items) {
 				console.debug(items, url, new Date());
-				if (items[url]) {
-					clearInterval(interval);
-					let dontShowAgain = items[url].dontShowAgain;
-					let createdon = new Date(items[url].createdon);
-					let now = new Date();
-					if (dontShowAgain) {
-						console.log("user opted to not show again");
-						return;
-					}
-					if (now.getTime() - createdon.getTime() < env.alertPeriod) {
-						console.log("Vigilance DAO: domain is new. trigger.");
-					} else {
-						console.log("Vigilance DAO: domain is old enough");
-					}
+				const item = items[url];
+				if (!item) return;
+
+				clearInterval(interval);
+
+				if (item.createdon == undefined) return;
+
+				let dontShowAgain = item.dontShowAgain;
+				let createdon = new Date(item.createdon);
+				let now = new Date();
+				if (dontShowAgain) {
+					console.log("user opted to not show again");
+					return;
+				}
+				if (now.getTime() - createdon.getTime() < env.alertPeriod) {
+					console.log("Vigilance DAO: domain is new. trigger.");
+				} else {
+					console.log("Vigilance DAO: domain is old enough");
 				}
 			}
 		);
@@ -303,7 +409,11 @@ async function checkDomain() {
 
 checkDomain();
 
+/**
+ * @param {string} chainID
+ */
 async function changeNetwork(chainID) {
+	// @ts-expect-error
 	let chainIDHex = ethers.utils.hexValue(chainID);
 	await provider.request({
 		method: "wallet_switchEthereumChain",
@@ -382,13 +492,16 @@ async function displayVerifiedAlert() {
 
 	const shadowRoot = alertVerifiedContainer.attachShadow({ mode: "closed" });
 	shadowRoot.innerHTML = innerHTMLParts.join("");
+	const closeIcon = shadowRoot.querySelector(".close-icon");
 
-	shadowRoot.querySelector(".close-icon").addEventListener("click", () => {
-		if (alertVerifiedContainer) {
-			alertVerifiedContainer.remove();
-			alertVerifiedContainer = null;
-		}
-	});
+	if (closeIcon) {
+		closeIcon.addEventListener("click", () => {
+			if (alertVerifiedContainer) {
+				alertVerifiedContainer.remove();
+				alertVerifiedContainer = null;
+			}
+		});
+	}
 
 	document.body.append(alertVerifiedContainer);
 }
@@ -402,7 +515,7 @@ let alertDialog = document.createElement("dialog");
  * @typedef AlertInfo
  * @prop {string} heading
  * @prop {string} description
- * @prop {string} category
+ * @prop {string | undefined} category
  * @prop {string} domainCreatedOn
  * @prop {string} imageSrc
  * @prop {string} url
@@ -449,14 +562,19 @@ async function createAlertDialog(alertInfo) {
 	alertDialog.append(div);
 
 	shadowRoot.innerHTML = innerHTMLParts.join("");
+	const select = querySelector.bind(null, shadowRoot);
 
-	const headingElement = shadowRoot.querySelector(".heading");
-	const descriptionElement = shadowRoot.querySelector(".description");
-	const categoryElement = shadowRoot.querySelector("#category");
-	const createdOnElement = shadowRoot.querySelector("#domain-reg-date");
-	const statusImgElement = shadowRoot.querySelector(".status-image");
+	const headingElement = select(".heading");
+	const descriptionElement = select(".description");
+	const categoryElement = select("#category");
+	const createdOnElement = select("#domain-reg-date");
+	const statusImgElement = select(".status-image");
 
-	if (alertInfo.category == undefined) {
+	if (!(statusImgElement instanceof HTMLImageElement)) {
+		throw new Error(".status-image is not an img element");
+	}
+
+	if (alertInfo.category == undefined && categoryElement.parentElement) {
 		categoryElement.parentElement.remove();
 	}
 	createdOnElement.innerHTML = alertInfo.domainCreatedOn;
@@ -466,16 +584,37 @@ async function createAlertDialog(alertInfo) {
 
 	shadowRoot.addEventListener("click", (event) => {
 		console.log("dialog clicked", event);
-		/**
-		 * @type {HTMLElement}
-		 */
+
+		if (!(event.target instanceof HTMLElement)) {
+			return;
+		}
+
 		const targetElement = event.target;
 		const target = targetElement.id;
+
 		if (target == "close-website") {
+			trackEventInContentScript({
+				eventName: "Domain Alert Action",
+				eventData: {
+					action: "Close Website",
+				},
+			});
 			sendMessageToBackground("close-website");
 		} else if (target == "hide") {
+			trackEventInContentScript({
+				eventName: "Domain Alert Action",
+				eventData: {
+					action: "Hide",
+				},
+			});
 			alertDialog.close();
 		} else if (target == "dont-show-again") {
+			trackEventInContentScript({
+				eventName: "Domain Alert Action",
+				eventData: {
+					action: "Dont't Show Again",
+				},
+			});
 			sendMessageToBackground("alert-dont-show-again", {
 				url: alertInfo.url,
 			});
@@ -485,6 +624,11 @@ async function createAlertDialog(alertInfo) {
 	alertDialog.className = "____vigilance-dao-dialog____";
 	document.body.appendChild(alertDialog);
 	alertDialog.showModal();
+	
+	trackEventInContentScript({
+		eventName: "Domain Alert Shown",
+		eventData: alertInfo,
+	});
 }
 
 async function checkNetwork() {
@@ -529,7 +673,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		const data = msg.data;
 		trackVisitedDomain(data)
 
-		if (data.validationInfo.isLegitVerified) {
+		if (
+			data.validationInfo != undefined &&
+			data.validationInfo.isLegitVerified
+		) {
 			displayVerifiedAlert();
 			return;
 		}
@@ -539,25 +686,43 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		let category;
 		let imageSrc = chrome.runtime.getURL("images/icon128.png");
 		if (data.scamInfo == undefined) {
+			// @ts-expect-error
 			data.scamInfo = {};
 		}
+
+		if (data.createdon == undefined || data.domain == undefined) return;
+
 		if (data.isNew) {
 			heading = "Be Cautious";
 			description =
 				"New domains can be risky; scammers may use them for fraud. Be cautious, especially with money.";
 			imageSrc = chrome.runtime.getURL("images/warning.png");
-		} else if (data.validationInfo.openScamReports > 0) {
+		} else if (
+			data.validationInfo != undefined &&
+			data.validationInfo.openScamReports > 0
+		) {
 			heading = "Likely Dangerous website";
 			description =
 				"We have reports that this could be a fraudulent website.";
 			imageSrc = chrome.runtime.getURL("images/dangerous.png");
-			category = data.scamInfo.attackType || "Unknown";
-		} else if (data.validationInfo.isScamVerified) {
+			if (data.scamInfo != undefined && data.scamInfo.attackType) {
+				category = data.scamInfo.attackType;
+			} else {
+				category = "Unknown";
+			}
+		} else if (
+			data.validationInfo != undefined &&
+			data.validationInfo.isScamVerified
+		) {
 			heading = "Confirmed scamming website";
 			description =
 				"This website has been confirmed to be a scam. Avoid using it.";
 			imageSrc = chrome.runtime.getURL("images/dangerous.png");
-			category = data.scamInfo.attackType || "Unknown";
+			if (data.scamInfo != undefined && data.scamInfo.attackType) {
+				category = data.scamInfo.attackType;
+			} else {
+				category = "Unknown";
+			}
 		} else {
 			return;
 		}
@@ -641,8 +806,11 @@ window.addEventListener("message", (event) => {
 		);
 		return;
 	}
-	
-	if (event.data.reason == "send-event" && typeof event.data.event != "undefined") {
+
+	if (
+		event.data.reason == "send-event" &&
+		typeof event.data.event != "undefined"
+	) {
 		sendEvent(event.data.event);
 		return;
 	}
