@@ -593,10 +593,28 @@ async function createAlertDialog(alertInfo) {
 		const target = targetElement.id;
 
 		if (target == "close-website") {
+			trackEventInContentScript({
+				eventName: "Domain Alert Action",
+				eventData: {
+					action: "Close Website",
+				},
+			});
 			sendMessageToBackground("close-website");
 		} else if (target == "hide") {
+			trackEventInContentScript({
+				eventName: "Domain Alert Action",
+				eventData: {
+					action: "Hide",
+				},
+			});
 			alertDialog.close();
 		} else if (target == "dont-show-again") {
+			trackEventInContentScript({
+				eventName: "Domain Alert Action",
+				eventData: {
+					action: "Dont't Show Again",
+				},
+			});
 			sendMessageToBackground("alert-dont-show-again", {
 				url: alertInfo.url,
 			});
