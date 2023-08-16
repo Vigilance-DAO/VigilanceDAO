@@ -595,6 +595,12 @@ function populateFinancialAlertWithData(alertInfo) {
 	});
 
 	containerElement.dataset[FINANCIAL_ALERT_IS_LOADING] = `${false}`;
+	sendEvent({
+		eventName: "Contract Alert Shown",
+		eventData: {
+			contract: alertInfo.contract,
+		},
+	});
 }
 
 /**
