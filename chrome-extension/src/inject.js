@@ -466,6 +466,10 @@ function populateFinancialAlertWithData(alertInfo) {
 			return;
 		}
 
+		sendEvent({
+			eventName: "Contract Alert Risk Expanded",
+		});
+
 		feedbackContainerElement.open = !feedbackContainerElement.open;
 	});
 	feedbackContainerElement.classList.toggle(
