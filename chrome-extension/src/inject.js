@@ -712,9 +712,23 @@ const ERROR_MSG = "Transaction cancelled by user.";
 						transactionsIn24hours: contractInfo.userCount24hours || 0,
 						transactionsIn30days: contractInfo.userCount30days || 0,
 						proceedButtonClickListener: () => {
+							sendEvent({
+								eventName: "Contract Alert Action",
+								eventData: {
+									contract: contractDisplay,
+									action: "Proceed"
+								},
+							});
 							continueRequest(true);
 						},
 						cancelButtonClickListener: () => {
+							sendEvent({
+								eventName: "Contract Alert Action",
+								eventData: {
+									contract: contractDisplay,
+									action: "Cancel"
+								},
+							});
 							removeFinancialAlert();
 							reject(new Error(ERROR_MSG));
 						},
