@@ -49,7 +49,7 @@ export async function trackEventInContentScript(event) {
 	if (event == undefined) return;
 
 	const userId = await getUserId();
-	if (userId == null) return;
+	if (userId === null) return;
 	event.userId = userId;
 	console.log("trackEventFromContentScript", event);
 
@@ -83,7 +83,7 @@ export async function sendEvent(event) {
 	}
 
 	const userId = await getUserId();
-	if (userId == null) return;
+	if (userId === null) return;
 
 	event.userId = userId;
 	console.log("sendEvent event", event);
