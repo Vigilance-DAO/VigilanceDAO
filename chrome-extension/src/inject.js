@@ -699,8 +699,8 @@ const ERROR_MSG = "Transaction cancelled by user.";
 					});
 
 					if (contractInfo == null) {
-						// TODO decide what to do at this point
-						continueRequest(false);
+						// request failed
+						continueRequest(true);
 						return;
 					}
 
