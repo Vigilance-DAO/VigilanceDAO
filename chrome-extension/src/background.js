@@ -122,6 +122,7 @@ let lastUrl = null;
  * @param {Record<string, import("./types").DomainStorageItem>} storageInfo - chrome storage info
  * @param {string} url - domain name
  * @returns {Promise<Date | null>} createdon
+ * @deprecated
  */
 async function getDomainRegistrationDate(storageInfo, url) {
 	console.log("getDomainRegistrationDate", storageInfo);
@@ -414,7 +415,12 @@ async function fetchDomainInfo(simplifiedUrl) {
 	const content = await response.json();
 
 	if (content.domain) {
-		storageItem = { ...storageItem, ...content };
+		storageItem = {
+			...storageItem,
+			...content,
+			createdon: new Date(content.createdon),
+			updatedon: new Date(content.updatedon)
+		};
 	}
 
 	const key = getStorageKey(simplifiedUrl);
@@ -494,8 +500,6 @@ async function processTab(tab) {
 	const { [DONT_SHOW_AGAIN_DOMAINS_KEY]: _unused, ...existingStorageItems } =
 		storageItems;
 
-	let createdOn = await getDomainRegistrationDate(existingStorageItems, url);
-
 	let now = new Date();
 
 	/**
@@ -519,7 +523,11 @@ async function processTab(tab) {
 				5 * 60 * 1000)
 	) {
 		// revalidate
-		const _validationInfo = await getDomainValidationInfo(url, tab, createdOn);
+		const _validationInfo = await getDomainValidationInfo(
+			url,
+			tab,
+			storageItem.createdon || null
+		);
 		if (_validationInfo != undefined) {
 			isUpdated = true;
 			storageItem.validationInfo = _validationInfo;
@@ -527,9 +535,14 @@ async function processTab(tab) {
 	}
 
 	if (isUpdated) {
-		chrome.storage.sync.set({
-			[key]: storageItem,
-		});
+		chrome.storage.sync.set(
+			{
+				[key]: storageItem,
+			},
+			function () {
+				console.log("saved to storage", key, storageItem);
+			}
+		);
 	}
 
 	// This can be used to show alert.html popup in tab
@@ -561,7 +574,7 @@ async function processTab(tab) {
 
 		storageItem.validationInfo.type = "success";
 		storageItem.validationInfo.msg = "Verified as legit";
-	} else if (createdOn && isSoftWarning(createdOn)) {
+	} else if (storageItem.createdon && isSoftWarning(storageItem.createdon)) {
 		// if a domain is registered recently then we show the ⚠️ icon on extension
 		console.log("changing icon");
 		updateActionBadge("warning", {
@@ -608,7 +621,7 @@ async function processTab(tab) {
 	sendMessage(tab, "domain", {
 		isSuccess: true,
 		domain: url,
-		createdOn: createdOn ? createdOn.getTime() : 0,
+		createdOn: storageItem.createdon ? storageItem.createdon.getTime() : 0,
 		type: storageItem.validationInfo?.type,
 		msg: storageItem.validationInfo?.msg,
 		description: storageItem.validationInfo?.description,
