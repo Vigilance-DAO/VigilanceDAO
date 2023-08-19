@@ -27,9 +27,7 @@ function FeatureCard(props: FeatureCardProps) {
 		<Box height="240px">
 			<Image src={props.imageSrc} width="100%" height="240px" margin="auto" objectFit={"cover"}/>						
 		</Box>
-		<Text style={{
-			"padding": '10px'
-		}}>{props.description}</Text>
+		<Text padding="10px">{props.description}</Text>
 	</Flex>)
 }
 
@@ -39,21 +37,17 @@ export default function ExtensionInstalled() {
 			<Flex
 				direction="column"
 				align="center"
-				style={{
-					maxWidth: MAX_WIDTH,
-					margin: "0 auto",
-					padding: "80px 0 70px",
-				}}
+				maxWidth={MAX_WIDTH}
+				margin="0 auto"
+				padding="80px 0 70px"
 			>
 				<Link href="https://vigilancedao.org"><Image src={logo} /></Link>
 				<Heading
 					as="h1"
-					style={{
-						maxWidth: "20ch",
-						margin: "40px auto",
-						fontSize: "3rem",
-						textAlign: "center",
-					}}
+					maxWidth="20ch"
+					margin="40px auto"
+					fontSize="3rem"
+					textAlign="center"
 				>
 					Thank you for installing our extension
 				</Heading>
@@ -64,10 +58,8 @@ export default function ExtensionInstalled() {
 				<Flex
 					gap="10px"
 					maxWidth="90%"
-					style={{
-						flexWrap: "wrap",
-						justifyContent: "center",
-					}}
+					flexWrap="wrap"
+					justifyContent="center"
 				>
 					<Button
 						variant="solid"
@@ -86,10 +78,8 @@ export default function ExtensionInstalled() {
 						_hover={{
 							bgColor: "#3c0191",
 						}}
-						style={{
-							boxShadow: "0px 4px 156px #8C00FB",
-							width: "fit-content",
-						}}
+						boxShadow="0px 4px 156px #8C00FB"
+						width="fit-content"
 					>
 						Join Our Discord Server
 					</Button>
@@ -111,10 +101,8 @@ export default function ExtensionInstalled() {
 							color: "whiteAlpha.600",
 							bgColor: "#3c0191",
 						}}
-						style={{
-							boxShadow: "0px 4px 156px rgba(140, 0, 251, 0.25)",
-							color: "white",
-						}}
+							boxShadow= "0px 4px 156px rgba(140, 0, 251, 0.25)"
+							color= "white"
 					>
 						See how it works
 					</Button>
@@ -132,10 +120,8 @@ export default function ExtensionInstalled() {
 				</Flex>
 			</Flex>
 			<Box
-				style={{
-					maxWidth: MAX_WIDTH,
-					margin: "0 auto 100px auto"
-				}}
+					maxWidth={MAX_WIDTH}
+					margin= "0 auto 100px auto"
 			>
 				<Heading as="h2" marginBottom="30px">Features</Heading>
 				
