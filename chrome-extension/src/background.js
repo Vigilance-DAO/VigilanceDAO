@@ -3,8 +3,8 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
-import { API_ENDPOINT, DOMAIN } from "../constants";
-import { sendEvent } from "./utils";
+import { API_ENDPOINT, DOMAIN, USER_ID_KEY } from "../constants";
+import { getUserId, sendEvent } from "./utils";
 import { updateActionBadge, getStorageKey } from "./utils/background";
 
 // ! For production uncomment these lines
@@ -27,6 +27,33 @@ const env = {
 	SUBGRAPH_URL:
 		"https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao",
 };
+
+/**
+ * @returns {Promise<Array<string>>}
+ */
+function loadDontShowAgainDomains() {
+	console.log("loadDontShowAgainDomains");
+	return chrome.storage.sync
+		.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
+		.then((items) => {
+			/**
+			 * @type {Array<string>} 
+			 */
+			const x = items[DONT_SHOW_AGAIN_DOMAINS_KEY] || []
+			return x;
+		})
+		.catch((error) => {
+			console.error(
+				`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
+				error
+			);
+			/**
+			 * @type {Array<string>}
+			 */
+			const x = [];
+			return x;
+		});
+}
 
 /**
  * TODO
@@ -673,19 +700,7 @@ async function processMsg(request, sender, sendResponse) {
 	} else if (request.type == "stake-amount") {
 		await sendMessage(sender.tab, "stake-amount", request.data);
 	} else if (request.type == "alert-dont-show-again") {
-		/**
-		 * @type {string[]}
-		 */
-		const dontShowAgainDomains = await chrome.storage.sync
-			.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
-			.then((items) => items[DONT_SHOW_AGAIN_DOMAINS_KEY] || [])
-			.catch((error) => {
-				console.error(
-					`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
-					error
-				);
-				return [];
-			});
+		const dontShowAgainDomains = await loadDontShowAgainDomains();
 		chrome.storage.sync.set({
 			[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
 				// @ts-expect-error
@@ -733,7 +748,7 @@ function takeScreenshot(tab) {
 	});
 }
 
-chrome.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener(async (details) => {
 	console.log('onInstalled', details);
 
 	if (details.reason == "chrome_update" || details.reason == "shared_module_update") return;
@@ -746,5 +761,29 @@ chrome.runtime.onInstalled.addListener((details) => {
 		chrome.tabs.create({
 			url: `${DOMAIN}/extension-installed?reason=${details.reason}`,
 		});
+	} else if (details.reason == "update") {
+		// on update clear everything on storage other than
+		// 	- userid
+		// 	- dont show again domains
+		// to avoid issues with mismatched types
+		const userId = await getUserId();
+		const dontShowAgainDomains = await loadDontShowAgainDomains();
+
+		chrome.storage.sync
+			.clear()
+			.then(() => {
+				console.log("storage.sync cleared");
+			})
+			.catch(console.error);
+
+		/** @type {Record<string, unknown>} */
+		const newItems = {};
+		if (userId) {
+			newItems[USER_ID_KEY] = userId;
+		}
+		if (dontShowAgainDomains.length > 0) {
+			newItems[DONT_SHOW_AGAIN_DOMAINS_KEY] = dontShowAgainDomains;
+		}
+		chrome.storage.sync.set(newItems);
 	}
 });
