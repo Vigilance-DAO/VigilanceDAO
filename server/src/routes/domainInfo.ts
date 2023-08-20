@@ -67,8 +67,8 @@ async function getDomainInfo(
 	} else {
 		const results = await whois(domain);
 		console.log("reading new domain info", domain, results);
-		domainInfo.createdon = new Date(results.creationDate);
-		domainInfo.updatedon = new Date(results.updatedDate);
+		domainInfo.createdon = new Date(results.creationDate).toISOString();
+		domainInfo.updatedon = new Date(results.updatedDate).toISOString();
 		domainInfo.isValid = true;
 
 		let text =
@@ -98,7 +98,7 @@ async function getDomainInfo(
 	return domainInfo;
 }
 
-export default async function (req: Request, res: Response) {
+export default async function (req: Request, res: Response<DomainInfo | {}>) {
 	// await captureWebsite.file('https://cryptnesis.com/', 'screenshot.png');
 
 	let domain = req.body.domain;

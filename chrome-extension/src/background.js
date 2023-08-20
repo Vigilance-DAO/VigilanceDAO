@@ -248,11 +248,11 @@ async function getDomainValidationInfo(url, tab, createdOn) {
 }
 
 /**
- * @param {Date} createdOn
+ * @param {string} createdOn
  */
 function isSoftWarning(createdOn) {
 	let now = new Date();
-	return now.getTime() - createdOn.getTime() < env.alertPeriod;
+	return now.getTime() - new Date(createdOn).getTime() < env.alertPeriod;
 }
 
 /**
@@ -350,8 +350,6 @@ async function fetchDomainInfo(simplifiedUrl) {
 		storageItem = {
 			...storageItem,
 			...content,
-			createdon: new Date(content.createdon),
-			updatedon: new Date(content.updatedon)
 		};
 	}
 
@@ -458,7 +456,7 @@ async function processTab(tab) {
 		const _validationInfo = await getDomainValidationInfo(
 			url,
 			tab,
-			storageItem.createdon || null
+			storageItem.createdon == undefined ? null : new Date(storageItem.createdon)
 		);
 		if (_validationInfo != undefined) {
 			isUpdated = true;
@@ -553,7 +551,7 @@ async function processTab(tab) {
 	sendMessage(tab, "domain", {
 		isSuccess: true,
 		domain: url,
-		createdOn: storageItem.createdon ? storageItem.createdon.getTime() : 0,
+		createdOn: storageItem.createdon == undefined ? 0 : new Date(storageItem.createdon).getTime(),
 		type: storageItem.validationInfo?.type,
 		msg: storageItem.validationInfo?.msg,
 		description: storageItem.validationInfo?.description,
@@ -572,7 +570,7 @@ async function processTab(tab) {
 	const computedStorageItem = {
 		...storageItem,
 		isNew: storageItem.createdon
-			? isSoftWarning(new Date(storageItem.createdon))
+			? isSoftWarning(storageItem.createdon)
 			: false,
 	};
 	sendMessage(tab, "processing-finished", computedStorageItem);
