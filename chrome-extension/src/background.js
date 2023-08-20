@@ -737,8 +737,10 @@ function takeScreenshot(tab) {
 
 chrome.runtime.onInstalled.addListener((details) => {
 	console.log('onInstalled', details);
+
+	if (details.reason == "chrome_update" || details.reason == "shared_module_update") return;
 	sendEvent({
-		eventName: "install",
+		eventName: details.reason,
 		...details
 	});
 	
