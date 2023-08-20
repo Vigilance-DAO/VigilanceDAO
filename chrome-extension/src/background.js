@@ -191,6 +191,7 @@ function getUrl(tab) {
  * @returns {Promise<import("./types").DomainValidationInfo | undefined>}
  */
 async function getDomainValidationInfo(url, tab, createdOn) {
+	console.log("getDomainValidationInfo", url, tab, createdOn);
 	/**
 	 * @type {"info" | "warning"}
 	 */
@@ -278,6 +279,7 @@ async function getDomainValidationInfo(url, tab, createdOn) {
  * @param {string} createdOn
  */
 function isSoftWarning(createdOn) {
+	console.log("isSoftWarning", createdOn, new Date(createdOn));
 	let now = new Date();
 	return now.getTime() - new Date(createdOn).getTime() < env.alertPeriod;
 }
@@ -288,6 +290,7 @@ function isSoftWarning(createdOn) {
  * @returns {Promise<import("./types").DomainStorageItem>}
  */
 async function fetchDomainInfo(simplifiedUrl) {
+	console.log("fetchDomainInfo", simplifiedUrl);
 	/**
 	 * @type {import("./types").DomainStorageItem}
 	 */
@@ -336,7 +339,8 @@ async function fetchDomainInfo(simplifiedUrl) {
 		body: JSON.stringify({ query }),
 	});
 	let data = await rawResponse.json();
-	console.log("response", data);
+	console.log("subgraph response", data);
+
 	let reports = data.data.reports;
 	for (let i = 0; i < reports.length; ++i) {
 		const report = reports[i];
@@ -372,6 +376,8 @@ async function fetchDomainInfo(simplifiedUrl) {
 	 * @type {import("../../important-types").DomainInfo}
 	 */
 	const content = await response.json();
+
+	console.log("/domain-info response", content);
 
 	if (content.domain) {
 		storageItem = {
