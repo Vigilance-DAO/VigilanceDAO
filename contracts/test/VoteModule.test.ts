@@ -167,12 +167,44 @@ describe("VoteModule", function () {
     })
 
 
-    // it("should validate and refund fee with reward token for an approved domain", async() => {
-    //   domain = "www.google.com";
-    //   const isApproved = true;
-    //   const validatorComments = "Approved by validator";
-    //   
-    //   await voteModule.req
-    // })
+    it("should validate and refund fee with reward token for an approved request", async() => {
+      domain = "www.google.com";
+      const isApproved = true;
+      const validatorComments = "Approved by validator";
+      const validationFees = ethers.utils.parseUnits("0.001", 18);
+      await voteModule.requestValidation(domain, false, {value: validationFees})
+      const rewardAmount = await voteModule.getRewardAmount();
 
+      //check for refund
+      const userBalanceBefore = await user.getBalance();
+      const tx = await expect(await voteModule.connect(validator).verifyValidationRequest(domain, isApproved, validatorComments))
+                .to.emit(voteModule, "ValidationVerdict");
+
+      const userBalanceAfter = await user.getBalance();
+      const validatorFee = await voteModule.getValidationFees();
+      expect(userBalanceAfter.sub(userBalanceBefore)).to.equal(validatorFee);
+
+       //check for reward amount
+       const userRewardBalance = await rewardTokenContract.balanceOf(await user.getAddress());
+       console.log("User reward balance: ", userRewardBalance)
+       expect(userRewardBalance).to.equal(userBalanceBefore.add(rewardAmount));
+
+    })
+
+    it("should slash votes and send fees to treasury for a rejected request", async() => {
+        domain = "www.google.com";
+        const isApproved = false;
+        const validatorComments = "Rejected by validator";
+
+        const validationFees = ethers.utils.parseUnits("0.001", 18);
+        await voteModule.requestValidation(domain, true, {value: validationFees});
+        await voteModule.connect(validator).verifyValidationRequest(domain, isApproved, validatorComments);
+
+        const userVoteBalance = await voteTokenContract.balanceOf(await user.getAddress());
+        expect(userVoteBalance).to.equal(BigNumber.from(0));
+
+        const treasuryBalance = await ethers.provider.getBalance(treasuryContract.address);
+        expect(treasuryBalance).to.equal(validationFees);
+    })
 });
+

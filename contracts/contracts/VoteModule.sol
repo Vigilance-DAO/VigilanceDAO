@@ -234,6 +234,9 @@ contract VoteModule {
         bool isApproved,
         string calldata _validatorComments
     ) external {
+        GovernanceBadgeNFT _gov = GovernanceBadgeNFT(governanceBadgeNFT);
+        uint256 bal = _gov.balanceOf(msg.sender, _gov.VALIDATOR_NFT());
+        require(bal > 0, "Only selected validators can validate");
         DomainClaim storage claim = domainVerdict[domain];
         require(claim.requestor != address(0), "No pending request");
 
