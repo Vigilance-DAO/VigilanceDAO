@@ -107,27 +107,15 @@ describe("VoteModule", function () {
         expect(userVoteBalance).to.equal(n);
     })
 
-    // // it("should calculate strength of a domain", async() => {
-    // //     domain = "www.google.com";
-    //     // const n = BigNumber.from(20);
-    //     // const totalCost = BigNumber.from(votePrice).mul(n).mul(n);
-    // //     const buyVotesTx = await expect(await voteModule.connect(user).buyVotes(n, { value: totalCost })).to.emit(voteModule, "VotesBought");
-    // //     await voteModule.reportDomain(domain, false, [], "") //reporting a domain with legit votes
-    // //     const expect
-    // // })
-
     it("should allow users to report a domain", async () => {
         domain = "www.google.com";
         const isScam = true;
-        const evidenceHashes = ["evidence1", "evidence2"];
-        const comments = "This is a scam domain";
-
         const initialVoteCount = await voteModule.getVoteCount(domain);
         const initialRewardBalance = await rewardTokenContract.balanceOf(user.address);
         const rewardAmount = await voteModule.getRewardAmount();
         console.log("Reward amount: ", rewardAmount)
         console.log("Initial reward balance: ", initialRewardBalance)
-        const report = await expect(await voteModule.reportDomain(domain, isScam, evidenceHashes, comments))
+        const report = await expect(await voteModule.reportDomain(domain, isScam))
             .to.emit(voteModule, "DomainReported");
         const updatedVoteCount = await voteModule.getVoteCount(domain);
         const updatedRewardBalance = await rewardTokenContract.balanceOf(user.address);
@@ -139,15 +127,14 @@ describe("VoteModule", function () {
     it("should fail for degenerate case of going with the majority", async () => {
         domain = "www.google.com";
         const isScam = true;
-        const evidenceHashes = ["evidence1", "evidence2"];
+        const evidences = ["evidence1", "evidence2"];
         const comments = "This is a scam domain";
-
-        const reportTx = await voteModule.reportDomain(domain, isScam, evidenceHashes, comments);
+        const reportTx = await voteModule.reportDomain(domain, isScam);
         const report = await reportTx.wait();
 
         const strength = expect(await voteModule.getStrength(domain)).to.equal(BigNumber.from(0));
 
-        const requestValidation = await expect(voteModule.requestValidation(domain, isScam))
+        const requestValidation = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
                                     .to.be.revertedWith("Validation request not allowed");
         // const requestValidation = await expect(voteModule.requestValidation(domain, isScam)).to.be.reverted;
     })
@@ -156,10 +143,11 @@ describe("VoteModule", function () {
     it("should generate a manual verification request with taking a validation fees", async () => {
         domain = "www.google.com";
         const isScam = true;
-        // const validationFees = await voteModule.getValidationFees();
+        const evidences = ["evidence1", "evidence2"];
+        const comments = "This is a scam domain";
         const validationFees = ethers.utils.parseUnits("0.001", 18);
         const initialBalance = await user.getBalance();
-        const tx = await expect(await voteModule.requestValidation(domain, isScam, { value: validationFees }) )
+        const tx = await expect(await voteModule.requestValidation(domain, isScam, evidences, comments, { value: validationFees }) )
                     .to.emit(voteModule, "ValidationRequest");
         const updatedBalance = await user.getBalance();
         expect(updatedBalance).to.equal(initialBalance.sub(validationFees));
@@ -170,9 +158,11 @@ describe("VoteModule", function () {
     it("should validate and refund fee with reward token for an approved request", async() => {
       domain = "www.google.com";
       const isApproved = true;
+      const evidences = ["evidence1", "evidence2"];
+      const comments = "This is a scam domain";
       const validatorComments = "Approved by validator";
       const validationFees = ethers.utils.parseUnits("0.001", 18);
-      await voteModule.requestValidation(domain, false, {value: validationFees})
+      await voteModule.requestValidation(domain, false, evidences, comments, {value: validationFees})
       const rewardAmount = await voteModule.getRewardAmount();
 
       //check for refund

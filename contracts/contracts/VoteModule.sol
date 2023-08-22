@@ -14,14 +14,15 @@ contract VoteModule {
     event DomainReported(
         string indexed domain,
         address indexed reporter,
-        bool isScam,
-        string evidences
+        bool isScam
     );
 
     event ValidationRequest(
         string indexed domain,
         address indexed requestor,
-        bool isScam
+        bool isScam,
+        string evidences,
+        string comments
     );
 
     event ValidationVerdict(
@@ -31,27 +32,29 @@ contract VoteModule {
         string validatorComments
     );
 
-    event VotesBought(
-        address indexed buyer,
-        uint256 n,
-        uint256 totalCost
-    );
+    event VotesBought(address indexed buyer, uint256 n, uint256 totalCost);
 
     struct Vote {
         address voter;
         bool isScam;
-        string comments;
-        string evidences;
+    }
+
+    enum Status {
+        Pending,
+        Approved,
+        Rejected
     }
 
     struct DomainClaim {
         string domain;
         bool isScam;
-        bool domainVerdictScamOrNot;
         address requestor;
-        string status;
-        string validatorComments;
+        string requestorComments;
+        string requestorEvidences;
+        Status status;
         address validator;
+        string validatorComments;
+        bool domainVerdictScamOrNot;
     }
 
     uint256 votePrice;
@@ -61,7 +64,7 @@ contract VoteModule {
     VoteToken public voteTokenContract;
     RewardToken public rewardTokenContract;
     Treasury public treasuryContract;
-    // mapping(string => mapping(address => bool)) isDomainVoted;   
+    // mapping(string => mapping(address => bool)) isDomainVoted;
     mapping(address => int) noOfDomainsVoted;
 
     mapping(string => uint256) voteCount;
@@ -69,7 +72,6 @@ contract VoteModule {
 
     mapping(string => DomainClaim) domainVerdict;
     GovernanceBadgeNFT public governanceBadgeNFT;
-
 
     constructor(
         address _governanceBadgeNFT,
@@ -86,7 +88,7 @@ contract VoteModule {
         validationFees = _validationFees;
         rewardTokenContract = RewardToken(_rewardTokenAddress);
         rewardAmount = _rewardAmount;
-        treasuryContract = Treasury(_treasuryContract); 
+        treasuryContract = Treasury(_treasuryContract);
     }
 
     function getVotePrice() public view returns (uint256) {
@@ -105,6 +107,19 @@ contract VoteModule {
         return voteCount[domain];
     }
 
+    // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
+    function sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
+    }
     function buyVotes(uint256 n) public payable {
         uint256 totalCost = n * n * votePrice;
         require(msg.value >= totalCost, "Insufficient funds");
@@ -117,9 +132,13 @@ contract VoteModule {
         uint256 amount = voteTokenContract.balanceOf(msg.sender);
         noOfDomainsVoted[msg.sender] = 0;
         voteTokenContract.burn(msg.sender, amount);
-        
+
         uint256 rewardBalance = rewardTokenContract.balanceOf(msg.sender);
-        rewardTokenContract.redeemOnBehalf(rewardBalance, msg.sender, msg.sender);
+        rewardTokenContract.redeemOnBehalf(
+            rewardBalance,
+            msg.sender,
+            msg.sender
+        );
         treasuryContract.sendFunds(msg.sender, amount);
     }
 
@@ -144,12 +163,7 @@ contract VoteModule {
         return (totalStrength * 100) / totalVotes;
     }
 
-    function reportDomain(
-        string memory domain,
-        bool isLegit,
-        string[] calldata evidenceHashes,
-        string calldata comments
-    ) external {
+    function reportDomain(string memory domain, bool isLegit) external {
         // if the domain verdict is present fail safely
         require(
             domainVerdict[domain].validator == address(0),
@@ -159,6 +173,36 @@ contract VoteModule {
         // require(isDomainVoted[domain][msg.sender] == false, "Domain already voted");
 
         require(isLegit != domainVerdict[domain].isScam, "Conflicting report");
+
+        // Mint reward token if the user is reporting for the first time
+        if (noOfDomainsVoted[msg.sender] == 0) {
+            rewardTokenContract.mint(msg.sender, rewardAmount);
+        }
+
+        noOfDomainsVoted[msg.sender]++;
+        voteCount[domain]++;
+        votes[domain][voteCount[domain] - 1] = Vote(msg.sender, isLegit);
+
+        emit DomainReported(domain, msg.sender, isLegit);
+    }
+
+    function requestValidation(
+        string calldata domain,
+        bool isScam,
+        string[] calldata evidenceHashes,
+        string calldata comments
+    ) external payable {
+        uint256 strength = getStrength(domain);
+        require(
+            (isScam && strength >= 51) || (!isScam && strength < 51),
+            "Validation request not allowed"
+        );
+
+        require(msg.value >= validationFees, "Insufficient funds");
+
+        if (msg.value > validationFees) {
+            payable(msg.sender).transfer(msg.value - validationFees);
+        }
 
         string memory evidenceHashesSerialised = "";
         uint256 nEvidences = evidenceHashes.length;
@@ -177,56 +221,25 @@ contract VoteModule {
             }
         }
 
-        if(noOfDomainsVoted[msg.sender] == 0) {
-            rewardTokenContract.mint(msg.sender, rewardAmount);
-        }
-
-        // isDomainVoted[domain][msg.sender] = true;
-        noOfDomainsVoted[msg.sender]++;
-        voteCount[domain]++;
-        votes[domain][voteCount[domain] - 1] = Vote(
-            msg.sender,
-            isLegit,
-            comments,
-            evidenceHashesSerialised
-        );
-
-        emit DomainReported(
-            domain,
-            msg.sender,
-            isLegit,
-            evidenceHashesSerialised
-        );
-    }
-
-    function requestValidation(
-        string calldata domain,
-        bool isScam
-    ) external payable {
-        // require(false, "ab to hoga");
-        uint256 strength = getStrength(domain);
-        require(
-            (isScam && strength >= 51) || (!isScam && strength < 51),
-            "Validation request not allowed"
-        );
-
-        require(msg.value >= validationFees, "Insufficient funds");
-
-        if (msg.value > validationFees) {
-            payable(msg.sender).transfer(msg.value - validationFees);
-        }
-
         domainVerdict[domain] = DomainClaim(
-            domain,
-            isScam,
-            false,
-            msg.sender,
-            "Pending",
+            domain, // domain
+            isScam, // isScam -> true if the requestor thinks domain is a scam
+            msg.sender, // requestor
+            comments, // requestorComments
+            evidenceHashesSerialised, // requestorEvidences
+            Status.Pending, // status
+            address(0),
             "",
-            address(0)
+            false
         );
 
-        emit ValidationRequest(domain, msg.sender, isScam);
+        emit ValidationRequest(
+            domain,
+            msg.sender,
+            isScam,
+            evidenceHashesSerialised,
+            comments
+        );
     }
 
     function verifyValidationRequest(
@@ -241,49 +254,60 @@ contract VoteModule {
         require(claim.requestor != address(0), "No pending request");
 
         claim.validator = msg.sender;
-        bool domainVerdictScamOrNot = (claim.isScam && isApproved) ||
-            (!claim.isScam && !isApproved);
+        bool domainVerdictScamOrNot = ( claim.isScam && isApproved ) || ( !claim.isScam && !isApproved );
         if (isApproved) {
-            claim.status = "Approved";
+            claim.status = Status.Approved;
             claim.domainVerdictScamOrNot = domainVerdictScamOrNot;
             claim.validatorComments = _validatorComments;
             rewardTokenContract.mint(claim.requestor, rewardAmount);
         } else {
-            claim.status = "Rejected";
+            claim.status = Status.Rejected;
         }
 
-        uint256 totalVotesToSlash = validationFees / votePrice;
+
+        // cost = n*n*price for n votes
+        // expense? recover in terms of votes slashed, let the expense be e
+        // x*x*price = e
+        // x = (e/price)^0.5
+
+        // Burn the votes of the voters who voted against the verdict
+        uint256 totalVotesToSlash = sqrt(validationFees / votePrice);
         uint256 totalAgainstVerdictVotes = 0;
 
         uint256 totalVoters = voteCount[domain];
         for (uint i = 0; i < totalVoters; i++) {
             Vote memory currentVote = votes[domain][i];
             if (currentVote.isScam != domainVerdictScamOrNot) {
-                totalAgainstVerdictVotes += voteTokenContract.balanceOf(currentVote.voter);
+                totalAgainstVerdictVotes += voteTokenContract.balanceOf(
+                    currentVote.voter
+                );
             }
         }
 
-        
         // Burn the votes of the voters who voted against the verdict
         for (uint i = 0; i < totalVoters; i++) {
             Vote memory currentVote = votes[domain][i];
             if (currentVote.isScam != domainVerdictScamOrNot) {
-                uint256 voterBalance = voteTokenContract.balanceOf(currentVote.voter);
-                uint256 votesToBurn = (voterBalance * totalVotesToSlash) / totalAgainstVerdictVotes;
+                uint256 voterBalance = voteTokenContract.balanceOf(
+                    currentVote.voter
+                );
+                uint256 votesToBurn = (voterBalance * totalVotesToSlash) /
+                    totalAgainstVerdictVotes;
                 voteTokenContract.burn(currentVote.voter, votesToBurn);
             }
         }
 
         emit ValidationVerdict(
-            domain, 
-            msg.sender, 
-            isApproved, 
+            domain,
+            msg.sender,
+            isApproved,
             _validatorComments
         );
-
     }
 
-    function getDomainVerdict(string memory domain)
+    function getDomainVerdict(
+        string memory domain
+    )
         external
         view
         returns (
@@ -291,7 +315,7 @@ contract VoteModule {
             bool,
             bool,
             address,
-            string memory,
+            Status,
             string memory,
             address
         )
