@@ -120,6 +120,7 @@ contract VoteModule {
             z = 1;
         }
     }
+
     function buyVotes(uint256 n) public payable {
         uint256 totalCost = n * n * votePrice;
         require(msg.value >= totalCost, "Insufficient funds");
