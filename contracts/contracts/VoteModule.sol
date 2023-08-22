@@ -64,6 +64,7 @@ contract VoteModule {
     VoteToken public voteTokenContract;
     RewardToken public rewardTokenContract;
     Treasury public treasuryContract;
+    address public wethAddress;
     // mapping(string => mapping(address => bool)) isDomainVoted;
     mapping(address => int) noOfDomainsVoted;
 
@@ -80,7 +81,8 @@ contract VoteModule {
         uint256 _validationFees,
         address _rewardTokenAddress,
         uint256 _rewardAmount,
-        address payable _treasuryContract
+        address payable _treasuryContract,
+        address _wethAddress
     ) {
         governanceBadgeNFT = GovernanceBadgeNFT(_governanceBadgeNFT);
         voteTokenContract = VoteToken(_voteTokenAddress);
@@ -89,6 +91,7 @@ contract VoteModule {
         rewardTokenContract = RewardToken(_rewardTokenAddress);
         rewardAmount = _rewardAmount;
         treasuryContract = Treasury(_treasuryContract);
+        wethAddress = _wethAddress;
     }
 
     function getVotePrice() public view returns (uint256) {
@@ -121,26 +124,44 @@ contract VoteModule {
         }
     }
 
-    function buyVotes(uint256 n) public payable {
+    function buyVotes(uint256 n) public {
         uint256 totalCost = n * n * votePrice;
-        require(msg.value >= totalCost, "Insufficient funds");
-        payable(treasuryContract).transfer(msg.value);
+        bool sent = IERC20(wethAddress).transferFrom(
+            msg.sender,
+            address(treasuryContract),
+            totalCost
+        );
+        require(sent, "WETH transfer failed");
         voteTokenContract.mint(msg.sender, n);
         emit VotesBought(msg.sender, n, totalCost);
     }
 
-    function withdraw() external {
-        uint256 amount = voteTokenContract.balanceOf(msg.sender);
-        noOfDomainsVoted[msg.sender] = 0;
-        voteTokenContract.burn(msg.sender, amount);
 
+    // withdraw the votes and reward tokens
+    // here the reward tokens will be burnt, 
+    // so user in advance will have to approve the vote module contract 
+    // to spend the reward tokens
+    function withdraw() external {
+        // Get vote balance of user
+        uint256 voterBalance = voteTokenContract.balanceOf(msg.sender);
+
+        // Reset variables
+        noOfDomainsVoted[msg.sender] = 0;
+
+        // Burn the votes
+        voteTokenContract.burn(msg.sender, voterBalance);
+
+        // Redeem reward tokens of the user on his behalf
         uint256 rewardBalance = rewardTokenContract.balanceOf(msg.sender);
-        rewardTokenContract.redeemOnBehalf(
+        rewardTokenContract.redeem(
             rewardBalance,
             msg.sender,
             msg.sender
         );
-        treasuryContract.sendFunds(msg.sender, amount);
+
+        // Send the equivalent funds from the treasury to the user
+        uint256 amount = voterBalance * voterBalance * votePrice;
+        treasuryContract.sendERC20(wethAddress, msg.sender, amount);
     }
 
     function getStrength(string calldata domain) public view returns (uint256) {
@@ -160,7 +181,7 @@ contract VoteModule {
             );
             totalStrength += uint256(voteWeight) * voterBalance;
             totalVotes += voterBalance;
-        }
+        }    
         return (totalStrength * 100) / totalVotes;
     }
 
@@ -171,13 +192,15 @@ contract VoteModule {
             "Domain already validated"
         );
 
-        // require(isDomainVoted[domain][msg.sender] == false, "Domain already voted");
-
-        require(isLegit != domainVerdict[domain].isScam, "Conflicting report");
-
         // Mint reward token if the user is reporting for the first time
+        // 1. get the amount from the treasury 
+        //    since we cant simply mint as it would devalue previous reward token share holders
+        // 2. mint the reward token to the user, after getting the funds from treasury
         if (noOfDomainsVoted[msg.sender] == 0) {
-            rewardTokenContract.mint(msg.sender, rewardAmount);
+            uint256 wethAmount = rewardTokenContract.previewMint(rewardAmount);
+            treasuryContract.sendERC20(wethAddress, address(this), wethAmount);
+            IERC20(wethAddress).approve(address(rewardTokenContract), wethAmount);
+            rewardTokenContract.mint(rewardAmount, msg.sender);
         }
 
         noOfDomainsVoted[msg.sender]++;
@@ -187,23 +210,25 @@ contract VoteModule {
         emit DomainReported(domain, msg.sender, isLegit);
     }
 
+    // Preapproval of (validation fees) required for this function
     function requestValidation(
         string calldata domain,
         bool isScam,
         string[] calldata evidenceHashes,
         string calldata comments
-    ) external payable {
+    ) external {
         uint256 strength = getStrength(domain);
         require(
             (isScam && strength >= 51) || (!isScam && strength < 51),
             "Validation request not allowed"
         );
 
-        require(msg.value >= validationFees, "Insufficient funds");
-
-        if (msg.value > validationFees) {
-            payable(msg.sender).transfer(msg.value - validationFees);
-        }
+        bool sent = IERC20(wethAddress).transferFrom(
+            msg.sender,
+            address(this),
+            validationFees
+        );
+        require(sent, "Transfer Failed");
 
         string memory evidenceHashesSerialised = "";
         uint256 nEvidences = evidenceHashes.length;
@@ -260,7 +285,16 @@ contract VoteModule {
             claim.status = Status.Approved;
             claim.domainVerdictScamOrNot = domainVerdictScamOrNot;
             claim.validatorComments = _validatorComments;
-            rewardTokenContract.mint(claim.requestor, rewardAmount);
+
+
+            // Mint reward token if the user is reporting for the first time
+            // 1. get the amount from the treasury 
+            //    since we cant simply mint as it would devalue previous reward token share holders
+            // 2. mint the reward token to the user, after getting the funds from treasury
+            uint256 wethAmount = rewardTokenContract.previewMint(rewardAmount);
+            treasuryContract.sendERC20(wethAddress, address(this), wethAmount);
+            IERC20(wethAddress).approve(address(rewardTokenContract), wethAmount);
+            rewardTokenContract.mint(rewardAmount, claim.requestor);
         } else {
             claim.status = Status.Rejected;
         }

@@ -28,7 +28,7 @@ contract Treasury is OwnableUpgradeable {
         emit FundsSent(to,amount);
     }
 
-    function sendERC20(address token,address to,uint amount) public onlyOwner{
+    function sendERC20(address token,address to,uint amount) public onlyAllowedCaller {
         IERC20Upgradeable(token).transfer(to, amount);
     }
 

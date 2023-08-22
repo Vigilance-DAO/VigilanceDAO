@@ -9,6 +9,7 @@ describe("VoteModule", function () {
     let rewardTokenContract: Contract;
     let treasuryContract: Contract;
     let voteModule: Contract;
+    let weth: Contract;
     let domain: string;
     let user: SignerWithAddress;
     let validator: SignerWithAddress;
@@ -20,6 +21,7 @@ describe("VoteModule", function () {
         console.log("User address", user.address);
         console.log("Validator's address", validator.address);
 
+        console.log("Deploying GovernanceBadgeNFT....")
         let GovernanceBadgeNFT = await ethers.getContractFactory("GovernanceBadgeNFT");
         governanceBadgeNFT = await upgrades.deployProxy(
             GovernanceBadgeNFT,
@@ -29,12 +31,20 @@ describe("VoteModule", function () {
         await governanceBadgeNFT.deployed();
         console.log("governanceBadgeNFT address: ", governanceBadgeNFT.address);
 
+        console.log("Deploying wETH....");
+        let wETH = await ethers.getContractFactory("WETH");
+        weth = await wETH.connect(user).deploy();
+        weth = await weth.deployed();
+        console.log("wETH address: ", weth.address);
+
+        console.log("Deploying VoteToken....")
         let voteToken = await ethers.getContractFactory("VoteToken");
         voteTokenContract = await voteToken.connect(user).deploy();
         voteTokenContract = await voteTokenContract.deployed();
         console.log("voteTokenContract address: ", voteTokenContract.address);
 
 
+        console.log("Deploying Treasury....")
         let treasury = await ethers.getContractFactory("Treasury");
         treasuryContract = await treasury.connect(user).deploy();
         treasuryContract = await treasuryContract.deployed();
@@ -42,8 +52,13 @@ describe("VoteModule", function () {
         setTreasuryOwner = await setTreasuryOwner.wait();
         console.log("treasuryContract address: ", treasuryContract.address)
 
+        console.log("Deploying RewardToken....")
         let rewardToken = await ethers.getContractFactory("RewardToken");
-        rewardTokenContract = await rewardToken.connect(user).deploy();
+        rewardTokenContract = await rewardToken.connect(user).deploy(
+            weth.address,
+            "Reward Token",
+            "RT",
+        );
         rewardTokenContract = await rewardTokenContract.deployed();
         console.log("rewardTokenContract address: ", rewardTokenContract.address);
 
@@ -51,6 +66,7 @@ describe("VoteModule", function () {
         const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
         const rewardAmount = ethers.utils.parseUnits("1", 18).toString();
 
+        console.log("Deploying VoteModule....")
         const VoteModule = await ethers.getContractFactory("VoteModule");
         voteModule = await VoteModule.deploy(
             governanceBadgeNFT.address,
@@ -59,11 +75,13 @@ describe("VoteModule", function () {
             validationFees,
             rewardTokenContract.address,
             rewardAmount,
-            treasuryContract.address
+            treasuryContract.address,
+            weth.address
         )
         voteModule = await voteModule.deployed();
         console.log("voteModule address: ", voteModule.address);
 
+        console.log("Setting vote module in treasury, reward token and vote token....")
         const setVoteModuleInTreasury = await expect(await treasuryContract.setVoteModulesContract(voteModule.address)).
             to.emit(treasuryContract, "VoteModuleContractSet")
             .withArgs(voteModule.address);
@@ -78,6 +96,20 @@ describe("VoteModule", function () {
         const setVoteModuleInVT = await expect(await voteTokenContract.setVoteModule(voteModule.address))
             .to.emit(voteTokenContract, "VoteModuleContractSet")
             .withArgs(voteModule.address);
+        console.log("Setting complete")
+
+        console.log("Minting Eth to user .....")
+        const amountToMint = ethers.utils.parseEther("10").toString();
+        let tx = await weth.connect(user).mint(user.address, amountToMint);
+        tx = await tx.wait();
+        console.log("Minted Eth to user successfully")
+
+        console.log("Filling up the treasury ....")
+        const amountToFill = ethers.utils.parseEther("100").toString();
+        tx = await weth.connect(user).mint(treasuryContract.address, amountToFill);
+        tx = await tx.wait();
+        console.log("Treasury filled successfully")
+
     })
 
     it("should return correct vote price", async () => {
@@ -87,23 +119,24 @@ describe("VoteModule", function () {
         expect(votePrice).to.equal(expectedVotePrice);
     })
 
-    it("should allow users to buy votes", async () => {
-        const initialBalance = await user.getBalance();
-        console.log("Initial balance: ", initialBalance)
-
+    it("should allow users to buy votes using weth", async () => {
         const votePrice = await voteModule.getVotePrice();
         console.log('Vote price in 2nd test ', votePrice)
         const n = BigNumber.from(20);
-        const totalCost = BigNumber.from(votePrice).mul(n).mul(n);
+        const totalCost = BigNumber.from(votePrice).mul(n).mul(n).toString();
         console.log("Total cost: ", totalCost)
+        const initialBalance = await weth.balanceOf(user.address);
+        console.log("Initial balance: ", initialBalance)
 
-        const buyVotesTx = await expect(await voteModule.connect(user).buyVotes(n, { value: totalCost })).to.emit(voteModule, "VotesBought");
+        await weth.connect(user).approve(voteModule.address, totalCost);
+
+        const buyVotesTx = await expect(await voteModule.connect(user).buyVotes(n)).to.emit(voteModule, "VotesBought");
         // const buyVotesTx = await tx.wait();
         // console.log("Buy votes tx: ", buyVotesTx)
-        const updatedBalance = await user.getBalance();
+        const updatedBalance = await weth.balanceOf(user.address);
         console.log("Updated balance: ", updatedBalance)
 
-        expect(updatedBalance).to.lessThan(initialBalance.sub(totalCost));
+        expect(updatedBalance).to.eq(initialBalance.sub(totalCost));
         const userVoteBalance = await voteTokenContract.balanceOf(user.address);
         expect(userVoteBalance).to.equal(n);
     })
@@ -111,16 +144,24 @@ describe("VoteModule", function () {
     it("should allow users to report a domain", async () => {
         domain = "www.google.com";
         const isScam = true;
+        
         const initialVoteCount = await voteModule.getVoteCount(domain);
         const initialRewardBalance = await rewardTokenContract.balanceOf(user.address);
         const rewardAmount = await voteModule.getRewardAmount();
         console.log("Reward amount: ", rewardAmount)
         console.log("Initial reward balance: ", initialRewardBalance)
-        const report = await expect(await voteModule.reportDomain(domain, isScam))
+
+        const reportTx = await voteModule.reportDomain(domain, isScam)
+        const report = await expect(reportTx)
             .to.emit(voteModule, "DomainReported");
+        // let report = await reportTx.wait();
+        
+        console.log("Report: ", report)
+
         const updatedVoteCount = await voteModule.getVoteCount(domain);
         const updatedRewardBalance = await rewardTokenContract.balanceOf(user.address);
         console.log("Updated reward balance: ", updatedRewardBalance)
+
         expect(updatedRewardBalance).to.equal(initialRewardBalance.add(rewardAmount));
         expect(updatedVoteCount).to.equal(initialVoteCount.add(1));
     })
@@ -130,10 +171,13 @@ describe("VoteModule", function () {
     //     const isScam = true;
     //     const evidences = ["evidence1", "evidence2"];
     //     const comments = "This is a scam domain";
+    //     const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
     //     const reportTx = await voteModule.reportDomain(domain, isScam);
     //     const report = await reportTx.wait();
 
     //     const strength = expect(await voteModule.getStrength(domain)).to.equal(BigNumber.from(0));
+    //     let appproveTx = await weth.connect(user).approve(voteModule.address, validationFees);
+    //     let approve = await appproveTx.wait();
 
     //     // const requestValidation = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
     //     //                             .to.be.revertedWith("Validation request not allowed");
@@ -147,18 +191,20 @@ describe("VoteModule", function () {
     //     const evidences = ["evidence1", "evidence2"];
     //     const comments = "This is a scam domain";
     //     const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
-    //     const initialBalance = await user.getBalance();
+    //     const initialBalance = await weth.balanceOf(user.address);
     //     console.log("Initial balance: ", initialBalance);
-    //     // const tx = await expect(await voteModule.requestValidation(domain, isScam, evidences, comments, { value: validationFees }) )
-    //     //             .to.emit(voteModule, "ValidationRequest");
-    //     // let tx = await expect(voteModule.requestValidation(domain, isScam, evidences, comments, { value: validationFees }))
-    //     let tx = await voteModule.connect(user).requestValidation(domain, isScam, [], comments, { value: validationFees })
+    //     let approveTx = await weth.connect(user).approve(voteModule.address, validationFees);
+    //     approveTx = await approveTx.wait();
+    //     const tx = await expect(await voteModule.requestValidation(domain, isScam, evidences, comments))
+    //                 .to.emit(voteModule, "ValidationRequest");
+    //     // let tx = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
+    //     // let tx = await expect(voteModule.connect(user).requestValidation(domain, isScam, [], comments))
     //     // .to.be.revertedWith(
     //     //     "Require atleast one evidence"
     //     // );
-    //     tx = await tx.wait();
+    //     // tx = await tx.wait();
     //     console.log(tx)
-    //     const updatedBalance = await user.getBalance();
+    //     const updatedBalance = await weth.balanceOf(user.address);
     //     console.log("Updated balance: ", updatedBalance);
 
     //     expect(updatedBalance).to.equal(initialBalance.sub(validationFees));
