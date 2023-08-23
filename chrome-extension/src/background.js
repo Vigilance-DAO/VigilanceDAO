@@ -790,6 +790,10 @@ function takeScreenshot(tab) {
 	});
 }
 
+async function doHttpPost(endpoint, data) {
+
+}
+
 chrome.runtime.onInstalled.addListener((details) => {
 	console.log('onInstalled', details);
 	sendEvent({

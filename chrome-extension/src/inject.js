@@ -29,6 +29,8 @@ function isSendTransactionRequest(params) {
 	return params.method == "eth_sendTransaction";
 }
 
+
+
 /**
  * @param {import("./inject").BasicContractInfo} basicInfo
  * @returns {Promise<import("./inject").ContractInfo | null>}

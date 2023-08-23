@@ -15,7 +15,7 @@ app.use(helmet());
 app.use(
 	cors(),
 );
-app.use(cookieParser());
+// app.use(cookieParser());
 
 app.post('/domain-info', domainInfo);
 app.post("/contract-info", contractInfo);

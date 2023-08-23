@@ -83,8 +83,7 @@ export async function sendEvent(event) {
 	}
 
 	const userId = await getUserId();
-	if (userId == null) return;
-
+	
 	event.userId = userId;
 	console.log("sendEvent event", event);
 
@@ -101,7 +100,7 @@ export async function sendEvent(event) {
 				console.error("sendEvent: response not ok", response.status, body);
 				return;
 			}
-
+			console.log('event', body)
 			if (userId != body) {
 				return chrome.storage.sync
 					.set({ [USER_ID_KEY]: body })
