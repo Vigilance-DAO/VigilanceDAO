@@ -16,7 +16,7 @@ import NetworkSelector from "../components/Network";
 import ReviewForm from "../components/ReviewForm";
 import AlertMessageType from "../interfaces/AlertMessageType";
 import History from "../components/History";
-import { FOR_DEVELOPMENT } from "../services/web3.hook";
+import { FOR_DEVELOPMENT, Web3Hook_DomainInfo } from "../services/web3.hook";
 import DomainCard, { DomainCardInfo } from "../components/DomainCard";
 
 import "../App.css";
@@ -107,12 +107,7 @@ function AccountTab() {
 }
 
 export default function Index(props?: {
-	domainInfo?: {
-		domain: string;
-		registeredOn: number;
-		status: AlertMessageType;
-		loading: boolean;
-	};
+	domainInfo?: Web3Hook_DomainInfo;
 	account?: {
 		loading: boolean;
 		account: string;

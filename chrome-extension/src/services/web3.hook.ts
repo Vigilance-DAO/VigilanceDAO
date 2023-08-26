@@ -4,10 +4,17 @@ import AlertMessageType from "../interfaces/AlertMessageType";
 
 declare const chrome: any;
 
+export interface Web3Hook_DomainInfo {
+	domain: string;
+	registeredOn: number;
+	status: AlertMessageType;
+	loading: boolean;
+}
+
 export const FOR_DEVELOPMENT = {
     domainInfo: {
         domain: 'google.com',
-        registeredOn: 0,
+        registeredOn: 881690400000,
         status: {
             message: "Meant for testing",
             type: 'warning',
@@ -41,8 +48,7 @@ export function useWeb3Hook() {
         loading: false
     })
 
-    const [domainInfo, setDomainInfo] = useState<{
-        domain: string, registeredOn: number, status: AlertMessageType, loading: boolean}>({
+    const [domainInfo, setDomainInfo] = useState<Web3Hook_DomainInfo>({
         domain: '',
         registeredOn: 0,
         status: {
