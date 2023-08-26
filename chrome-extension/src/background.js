@@ -146,6 +146,7 @@ let counter = {};
  * @returns {string | undefined}
  */
 function getUrl(tab) {
+	console.log("getUrl", tab);
 	/**
 	 * @type {string}
 	 */
@@ -522,6 +523,7 @@ async function processTab(tab) {
 	// 		description: storageItem.validationInfo?.description,
 	// 	});
 	// }
+	console.log(storageItem);
 
 	// If we know from blockchain or our Backend API that a domain is scam
 	// then we show the ❌ icon on extension
