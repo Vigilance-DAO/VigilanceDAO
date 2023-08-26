@@ -69,45 +69,52 @@ export function useWeb3Hook() {
     }
 
     function activateListeners() {
-        if(chrome && chrome.runtime) {
-            chrome.runtime.onMessage.addListener((msg: any, sender: any, sendResponse: any) => {
-                console.log('react on message', msg, sender)
-                if(msg && msg.type == "wallet-connected"){
-                    console.log('react on message2', msg, sender)
-                    let account = msg.data.account
-                    setAccount({account, loading: false})
-                } else if(msg && msg.type == 'chainID') {
-            let chainId = msg.data.chainId
-            setChainId({
-                chainId,
-                loading: false
-            })
-        } else if(msg && msg.type == 'transaction-update') {
-            setReportTxInfo({
-                txHash: msg.data.txHash,
-                isSuccess: msg.data.isSuccess,
-                error: msg.data.error,
-                loading: false
-            })
-        } else if(msg && msg.type == 'stake-amount') {
-            setStakeETH({
-                stakeETH: msg.data.stakeAmount,
-                loading: false
-            })
-        } else if(msg && msg.type == "domain"){
-            setDomainInfo({
-                domain: msg.data.domain,
-                registeredOn: msg.data.createdOn,
-                status: {
-                    message: msg.data.msg,
-                    type: msg.data.type,
-                    description: msg.data.description
-                },
-                loading: false
-            })
+        if (typeof chrome == "undefined" || chrome.runtime == undefined) {
+            return;
         }
-            });
-        }
+        chrome.runtime.onMessage.addListener(
+            (msg: any, sender: any, sendResponse: any) => {
+                console.log("react on message", msg, sender);
+
+                if (msg == undefined) return;
+
+                if (msg.type == "wallet-connected") {
+                    console.log("react on message2", msg, sender);
+                    let account = msg.data.account;
+                    setAccount({ account, loading: false });
+                } else if (msg.type == "chainID") {
+                    let chainId = msg.data.chainId;
+                    setChainId({
+                        chainId,
+                        loading: false,
+                    });
+                } else if (msg.type == "transaction-update") {
+                    setReportTxInfo({
+                        txHash: msg.data.txHash,
+                        isSuccess: msg.data.isSuccess,
+                        error: msg.data.error,
+                        loading: false,
+                    });
+                } else if (msg.type == "stake-amount") {
+                    setStakeETH({
+                        stakeETH: msg.data.stakeAmount,
+                        loading: false,
+                    });
+                } else if (msg.type == "domain") {
+                    setDomainInfo({
+                        domain: msg.data.domain,
+                        registeredOn: msg.data.createdOn,
+                        status: {
+                            message: msg.data.msg,
+                            type: msg.data.type,
+                            description: msg.data.description,
+                        },
+                        strength: msg.data.strength,
+                        loading: false,
+                    });
+                }
+            }
+        );
     }
 
     useEffect(() => {
