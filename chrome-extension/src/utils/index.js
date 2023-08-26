@@ -25,7 +25,7 @@ export async function subgraphQuery(query) {
  * undefined -> no user id saved
  * string -> user id
  */
-function getUserId() {
+export function getUserId() {
 	return chrome.storage.sync
 		.get(USER_ID_KEY)
 		.then(
