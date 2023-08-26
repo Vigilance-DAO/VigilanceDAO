@@ -34,14 +34,11 @@ background: -webkit-linear-gradient(0deg, rgba(34,7,94,1) 33%, rgba(6,17,120,1) 
 background: linear-gradient(0deg, rgba(34,7,94,1) 33%, rgba(6,17,120,1) 68%);
 filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#22075e",endColorstr="#061178",GradientType=1); */
 
-  min-height: 100vh;
   font-size: calc(10px + 2vmin);
   color: white;
   padding: 10px 15px;
-  width: 420px;
-  float: left;
-  height: 100vh;
-  overflow-y: scroll;
+  max-width: 420px;
+  overflow-y: hidden;
 }
 
 .App-link {
