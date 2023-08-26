@@ -57,3 +57,54 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#22075e",endCo
 .ant-form-item .ant-form-item-label {
   padding-bottom: 0px !important;
 }
+
+.tab--home {
+  padding: 0 14px;
+}
+
+ol.steps {
+	padding: 0 18px 0 0;
+	counter-reset: steps-count;
+	list-style: none;
+}
+
+ol.steps li {
+	counter-increment: steps-count;
+	display: flex;
+	gap: 9px;
+	margin: 11px 0;
+	align-items: center;
+}
+ol.steps li > div {
+	display: grid;
+	grid-template-rows: repeat(2, auto);
+	grid-template-columns: 1fr auto 1fr;
+	grid-template-areas:
+		"main-text . button"
+		"description . button";
+	flex: 1;
+}
+ol.steps li::before {
+	content: counter(steps-count);
+	background-color: rgb(172, 209, 255);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	--w: 35px;
+	width: var(--w);
+	height: var(--w);
+	font-size: 1.2em;
+	border-radius: 50%;
+}
+ol.steps li > div > strong {
+	grid-area: main-text;
+	font-size: 1.1em;
+}
+ol.steps li > div > p {
+	grid-area: description;
+}
+ol.steps li > div > button {
+	grid-area: button;
+	border-radius: 3px;
+	font-size: 1.05em;
+}
