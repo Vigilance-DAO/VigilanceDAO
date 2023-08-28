@@ -41,12 +41,11 @@ if (TELEGRAM_CHAT_ID) {
  */
 export function sendMessage(
 	message,
-	alertType = "infoAlert",
 	options = {},
 	members = allowedMembers,
 	i = 0
 ) {
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve) => {
 		let member = members[i];
 
 		if (member == undefined) {

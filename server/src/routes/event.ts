@@ -20,11 +20,11 @@ export default async function (
 	req: Request<{}, unknown, TrackingEvent>,
 	res: Response
 ) {
-	const { eventName, userId: _userId, ...others } = req.body;
-	console.log("event", { eventName, _userId, ...others });
+	const { eventName, userId: _userId, eventData } = req.body;
+	console.log("event", { eventName, _userId, eventData });
 
 	let userId: string;
-	if (typeof _userId == "undefined") {
+	if (typeof _userId == "undefined" || _userId == '') {
 		// create new
 		userId = createUserId();
 	} else if (typeof _userId == "string") {
@@ -39,7 +39,7 @@ export default async function (
 		console.warn("Mixpanel is not initialized. Events cannot be sent.");
 	} else {
 		// mixpanel.people.set(userId, {});
-		mixpanel.track(eventName, { ...others, distinct_id: userId });
+		mixpanel.track(eventName, { ...eventData, distinct_id: userId });
 	}
 
 	res.status(200).send(userId);

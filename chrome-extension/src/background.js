@@ -8,10 +8,10 @@ import { getUserId, sendEvent } from "./utils";
 import { updateActionBadge, getStorageKey } from "./utils/background";
 
 // ! For production uncomment these lines
-console.log = function(){};
-console.debug = function(){};
-console.error = function(){};
-console.warn = function(){};
+// console.log = function(){};
+// console.debug = function(){};
+// console.error = function(){};
+// console.warn = function(){};
 
 try {
 	importScripts("./psl.min.js" /*, and so on */);
@@ -762,7 +762,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 	if (details.reason == "chrome_update" || details.reason == "shared_module_update") return;
 	sendEvent({
 		eventName: details.reason,
-		...details
+		eventData: {
+			...details
+		}
 	});
 	
 	if (details.reason == 'install') {

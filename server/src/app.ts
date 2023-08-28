@@ -1,6 +1,6 @@
 import express, { json } from 'express';
 import helmet from 'helmet';
-import cookieParser from "cookie-parser";
+// import cookieParser from "cookie-parser";
 
 import domainInfo from './routes/domainInfo';
 import contractInfo from './routes/contractInfo';
