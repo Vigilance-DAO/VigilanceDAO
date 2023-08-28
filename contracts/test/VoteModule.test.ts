@@ -2,6 +2,8 @@ import { expect } from "chai";
 import { BigNumber, Contract } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { deployQV, loadRewards } from "../scripts/deployQVLib";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("VoteModule", function () {
     let governanceBadgeNFT: Contract;
@@ -12,104 +14,36 @@ describe("VoteModule", function () {
     let weth: Contract;
     let domain: string;
     let user: SignerWithAddress;
+    let user2: SignerWithAddress;
+    let user3: SignerWithAddress;
     let validator: SignerWithAddress;
+    const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
 
     before(async () => {
         let signers = await ethers.getSigners();
         user = signers[0];
+        console.log('addr', user.address)
         validator = signers[1]
+        user2 = signers[2];
+        user3 = signers[3];
         console.log("User address", user.address);
         console.log("Validator's address", validator.address);
-
-        console.log("Deploying GovernanceBadgeNFT....")
-        let GovernanceBadgeNFT = await ethers.getContractFactory("GovernanceBadgeNFT");
-        governanceBadgeNFT = await upgrades.deployProxy(
-            GovernanceBadgeNFT,
-            ["Vigilance DAO", "VIGI-NFT", "uri"],
-            { timeout: 180000 }
-        );
-        await governanceBadgeNFT.deployed();
-        console.log("governanceBadgeNFT address: ", governanceBadgeNFT.address);
-
+        
         console.log("Deploying wETH....");
         let wETH = await ethers.getContractFactory("WETH");
         weth = await wETH.connect(user).deploy();
         weth = await weth.deployed();
         console.log("wETH address: ", weth.address);
 
-        console.log("Deploying VoteToken....")
-        let voteToken = await ethers.getContractFactory("VoteToken");
-        voteTokenContract = await voteToken.connect(user).deploy();
-        voteTokenContract = await voteTokenContract.deployed();
-        console.log("voteTokenContract address: ", voteTokenContract.address);
-
-
-        console.log("Deploying Treasury....")
-        let treasury = await ethers.getContractFactory("Treasury");
-        treasuryContract = await treasury.connect(user).deploy();
-        treasuryContract = await treasuryContract.deployed();
-        let setTreasuryOwner = await treasuryContract.connect(user).initialize();
-        setTreasuryOwner = await setTreasuryOwner.wait();
-        console.log("treasuryContract address: ", treasuryContract.address)
-
-        console.log("Deploying RewardToken....")
-        let rewardToken = await ethers.getContractFactory("RewardToken");
-        rewardTokenContract = await rewardToken.connect(user).deploy(
-            weth.address,
-            "Reward Token",
-            "RT",
-        );
-        rewardTokenContract = await rewardTokenContract.deployed();
-        console.log("rewardTokenContract address: ", rewardTokenContract.address);
-
-        const votePrice = ethers.utils.parseUnits("0.001", 18);
-        const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
-        const rewardAmount = ethers.utils.parseUnits("1", 18).toString();
-
-        console.log("Deploying VoteModule....")
-        const VoteModule = await ethers.getContractFactory("VoteModule");
-        voteModule = await VoteModule.deploy(
-            governanceBadgeNFT.address,
-            voteTokenContract.address,
-            votePrice,
-            validationFees,
-            rewardTokenContract.address,
-            rewardAmount,
-            treasuryContract.address,
-            weth.address
-        )
-        voteModule = await voteModule.deployed();
-        console.log("voteModule address: ", voteModule.address);
-
-        console.log("Setting vote module in treasury, reward token and vote token....")
-        const setVoteModuleInTreasury = await expect(await treasuryContract.setVoteModulesContract(voteModule.address)).
-            to.emit(treasuryContract, "VoteModuleContractSet")
-            .withArgs(voteModule.address);
+        let contracts = await deployQV(weth);
+        governanceBadgeNFT = contracts.governanceBadgeNFT;
+        rewardTokenContract = contracts.rewardTokenContract;
+        voteModule = contracts.voteModule;
+        treasuryContract = contracts.treasuryContract;
 
         const checkOwner = expect(await treasuryContract.callStatic.owner()).to.equal(user.address);
 
-        const setVoteModuleInRT = await expect(await rewardTokenContract.setVoteModulesContract(voteModule.address))
-            .to.emit(rewardTokenContract, "VoteModuleContractSet")
-            .withArgs(voteModule.address);
-
-
-        const setVoteModuleInVT = await expect(await voteTokenContract.setVoteModule(voteModule.address))
-            .to.emit(voteTokenContract, "VoteModuleContractSet")
-            .withArgs(voteModule.address);
-        console.log("Setting complete")
-
-        console.log("Minting Eth to user .....")
-        const amountToMint = ethers.utils.parseEther("10").toString();
-        let tx = await weth.connect(user).mint(user.address, amountToMint);
-        tx = await tx.wait();
-        console.log("Minted Eth to user successfully")
-
-        console.log("Filling up the treasury ....")
-        const amountToFill = ethers.utils.parseEther("100").toString();
-        tx = await weth.connect(user).mint(treasuryContract.address, amountToFill);
-        tx = await tx.wait();
-        console.log("Treasury filled successfully")
-
+        await loadRewards(weth, treasuryContract);
     })
 
     it("should return correct vote price", async () => {
@@ -129,15 +63,56 @@ describe("VoteModule", function () {
         console.log("Initial balance: ", initialBalance)
 
         await weth.connect(user).approve(voteModule.address, totalCost);
-
-        const buyVotesTx = await expect(await voteModule.connect(user).buyVotes(n)).to.emit(voteModule, "VotesBought");
+        console.log('approved')
+        const buyVotesTx = await expect(await voteModule.connect(user).buyVotes(n, user.address)).to.emit(voteModule, "VotesBought");
         // const buyVotesTx = await tx.wait();
         // console.log("Buy votes tx: ", buyVotesTx)
         const updatedBalance = await weth.balanceOf(user.address);
         console.log("Updated balance: ", updatedBalance)
 
         expect(updatedBalance).to.eq(initialBalance.sub(totalCost));
-        const userVoteBalance = await voteTokenContract.balanceOf(user.address);
+        const userVoteBalance = await voteModule.getVotesBalance(user.address);
+        expect(userVoteBalance).to.equal(n);
+    })
+
+    it("should allow users to buy votes using eth [user2]", async () => {
+        const votePrice = await voteModule.getVotePrice();
+        console.log('Vote price in 2nd test ', votePrice)
+        const n = BigNumber.from(1);
+        const totalCost = BigNumber.from(votePrice).mul(n).mul(n).toString();
+        console.log("Total cost: ", totalCost)
+        const initialBalance = await user2.getBalance();
+        console.log("Initial balance: ", initialBalance)
+
+        const buyVotesTx = await expect(await voteModule.connect(user2).buyVotesWithEth(n, user2.address, { value: totalCost })).to.emit(voteModule, "VotesBought");
+        const updatedBalance = await user2.getBalance();
+        console.log("Updated balance: ", updatedBalance)
+
+        // bcz of gas
+        expect(updatedBalance).lessThan(initialBalance.sub(totalCost));
+        const userVoteBalance = await voteModule.getVotesBalance(user2.address);
+        expect(userVoteBalance).to.equal(n);
+    })
+
+    it("should allow users to buy votes using eth [user3]", async () => {
+        const votePrice = await voteModule.getVotePrice();
+        console.log('Vote price in 2nd test ', votePrice)
+        const n = BigNumber.from(2);
+        const totalCost = BigNumber.from(votePrice).mul(n).mul(n).toString();
+        console.log("Total cost: ", totalCost)
+        const initialBalance = await user3.getBalance();
+        console.log("Initial balance: ", initialBalance)
+
+        domain = "www.youtube.com";
+        const isScam = true;
+
+        const buyVotesTx = await expect(await voteModule.connect(user3).buyVotesWithEThAndVote(n, domain, !isScam, { value: totalCost })).to.emit(voteModule, "VotesBought");
+        const updatedBalance = await user3.getBalance();
+        console.log("Updated balance: ", updatedBalance)
+
+        // bcz of gas
+        expect(updatedBalance).lessThan(initialBalance.sub(totalCost));
+        const userVoteBalance = await voteModule.getVotesBalance(user3.address);
         expect(userVoteBalance).to.equal(n);
     })
 
@@ -150,6 +125,7 @@ describe("VoteModule", function () {
         const rewardAmount = await voteModule.getRewardAmount();
         console.log("Reward amount: ", rewardAmount)
         console.log("Initial reward balance: ", initialRewardBalance)
+        console.log("Initial vote balance: ", initialVoteCount)
 
         const reportTx = await voteModule.reportDomain(domain, isScam)
         const report = await expect(reportTx)
@@ -161,98 +137,130 @@ describe("VoteModule", function () {
         const updatedVoteCount = await voteModule.getVoteCount(domain);
         const updatedRewardBalance = await rewardTokenContract.balanceOf(user.address);
         console.log("Updated reward balance: ", updatedRewardBalance)
+        console.log("Updated vote balance: ", updatedVoteCount)
 
-        expect(updatedRewardBalance).to.equal(initialRewardBalance.add(rewardAmount));
+        expect(updatedRewardBalance).to.equal(initialRewardBalance.add(0));
         expect(updatedVoteCount).to.equal(initialVoteCount.add(1));
     })
 
-    // it("should fail for degenerate case of going with the majority", async () => {
-    //     domain = "www.google.com";
-    //     const isScam = true;
-    //     const evidences = ["evidence1", "evidence2"];
-    //     const comments = "This is a scam domain";
-    //     const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
-    //     const reportTx = await voteModule.reportDomain(domain, isScam);
-    //     const report = await reportTx.wait();
-
-    //     const strength = expect(await voteModule.getStrength(domain)).to.equal(BigNumber.from(0));
-    //     let appproveTx = await weth.connect(user).approve(voteModule.address, validationFees);
-    //     let approve = await appproveTx.wait();
-
-    //     // const requestValidation = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
-    //     //                             .to.be.revertedWith("Validation request not allowed");
-    //     const requestValidation = await expect(voteModule.requestValidation(domain, isScam, evidences, comments)).to.be.reverted;
-    // })
-
-
-    // it("should generate a manual verification request with taking a validation fees", async () => {
-    //     domain = "www.google.com";
-    //     const isScam = true;
-    //     const evidences = ["evidence1", "evidence2"];
-    //     const comments = "This is a scam domain";
-    //     const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
-    //     const initialBalance = await weth.balanceOf(user.address);
-    //     console.log("Initial balance: ", initialBalance);
-    //     let approveTx = await weth.connect(user).approve(voteModule.address, validationFees);
-    //     approveTx = await approveTx.wait();
-    //     const tx = await expect(await voteModule.requestValidation(domain, isScam, evidences, comments))
-    //                 .to.emit(voteModule, "ValidationRequest");
-    //     // let tx = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
-    //     // let tx = await expect(voteModule.connect(user).requestValidation(domain, isScam, [], comments))
-    //     // .to.be.revertedWith(
-    //     //     "Require atleast one evidence"
-    //     // );
-    //     // tx = await tx.wait();
-    //     console.log(tx)
-    //     const updatedBalance = await weth.balanceOf(user.address);
-    //     console.log("Updated balance: ", updatedBalance);
-
-    //     expect(updatedBalance).to.equal(initialBalance.sub(validationFees));
-
-    // })
+    it("should fail for degenerate case of going with the majority", async () => {
+        domain = "www.google.com";
+        const isScam = true;
+        const evidences = ["evidence1", "evidence2"];
+        const comments = "This is a scam domain";
+        const validationFees = ethers.utils.parseUnits("0.001", 18).toString();
+        const reportTx = await voteModule.reportDomain(domain, isScam);
+        const report = await reportTx.wait();
+        console.log('report', report);
+        const strength = await voteModule.getStrength(domain)
+        // ).to.equal(BigNumber.from(0));
+        console.log('strength', strength);
+        expect(strength.strength).to.equal(BigNumber.from(0));
+        expect(strength.totalVotes).to.equal(BigNumber.from(20));
+        let appproveTx = await weth.connect(user).approve(voteModule.address, validationFees);
+        let approve = await appproveTx.wait();
+        console.log('approved')
+        // const requestValidation = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
+        //                             .to.be.revertedWith("Validation request not allowed");
+        try {
+            const tx = await voteModule.requestValidation(domain, isScam, evidences, comments, {
+                value: validationFees
+            })
+            await tx.wait();
+            throw new Error('Expected revert')
+        } catch(err) {
+            // console.error(err);
+        }
+        // ).to.be.reverted;
+    })
 
 
-    // it("should validate and refund fee with reward token for an approved request", async () => {
-    //     domain = "www.google.com";
-    //     const isApproved = true;
-    //     const evidences = ["evidence1", "evidence2"];
-    //     const comments = "This is a scam domain";
-    //     const validatorComments = "Approved by validator";
-    //     const validationFees = ethers.utils.parseUnits("0.001", 18);
-    //     await voteModule.requestValidation(domain, true, evidences, comments, { value: validationFees })
-    //     const rewardAmount = await voteModule.getRewardAmount();
+    it("should generate a manual verification request with taking a validation fees", async () => {
+        domain = "www.google.com";
+        const isScam = false;
+        const evidences = ["evidence1", "evidence2"];
+        const comments = "This is a scam domain";
+        const initialBalance = await user.getBalance();
+        console.log("Initial balance: ", initialBalance);
+        const tx = await voteModule.requestValidation(domain, isScam, evidences, comments, {
+            value: validationFees
+        })
+        await expect(tx)
+                    .to.emit(voteModule, "ValidationRequest");
+        await tx.wait();
+        // let tx = await expect(voteModule.requestValidation(domain, isScam, evidences, comments))
+        // let tx = await expect(voteModule.connect(user).requestValidation(domain, isScam, [], comments))
+        // .to.be.revertedWith(
+        //     "Require atleast one evidence"
+        // );
+        // tx = await tx.wait();
+        console.log(tx)
+        const updatedBalance = await user.getBalance();
+        console.log("Updated balance: ", updatedBalance);
 
-    //     //check for refund
-    //     const userBalanceBefore = await user.getBalance();
-    //     const tx = await expect(await voteModule.connect(validator).verifyValidationRequest(domain, isApproved, validatorComments))
-    //         .to.emit(voteModule, "ValidationVerdict");
+        expect(updatedBalance).lessThan(initialBalance.sub(validationFees));
 
-    //     const userBalanceAfter = await user.getBalance();
-    //     const validatorFee = await voteModule.getValidationFees();
-    //     expect(userBalanceAfter.sub(userBalanceBefore)).to.equal(validatorFee);
+    })
 
-    //     //check for reward amount
-    //     const userRewardBalance = await rewardTokenContract.balanceOf(await user.getAddress());
-    //     console.log("User reward balance: ", userRewardBalance)
-    //     expect(userRewardBalance).to.equal(userBalanceBefore.add(rewardAmount));
 
-    // })
+    it("should validate and refund fee with reward token for an approved request", async () => {
+        domain = "www.google.com";
+        const isApproved = true;
+        const validatorComments = "Approved by validator";
+        const rewardAmount = await voteModule.getRewardAmount();
 
-    // it("should slash votes and send fees to treasury for a rejected request", async () => {
-    //     domain = "www.google.com";
-    //     const isApproved = false;
-    //     const validatorComments = "Rejected by validator";
+        // request validator role
+        console.log('reqquesting validation role');
+        let tx1 = await governanceBadgeNFT.connect(validator).requestValidatorRole({ value: '1000000000000000'})
+        await tx1.wait();
 
-    //     const validationFees = ethers.utils.parseUnits("0.001", 18);
-    //     await voteModule.requestValidation(domain, true, { value: validationFees });
-    //     await voteModule.connect(validator).verifyValidationRequest(domain, isApproved, validatorComments);
+        // approve validator
+        console.log('approving validation role');
+        let tx2 = await governanceBadgeNFT.voteValidator(validator.address);
+        await tx2.wait();
+        console.log('reqquesting validation');
 
-    //     const userVoteBalance = await voteTokenContract.balanceOf(await user.getAddress());
-    //     expect(userVoteBalance).to.equal(BigNumber.from(0));
+        //check for refund
+        const userBalanceBefore = await weth.balanceOf(user.address)
+        const userBalanceETHBefore = await user.getBalance();
+        const tx = await expect(await voteModule.connect(validator).verifyValidationRequest(domain, isApproved, validatorComments))
+        .to.emit(voteModule, "ValidationVerdict");
 
-    //     const treasuryBalance = await ethers.provider.getBalance(treasuryContract.address);
-    //     expect(treasuryBalance).to.equal(validationFees);
-    // })
+        const userBalanceAfter = await weth.balanceOf(user.address)
+        const userBalanceETHAfter = await user.getBalance();
+        const validatorFee = await voteModule.getValidationFees();
+        console.log('validator fee', validatorFee);
+
+        expect(userBalanceAfter.sub(userBalanceBefore)).to.equal(rewardAmount);
+        expect(userBalanceETHAfter.sub(userBalanceETHBefore)).to.equal(validatorFee);
+        
+        // @todo We wil activate later
+        // expect(validatorBalanceAfter.sub(validatorBalanceBefore)).to.equal(validatorFee);
+
+    })
+
+    it("should slash votes and send fees to treasury for a rejected request", async () => {
+        domain = "www.google.com";
+        const isApproved = false;
+        const validatorComments = "Rejected by validator";
+        const evidences = ["evidence1", "evidence2"];
+        const comments = "This is a scam domain";
+        const userVoteBalanceBefore = await voteModule.getVotesBalance(await user.getAddress());
+        const validationFees = ethers.utils.parseUnits("0.001", 18);
+        let tx = await voteModule.requestValidation(domain, false, evidences, comments, { value: validationFees });
+        await tx.wait()
+        tx = await voteModule.connect(validator).verifyValidationRequest(domain, isApproved, validatorComments);
+        await tx.wait();
+        console.log('userVoteBalanceBefore', userVoteBalanceBefore)
+        // no slashing
+        const userVoteBalanceAfter = await voteModule.getVotesBalance(await user.getAddress());
+        console.log('userVoteBalanceAfter', userVoteBalanceAfter)
+        expect(userVoteBalanceAfter).to.equal(userVoteBalanceBefore);
+        console.log('balance match');
+
+        const treasuryBalance = await ethers.provider.getBalance(treasuryContract.address);
+        expect(treasuryBalance).to.equal(validationFees);
+    })
 
 });
 

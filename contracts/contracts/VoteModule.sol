@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "hardhat/console.sol";
 import "./GovernanceBadgeNFT.sol";
-import "./VoteToken.sol";
 import "./Treasury.sol";
-import "./RewardToken.sol";
+import { IERC4626 } from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import { IWETH } from "./interfaces/IWETH.sol";
 
 contract VoteModule {
     event DomainReported(
@@ -40,6 +40,7 @@ contract VoteModule {
     }
 
     enum Status {
+        None,
         Pending,
         Approved,
         Rejected
@@ -57,26 +58,25 @@ contract VoteModule {
         bool domainVerdictScamOrNot;
     }
 
-    uint256 votePrice;
-    uint256 validationFees;
-    uint256 rewardAmount;
+    // constants
+    uint256 votePrice; // cost for each vote
+    uint256 validationFees; // manual validation fees
+    uint256 rewardAmount; // correct manual validation report reward to rewarder
 
-    VoteToken public voteTokenContract;
-    RewardToken public rewardTokenContract;
+    // Required supporting contracts
+    IERC4626 public rewardTokenContract;
     Treasury public treasuryContract;
     address public wethAddress;
-    // mapping(string => mapping(address => bool)) isDomainVoted;
-    mapping(address => int) noOfDomainsVoted;
+    GovernanceBadgeNFT public governanceBadgeNFT; 
 
-    mapping(string => uint256) voteCount;
-    mapping(string => mapping(uint256 => Vote)) votes;
-
-    mapping(string => DomainClaim) domainVerdict;
-    GovernanceBadgeNFT public governanceBadgeNFT;
+    // reporting & validation storage
+    mapping(string => uint256) voteCount; // total reports on domain (unique per address)
+    mapping(string => address[]) domainVoterArray; // array of voters for each domain
+    mapping(string => mapping(address => Vote)) votes; // vote of each user for a domain
+    mapping(string => DomainClaim) domainVerdict; // validation claims
 
     constructor(
         address _governanceBadgeNFT,
-        address _voteTokenAddress,
         uint256 _votePrice,
         uint256 _validationFees,
         address _rewardTokenAddress,
@@ -85,10 +85,9 @@ contract VoteModule {
         address _wethAddress
     ) {
         governanceBadgeNFT = GovernanceBadgeNFT(_governanceBadgeNFT);
-        voteTokenContract = VoteToken(_voteTokenAddress);
         votePrice = _votePrice;
         validationFees = _validationFees;
-        rewardTokenContract = RewardToken(_rewardTokenAddress);
+        rewardTokenContract = IERC4626(_rewardTokenAddress);
         rewardAmount = _rewardAmount;
         treasuryContract = Treasury(_treasuryContract);
         wethAddress = _wethAddress;
@@ -110,6 +109,14 @@ contract VoteModule {
         return voteCount[domain];
     }
 
+    function getVotesBalance(address user) public view returns (uint256) {
+        uint256 bal = rewardTokenContract.balanceOf(user);
+        console.log("bal: %s", bal);
+        uint256 value = rewardTokenContract.previewRedeem(bal);
+        console.log("value: %s, reward: %s", value, votePrice);
+        return sqrt(value/votePrice);
+    }
+
     // babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method)
     function sqrt(uint y) internal pure returns (uint z) {
         if (y > 3) {
@@ -124,18 +131,31 @@ contract VoteModule {
         }
     }
 
-    function buyVotes(uint256 n) public {
+    function buyVotes(uint256 n, address receiver) public {
+        require(n != 0, "n should >= 1");
+        console.log("transfering0: %s", n);
         uint256 totalCost = n * n * votePrice;
+        console.log("transfering1: %s", totalCost);
         bool sent = IERC20(wethAddress).transferFrom(
             msg.sender,
-            address(treasuryContract),
+            address(this),
             totalCost
         );
+        console.log("transfering2");
         require(sent, "WETH transfer failed");
-        voteTokenContract.mint(msg.sender, n);
-        emit VotesBought(msg.sender, n, totalCost);
+        _buyVotes(totalCost, n, receiver);
     }
 
+    // internal
+    function _buyVotes(uint256 totalCost, uint256 n, address receiver) internal {
+        IERC20(wethAddress).approve(
+            address(rewardTokenContract),
+            totalCost
+        );
+        console.log("transfering3");
+        rewardTokenContract.deposit(totalCost, receiver);
+        emit VotesBought(msg.sender, n, totalCost);
+    }
 
     // withdraw the votes and reward tokens
     // here the reward tokens will be burnt, 
@@ -143,71 +163,81 @@ contract VoteModule {
     // to spend the reward tokens
     function withdraw() external {
         // Get vote balance of user
-        uint256 voterBalance = voteTokenContract.balanceOf(msg.sender);
-
-        // Reset variables
-        noOfDomainsVoted[msg.sender] = 0;
-
-        // Burn the votes
-        voteTokenContract.burn(msg.sender, voterBalance);
-
-        // Redeem reward tokens of the user on his behalf
-        uint256 rewardBalance = rewardTokenContract.balanceOf(msg.sender);
-        rewardTokenContract.redeem(
-            rewardBalance,
+        uint256 voterBalance = rewardTokenContract.balanceOf(msg.sender);
+        // burn votes and withdraw balance + rewards to user
+        rewardTokenContract.transferFrom(
             msg.sender,
-            msg.sender
+            address(this),
+            voterBalance
         );
-
-        // Send the equivalent funds from the treasury to the user
-        uint256 amount = voterBalance * voterBalance * votePrice;
-        treasuryContract.sendERC20(wethAddress, msg.sender, amount);
+        rewardTokenContract.redeem(voterBalance, msg.sender, address(this));
+        
+        
+        // no need to loop and remove votes. as their weight will
+        // be zero anyways. 
     }
 
-    function getStrength(string calldata domain) public view returns (uint256) {
-        uint256 totalVotes = voteCount[domain];
-        if (totalVotes == 0) {
-            return 0;
+    function withdrawETH() external {
+        // Get vote balance of user
+        uint256 voterBalance = rewardTokenContract.balanceOf(msg.sender);
+        require(voterBalance > 0, "no balance");
+        // burn votes and withdraw balance + rewards to user
+        rewardTokenContract.transferFrom(
+            msg.sender,
+            address(this),
+            voterBalance
+        );
+        uint256 amount = rewardTokenContract.redeem(voterBalance, address(this), address(this));
+        
+        IWETH(wethAddress).withdraw(amount);
+        bool sent = payable(msg.sender).send(amount);
+        require(sent, "ETH transfer failed");
+    }
+
+    // returns in basis points
+    function getStrength(string calldata domain) public view returns (uint256 strength, uint256 totalVotes) {
+        uint256 totalReports = voteCount[domain];
+        if (totalReports == 0) {
+            return (0, 0);
         }
 
         uint256 totalStrength;
-        for (uint256 i = 0; i < totalVotes; i++) {
-            Vote memory currentVote = votes[domain][i];
+        uint256 _totalVotes = 0;
+        for (uint256 i = 0; i < totalReports; i++) {
+            address voter = domainVoterArray[domain][i];
+            Vote memory currentVote = votes[domain][voter];
             uint256 voteWeight = currentVote.isScam ? 0 : 1;
 
             // Consider the balance of the voter's votes in the voteToken contract
-            uint256 voterBalance = voteTokenContract.balanceOf(
-                currentVote.voter
-            );
+            uint256 voterBalance = getVotesBalance(currentVote.voter);
             totalStrength += uint256(voteWeight) * voterBalance;
-            totalVotes += voterBalance;
+            _totalVotes += voterBalance;
         }    
-        return (totalStrength * 100) / totalVotes;
+        return ((totalStrength * 10000) / _totalVotes, _totalVotes);
+    }
+
+    function _reportDomain(string memory domain, bool isLegit) internal {
+        // @todo should voting be reset after validation and allow fresh voting again?
+        // Decision: yes
+
+        // @todo report reward?
+        uint256 totalVoters = voteCount[domain];
+        require(totalVoters < 50, "Max 50 votes per domain");
+
+        Vote memory existingVote = votes[domain][msg.sender];
+        // if new voter
+        if (existingVote.voter == address(0)) {
+            domainVoterArray[domain].push(msg.sender);
+            voteCount[domain]++;
+        }
+
+        votes[domain][msg.sender] = Vote(msg.sender, isLegit);
+
+        emit DomainReported(domain, msg.sender, isLegit);
     }
 
     function reportDomain(string memory domain, bool isLegit) external {
-        // if the domain verdict is present fail safely
-        require(
-            domainVerdict[domain].validator == address(0),
-            "Domain already validated"
-        );
-
-        // Mint reward token if the user is reporting for the first time
-        // 1. get the amount from the treasury 
-        //    since we cant simply mint as it would devalue previous reward token share holders
-        // 2. mint the reward token to the user, after getting the funds from treasury
-        if (noOfDomainsVoted[msg.sender] == 0) {
-            uint256 wethAmount = rewardTokenContract.previewMint(rewardAmount);
-            treasuryContract.sendERC20(wethAddress, address(this), wethAmount);
-            IERC20(wethAddress).approve(address(rewardTokenContract), wethAmount);
-            rewardTokenContract.mint(rewardAmount, msg.sender);
-        }
-
-        noOfDomainsVoted[msg.sender]++;
-        voteCount[domain]++;
-        votes[domain][voteCount[domain] - 1] = Vote(msg.sender, isLegit);
-
-        emit DomainReported(domain, msg.sender, isLegit);
+        _reportDomain(domain, isLegit);
     }
 
     // Preapproval of (validation fees) required for this function
@@ -216,23 +246,30 @@ contract VoteModule {
         bool isScam,
         string[] calldata evidenceHashes,
         string calldata comments
-    ) external {
-        uint256 strength = getStrength(domain);
+    ) external payable {
+        console.log(111);
+        (uint256 strength,) = getStrength(domain);
+        console.log(122, isScam, strength);
         require(
-            (isScam && strength >= 51) || (!isScam && strength < 51),
+            (isScam && strength >= 5100) || (!isScam && strength < 5100),
             "Validation request not allowed"
         );
 
-        bool sent = IERC20(wethAddress).transferFrom(
-            msg.sender,
-            address(this),
-            validationFees
-        );
-        require(sent, "Transfer Failed");
+        // avoid duplicate request when one is already pending and in same direction
+        // supports max one claim at a time on domain
+        DomainClaim memory existingRequest = domainVerdict[domain];
+        require(existingRequest.status != Status.Pending, "Pending claim exists");
+
+        console.log(133);
+        
+        require(msg.value == validationFees, "Incorrect validation fee");
+
+        console.log(144);
 
         string memory evidenceHashesSerialised = "";
         uint256 nEvidences = evidenceHashes.length;
         require(nEvidences > 0, "Require atleast one evidence");
+        console.log(166);
 
         for (uint256 i = 0; i < nEvidences; ++i) {
             evidenceHashesSerialised = string.concat(
@@ -246,6 +283,7 @@ contract VoteModule {
                 );
             }
         }
+        console.log(177);
 
         domainVerdict[domain] = DomainClaim(
             domain, // domain
@@ -258,6 +296,7 @@ contract VoteModule {
             "",
             false
         );
+        console.log(188);
 
         emit ValidationRequest(
             domain,
@@ -273,32 +312,43 @@ contract VoteModule {
         bool isApproved,
         string calldata _validatorComments
     ) external {
+        console.log(1);
         GovernanceBadgeNFT _gov = GovernanceBadgeNFT(governanceBadgeNFT);
         uint256 bal = _gov.balanceOf(msg.sender, _gov.VALIDATOR_NFT());
+        console.log(12);
         require(bal > 0, "Only selected validators can validate");
+        console.log(13);
         DomainClaim storage claim = domainVerdict[domain];
+        console.log(14);
         require(claim.requestor != address(0), "No pending request");
+        console.log(2);
 
         claim.validator = msg.sender;
         bool domainVerdictScamOrNot = ( claim.isScam && isApproved ) || ( !claim.isScam && !isApproved );
         if (isApproved) {
+            console.log("approving");
             claim.status = Status.Approved;
             claim.domainVerdictScamOrNot = domainVerdictScamOrNot;
             claim.validatorComments = _validatorComments;
-
-
-            // Mint reward token if the user is reporting for the first time
-            // 1. get the amount from the treasury 
-            //    since we cant simply mint as it would devalue previous reward token share holders
-            // 2. mint the reward token to the user, after getting the funds from treasury
-            uint256 wethAmount = rewardTokenContract.previewMint(rewardAmount);
-            treasuryContract.sendERC20(wethAddress, address(this), wethAmount);
-            IERC20(wethAddress).approve(address(rewardTokenContract), wethAmount);
-            rewardTokenContract.mint(rewardAmount, claim.requestor);
+            
+            // return fees
+            bool sent = payable(claim.requestor).send(validationFees);
+            require(sent, "Failed to return fees");
+            
+            // send reward from treasury
+            treasuryContract.sendERC20(wethAddress, claim.requestor, rewardAmount);
         } else {
             claim.status = Status.Rejected;
+            uint256 bal2 = address(this).balance;
+            console.log("rejecting, %s, %s, %s", address(treasuryContract), validationFees, bal2);
+            bool sent = treasuryContract.receiveETH{value: validationFees}();
+            // bool sent = payable(treasuryContract).send(validationFees);
+            console.log("funds sent: %s", sent);
+            require(sent, "Failed to move fees to treasury");
+            console.log("funds sent2");
         }
 
+        console.log(3);
 
         // cost = n*n*price for n votes
         // expense? recover in terms of votes slashed, let the expense be e
@@ -306,31 +356,45 @@ contract VoteModule {
         // x = (e/price)^0.5
 
         // Burn the votes of the voters who voted against the verdict
-        uint256 totalVotesToSlash = sqrt(validationFees / votePrice);
-        uint256 totalAgainstVerdictVotes = 0;
+        // uint256 totalVotesToSlash = sqrt(validationFees / votePrice);
+        // uint256 totalAgainstVerdictVotes = 0;
+        // console.log(4);
 
-        uint256 totalVoters = voteCount[domain];
-        for (uint i = 0; i < totalVoters; i++) {
-            Vote memory currentVote = votes[domain][i];
-            if (currentVote.isScam != domainVerdictScamOrNot) {
-                totalAgainstVerdictVotes += voteTokenContract.balanceOf(
-                    currentVote.voter
-                );
-            }
-        }
+        // @todo penalisation can do later
+        // uint256 totalVoters = voteCount[domain];
+        // for (uint i = 0; i < totalVoters; i++) {
+        //     Vote memory currentVote = votes[domain][i];
+        //     if (currentVote.isScam != domainVerdictScamOrNot) {
+        //         totalAgainstVerdictVotes += getVoteCount(currentVote.voter);
+        //     }
+        // }
 
         // Burn the votes of the voters who voted against the verdict
-        for (uint i = 0; i < totalVoters; i++) {
-            Vote memory currentVote = votes[domain][i];
-            if (currentVote.isScam != domainVerdictScamOrNot) {
-                uint256 voterBalance = voteTokenContract.balanceOf(
-                    currentVote.voter
-                );
-                uint256 votesToBurn = (voterBalance * totalVotesToSlash) /
-                    totalAgainstVerdictVotes;
-                voteTokenContract.burn(currentVote.voter, votesToBurn);
-            }
+        // for (uint i = 0; i < totalVoters; i++) {
+        //     Vote memory currentVote = votes[domain][i];
+        //     if (currentVote.isScam != domainVerdictScamOrNot) {
+        //         uint256 voterBalance = getVoteCount(currentVote.voter);
+        //         uint256 votesToBurn = (voterBalance * totalVotesToSlash) /
+        //             totalAgainstVerdictVotes;
+        //         // @todo need an option to burn without approval
+        //         // rewardTokenContract.burn(currentVote.voter, votesToBurn);
+        //     }
+        // }
+        console.log(5);
+
+        // pay validator fees
+        // @note: Will be activated later
+        // bool sent = payable(msg.sender).send(validationFees);
+        // require(sent, "Failed to send fees");
+
+        // reset domain votes
+        uint256 count = voteCount[domain];
+        for (uint i = 0; i < count; i++) {
+            address voter = domainVoterArray[domain][i];
+            delete votes[domain][voter];
         }
+        voteCount[domain] = 0;
+        delete domainVoterArray[domain];
 
         emit ValidationVerdict(
             domain,
@@ -338,6 +402,19 @@ contract VoteModule {
             isApproved,
             _validatorComments
         );
+        console.log(6);
+    }
+
+    function buyVotesWithEth(uint256 n, address receiver) public payable {
+        require(n != 0, "n should >= 1");
+        uint256 totalCost = n * n * votePrice;
+        IWETH(wethAddress).deposit{value: totalCost}();
+        _buyVotes(totalCost, n, receiver);
+    }
+
+    function buyVotesWithEThAndVote(uint256 n, string memory domain, bool isLegit) public payable {
+        buyVotesWithEth(n, msg.sender);
+        _reportDomain(domain, isLegit);
     }
 
     function getDomainVerdict(

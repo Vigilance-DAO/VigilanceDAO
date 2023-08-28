@@ -36,6 +36,13 @@ contract Treasury is OwnableUpgradeable {
         return address(this).balance;
     }
 
+    function receiveETH() external payable returns (bool) {
+        require(msg.value > 0, "value should > 0");
+        return true;
+    }
+
     receive() external payable {}
     fallback() external payable{}
+
+    //
 }

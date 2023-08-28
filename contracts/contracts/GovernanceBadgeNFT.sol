@@ -23,7 +23,7 @@ contract GovernanceBadgeNFT is ERC1155Upgradeable, OwnableUpgradeable, ERC1155Ho
 
     function initialize(string memory _name, 
         string memory _symbol, 
-        string calldata _uri) initializer public {
+        string calldata _uri, uint256 _stakingAmount, uint _minVotes) initializer public {
         __ERC1155_init(_uri);
         __Ownable_init();
         __ERC1155Holder_init();
@@ -31,8 +31,8 @@ contract GovernanceBadgeNFT is ERC1155Upgradeable, OwnableUpgradeable, ERC1155Ho
         symbol = _symbol;
         GOVERNANCE_NFT = 0;
         VALIDATOR_NFT = 1;
-        stakingAmount = 5 ether;
-        minVotes = 2;
+        stakingAmount = _stakingAmount;
+        minVotes = _minVotes;
 
         _mint(address(this), VALIDATOR_NFT, 100000, "");
         _mint(address(this), GOVERNANCE_NFT, 100, "");
