@@ -3,8 +3,9 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
-import { API_ENDPOINT, DOMAIN } from "../constants";
-import { sendEvent } from "./utils";
+import { API_ENDPOINT, DOMAIN, USER_ID_KEY } from "../constants";
+import { getUserId, sendEvent } from "./utils";
+import { updateActionBadge, getStorageKey } from "./utils/background";
 
 // ! For production uncomment these lines
 console.log = function(){};
@@ -28,64 +29,30 @@ const env = {
 };
 
 /**
- * @typedef ActionBadgeValues
- * @prop {string} [text]
- *
- *
- * @param {"loading" | "scam" | "legit" | "warning" | "reset" | "error"} key
- * @param {ActionBadgeValues} [values]
+ * @returns {Promise<Array<string>>}
  */
-function updateActionBadge(key, values) {
-	if (key != "warning" && typeof values != "undefined") {
-		console.warn("Values object only has effect when key is 'warning'");
-	}
-
-	if (key == "loading") {
-		chrome.action.setIcon({
-			path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
+function loadDontShowAgainDomains() {
+	console.log("loadDontShowAgainDomains");
+	return chrome.storage.sync
+		.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
+		.then((items) => {
+			/**
+			 * @type {Array<string>} 
+			 */
+			const x = items[DONT_SHOW_AGAIN_DOMAINS_KEY] || []
+			return x;
+		})
+		.catch((error) => {
+			console.error(
+				`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
+				error
+			);
+			/**
+			 * @type {Array<string>}
+			 */
+			const x = [];
+			return x;
 		});
-		chrome.action.setBadgeText({ text: "..." });
-		chrome.action.setBadgeBackgroundColor({ color: "yellow" });
-	} else if (key == "scam") {
-		chrome.action.setIcon({
-			path: {
-				19: "/images/alerticon19-red.png",
-				38: "/images/alerticon38-red.png",
-			},
-		});
-		chrome.action.setBadgeText({ text: "❌" });
-		chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
-	} else if (key == "legit") {
-		chrome.action.setIcon({
-			path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
-		});
-		chrome.action.setBadgeText({ text: "✔️" });
-		chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
-	} else if (key == "warning") {
-		chrome.action.setIcon({
-			path: {
-				19: "/images/alerticon19-red.png",
-				38: "/images/alerticon38-red.png",
-			},
-		});
-		chrome.action.setBadgeText({ text: values?.text || "1" });
-		chrome.action.setBadgeBackgroundColor({ color: "#f96c6c" });
-	} else if (key == "reset") {
-		chrome.action.setIcon({
-			path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
-		});
-		chrome.action.setBadgeText({ text: "0" });
-		chrome.action.setBadgeBackgroundColor({ color: "#05ed05" });
-	} else if (key == "error") {
-		chrome.action.setIcon({
-			path: { 16: "/images/icon16.png", 32: "/images/icon32.png" },
-		});
-		chrome.action.setBadgeText({ text: "⚠️" });
-		chrome.action.setBadgeBackgroundColor({ color: "#000000" });
-	} else {
-		console.error(`Invalid key for updateActionBadge: ${key}`);
-		return;
-	}
 }
 
 /**
@@ -97,14 +64,6 @@ function searchColumnIndex(columns, column) {
 	return columns.findIndex((item, i) => {
 		return item.name == column;
 	});
-}
-
-/**
- * Returns a unique key for a specific url
- * @param {string} url
- */
-function getStorageKey(url) {
-	return `vigil__${url}`;
 }
 
 let inMemoryStorage = {};
@@ -122,6 +81,7 @@ let lastUrl = null;
  * @param {Record<string, import("./types").DomainStorageItem>} storageInfo - chrome storage info
  * @param {string} url - domain name
  * @returns {Promise<Date | null>} createdon
+ * @deprecated
  */
 async function getDomainRegistrationDate(storageInfo, url) {
 	console.log("getDomainRegistrationDate", storageInfo);
@@ -186,6 +146,7 @@ let counter = {};
  * @returns {string | undefined}
  */
 function getUrl(tab) {
+	console.log("getUrl", tab);
 	/**
 	 * @type {string}
 	 */
@@ -231,6 +192,7 @@ function getUrl(tab) {
  * @returns {Promise<import("./types").DomainValidationInfo | undefined>}
  */
 async function getDomainValidationInfo(url, tab, createdOn) {
+	console.log("getDomainValidationInfo", url, tab, createdOn);
 	/**
 	 * @type {"info" | "warning"}
 	 */
@@ -315,11 +277,12 @@ async function getDomainValidationInfo(url, tab, createdOn) {
 }
 
 /**
- * @param {Date} createdOn
+ * @param {string} createdOn
  */
 function isSoftWarning(createdOn) {
+	console.log("isSoftWarning", createdOn, new Date(createdOn));
 	let now = new Date();
-	return now.getTime() - createdOn.getTime() < env.alertPeriod;
+	return now.getTime() - new Date(createdOn).getTime() < env.alertPeriod;
 }
 
 /**
@@ -328,6 +291,7 @@ function isSoftWarning(createdOn) {
  * @returns {Promise<import("./types").DomainStorageItem>}
  */
 async function fetchDomainInfo(simplifiedUrl) {
+	console.log("fetchDomainInfo", simplifiedUrl);
 	/**
 	 * @type {import("./types").DomainStorageItem}
 	 */
@@ -376,7 +340,8 @@ async function fetchDomainInfo(simplifiedUrl) {
 		body: JSON.stringify({ query }),
 	});
 	let data = await rawResponse.json();
-	console.log("response", data);
+	console.log("subgraph response", data);
+
 	let reports = data.data.reports;
 	for (let i = 0; i < reports.length; ++i) {
 		const report = reports[i];
@@ -413,8 +378,13 @@ async function fetchDomainInfo(simplifiedUrl) {
 	 */
 	const content = await response.json();
 
+	console.log("/domain-info response", content);
+
 	if (content.domain) {
-		storageItem = { ...storageItem, ...content };
+		storageItem = {
+			...storageItem,
+			...content,
+		};
 	}
 
 	const key = getStorageKey(simplifiedUrl);
@@ -494,8 +464,6 @@ async function processTab(tab) {
 	const { [DONT_SHOW_AGAIN_DOMAINS_KEY]: _unused, ...existingStorageItems } =
 		storageItems;
 
-	let createdOn = await getDomainRegistrationDate(existingStorageItems, url);
-
 	let now = new Date();
 
 	/**
@@ -519,7 +487,11 @@ async function processTab(tab) {
 				5 * 60 * 1000)
 	) {
 		// revalidate
-		const _validationInfo = await getDomainValidationInfo(url, tab, createdOn);
+		const _validationInfo = await getDomainValidationInfo(
+			url,
+			tab,
+			storageItem.createdon == undefined ? null : new Date(storageItem.createdon)
+		);
 		if (_validationInfo != undefined) {
 			isUpdated = true;
 			storageItem.validationInfo = _validationInfo;
@@ -527,9 +499,14 @@ async function processTab(tab) {
 	}
 
 	if (isUpdated) {
-		chrome.storage.sync.set({
-			[key]: storageItem,
-		});
+		chrome.storage.sync.set(
+			{
+				[key]: storageItem,
+			},
+			function () {
+				console.log("saved to storage", key, storageItem);
+			}
+		);
 	}
 
 	// This can be used to show alert.html popup in tab
@@ -546,6 +523,7 @@ async function processTab(tab) {
 	// 		description: storageItem.validationInfo?.description,
 	// 	});
 	// }
+	console.log(storageItem);
 
 	// If we know from blockchain or our Backend API that a domain is scam
 	// then we show the ❌ icon on extension
@@ -561,7 +539,7 @@ async function processTab(tab) {
 
 		storageItem.validationInfo.type = "success";
 		storageItem.validationInfo.msg = "Verified as legit";
-	} else if (createdOn && isSoftWarning(createdOn)) {
+	} else if (storageItem.createdon && isSoftWarning(storageItem.createdon)) {
 		// if a domain is registered recently then we show the ⚠️ icon on extension
 		console.log("changing icon");
 		updateActionBadge("warning", {
@@ -608,7 +586,7 @@ async function processTab(tab) {
 	sendMessage(tab, "domain", {
 		isSuccess: true,
 		domain: url,
-		createdOn: createdOn ? createdOn.getTime() : 0,
+		createdOn: storageItem.createdon == undefined ? 0 : new Date(storageItem.createdon).getTime(),
 		type: storageItem.validationInfo?.type,
 		msg: storageItem.validationInfo?.msg,
 		description: storageItem.validationInfo?.description,
@@ -627,7 +605,7 @@ async function processTab(tab) {
 	const computedStorageItem = {
 		...storageItem,
 		isNew: storageItem.createdon
-			? isSoftWarning(new Date(storageItem.createdon))
+			? isSoftWarning(storageItem.createdon)
 			: false,
 	};
 	sendMessage(tab, "processing-finished", computedStorageItem);
@@ -730,19 +708,7 @@ async function processMsg(request, sender, sendResponse) {
 	} else if (request.type == "stake-amount") {
 		await sendMessage(sender.tab, "stake-amount", request.data);
 	} else if (request.type == "alert-dont-show-again") {
-		/**
-		 * @type {string[]}
-		 */
-		const dontShowAgainDomains = await chrome.storage.sync
-			.get(DONT_SHOW_AGAIN_DOMAINS_KEY)
-			.then((items) => items[DONT_SHOW_AGAIN_DOMAINS_KEY] || [])
-			.catch((error) => {
-				console.error(
-					`Error while getting ${DONT_SHOW_AGAIN_DOMAINS_KEY}`,
-					error
-				);
-				return [];
-			});
+		const dontShowAgainDomains = await loadDontShowAgainDomains();
 		chrome.storage.sync.set({
 			[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
 				// @ts-expect-error
@@ -790,14 +756,12 @@ function takeScreenshot(tab) {
 	});
 }
 
-async function doHttpPost(endpoint, data) {
-
-}
-
-chrome.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener(async (details) => {
 	console.log('onInstalled', details);
+
+	if (details.reason == "chrome_update" || details.reason == "shared_module_update") return;
 	sendEvent({
-		eventName: "install",
+		eventName: details.reason,
 		...details
 	});
 	
@@ -805,5 +769,29 @@ chrome.runtime.onInstalled.addListener((details) => {
 		chrome.tabs.create({
 			url: `${DOMAIN}/extension-installed?reason=${details.reason}`,
 		});
+	} else if (details.reason == "update") {
+		// on update clear everything on storage other than
+		// 	- userid
+		// 	- dont show again domains
+		// to avoid issues with mismatched types
+		const userId = await getUserId();
+		const dontShowAgainDomains = await loadDontShowAgainDomains();
+
+		chrome.storage.sync
+			.clear()
+			.then(() => {
+				console.log("storage.sync cleared");
+			})
+			.catch(console.error);
+
+		/** @type {Record<string, unknown>} */
+		const newItems = {};
+		if (userId) {
+			newItems[USER_ID_KEY] = userId;
+		}
+		if (dontShowAgainDomains.length > 0) {
+			newItems[DONT_SHOW_AGAIN_DOMAINS_KEY] = dontShowAgainDomains;
+		}
+		chrome.storage.sync.set(newItems);
 	}
 });

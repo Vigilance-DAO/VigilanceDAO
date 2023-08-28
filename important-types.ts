@@ -2,8 +2,8 @@
 
 export interface BasicDomainInfo {
 	domain: string;
-	createdon: Date,
-	updatedon: Date,
+	createdon: string,
+	updatedon: string,
 	recordCreatedOn?: string,
 	isValid?: boolean
 }

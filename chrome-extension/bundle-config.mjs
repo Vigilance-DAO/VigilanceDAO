@@ -137,7 +137,7 @@ const prebuildOptions = {
 							}) || ""
 						)
 						.replace("\\", "/");
-					console.log(prebuildOutputScript);
+					console.log("Transpiled prebuild script", prebuildOutputScript);
 
 					if (prebuildOutputScript == "./") {
 						throw new Error("Prebuild script is not found");
@@ -164,6 +164,11 @@ const prebuildOptions = {
 						console.error(err);
 					}
 					console.log("Generating prebuilt html done");
+					
+					// remove prebuild script
+					await rm(prebuildOutputScript).then(() => {
+						console.log("Removed", prebuildOutputScript);
+					}).catch(console.error);
 				});
 
 				build.onDispose(async () => {

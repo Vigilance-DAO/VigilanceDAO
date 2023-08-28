@@ -25,7 +25,7 @@ export async function subgraphQuery(query) {
  * undefined -> no user id saved
  * string -> user id
  */
-function getUserId() {
+export function getUserId() {
 	return chrome.storage.sync
 		.get(USER_ID_KEY)
 		.then(
@@ -49,7 +49,7 @@ export async function trackEventInContentScript(event) {
 	if (event == undefined) return;
 
 	const userId = await getUserId();
-	if (userId == null) return;
+	if (userId === null) return;
 	event.userId = userId;
 	console.log("trackEventFromContentScript", event);
 
@@ -84,7 +84,7 @@ export async function sendEvent(event) {
 
 	const userId = await getUserId();
 	
-	event.userId = userId;
+	event.userId = userId || '';
 	console.log("sendEvent event", event);
 
 	return fetch(`${API_ENDPOINT}/event`, {
