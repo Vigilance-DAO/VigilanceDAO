@@ -3,6 +3,9 @@
 /// <reference types="psl" />
 /// <reference lib="webworker" />
 
+import { API_ENDPOINT, DOMAIN } from "../constants";
+import { sendEvent } from "./utils";
+
 // ! For production uncomment these lines
 console.log = function(){};
 console.debug = function(){};
@@ -18,7 +21,7 @@ try {
 const DONT_SHOW_AGAIN_DOMAINS_KEY = "dont_show_again_domains";
 const env = {
 	// host: "http://localhost:4000", // backend API endpoint
-	host: "https://api.vigilancedao.org",
+	host: API_ENDPOINT,
 	alertPeriod: 4 * 30 * 86400 * 1000,
 	SUBGRAPH_URL:
 		"https://api.thegraph.com/subgraphs/name/venkatteja/vigilancedao",
@@ -131,6 +134,12 @@ async function getDomainRegistrationDate(storageInfo, url) {
 
 		return new Date(itemInStorage.createdon);
 	} else {
+		sendEvent({
+			eventName: "Fetch /domain-info",
+			eventData: {
+				url,
+			},
+		});
 		try {
 			// fetch from our backend
 			const rawResponse = await fetch(`${env.host}/domain-info`, {
@@ -140,6 +149,7 @@ async function getDomainRegistrationDate(storageInfo, url) {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({ domain: url }),
+				credentials: "include",
 			});
 			/**
 			 * @type {import("../../important-types").DomainInfo}
@@ -196,6 +206,7 @@ function getUrl(tab) {
 		console.debug("bg current url", _url);
 		console.debug("bg current tab", tab);
 
+		// @ts-expect-error
 		var parsed = psl.parse(_url.hostname);
 		if (parsed.error) {
 			throw new Error(parsed.error.message);
@@ -381,6 +392,12 @@ async function fetchDomainInfo(simplifiedUrl) {
 		}
 	}
 
+	sendEvent({
+		eventName: "Fetch /domain-info",
+		eventData: {
+			url: simplifiedUrl,
+		},
+	});
 	// fetch /domain-info endpoint
 	const response = await fetch(`${env.host}/domain-info`, {
 		method: "POST",
@@ -389,6 +406,7 @@ async function fetchDomainInfo(simplifiedUrl) {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({ domain: simplifiedUrl }),
+		credentials: "include",
 	});
 	/**
 	 * @type {import("../../important-types").DomainInfo}
@@ -681,6 +699,11 @@ chrome.action.onClicked.addListener(function (tab) {
 // so the below functions proxies the msg between index.html and content.js
 // Look for `chrome.runtime.onMessage.addListener` in the code
 // to see how the msgs are being recieved and sent
+/**
+ * @param {{ type: string; data: unknown; }} request
+ * @param {chrome.runtime.MessageSender} sender
+ * @param {(response?: any) => void} sendResponse
+ */
 async function processMsg(request, sender, sendResponse) {
 	if (sender.tab == undefined) {
 		console.error("sender", sender);
@@ -722,6 +745,7 @@ async function processMsg(request, sender, sendResponse) {
 			});
 		chrome.storage.sync.set({
 			[DONT_SHOW_AGAIN_DOMAINS_KEY]: dontShowAgainDomains.concat(
+				// @ts-expect-error
 				request.data.url
 			),
 		});
@@ -765,3 +789,21 @@ function takeScreenshot(tab) {
 		);
 	});
 }
+
+async function doHttpPost(endpoint, data) {
+
+}
+
+chrome.runtime.onInstalled.addListener((details) => {
+	console.log('onInstalled', details);
+	sendEvent({
+		eventName: "install",
+		...details
+	});
+	
+	if (details.reason == 'install') {
+		chrome.tabs.create({
+			url: `${DOMAIN}/extension-installed?reason=${details.reason}`,
+		});
+	}
+});

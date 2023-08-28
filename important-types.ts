@@ -18,3 +18,10 @@ export interface DomainScamInfo {
 export interface DomainInfo extends BasicDomainInfo {
 	scamInfo?: DomainScamInfo;
 }
+
+export interface TrackingEvent {
+	eventName: string;
+	userId?: string;
+	accountId?: string;
+	eventData?: Record<string, unknown>;
+}
