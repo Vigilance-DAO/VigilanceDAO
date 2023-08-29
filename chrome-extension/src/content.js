@@ -454,9 +454,28 @@ async function displayVerifiedAlert() {
 			bottom: clamp(10px, 2vh, 30px);
 			right: clamp(10px, 3vw, 30px);
 		}
+		.container {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
 		img.verified-icon {
 			cursor: pointer;
 			filter: drop-shadow(0px 0px 10px #00eb18);
+		}
+		.tooltip {
+			opacity: 0;
+			transform: translate(0px, 10px) scale(0.5, 0.1);
+			transition: transform .18s ease-in-out, background-color .18s ease-in-out, opacity .18s ease-in-out;
+			transform-origin: bottom right;
+			padding: 4px 10px;
+			border-radius: 5px;
+			color: white;
+		}
+		div.container:hover .tooltip {
+			opacity: 1;
+			transform: translate(0px,0px) scale(1, 1);
+			background-color: #282f29;
 		}
 		span.close-icon {
 			cursor: pointer;
@@ -481,9 +500,13 @@ async function displayVerifiedAlert() {
 	</style>`.trim();
 
 	const verifiedIconSrc = chrome.runtime.getURL("images/icon48.png");
+	const tooltipText = "Verified by Vigilance DAO"
 	innerHTMLParts[1] = `
 		<div class="container">
-			<img class="verified-icon" src="${verifiedIconSrc}" title="Verified by Vigilance DAO" />
+			<span class="tooltip">
+				${tooltipText}
+			</span>
+			<img class="verified-icon" src="${verifiedIconSrc}" title="${tooltipText}" />
 			<span class="close-icon" title="Close">
 				${CLOSE_ICON}
 			</span>
