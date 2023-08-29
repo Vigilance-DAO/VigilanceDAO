@@ -19,7 +19,7 @@ const env = {
 	// host: "http://localhost:4000",
 };
 
-const ContractInfoAPIURL = env.host.concat("/contract-infoo");
+const ContractInfoAPIURL = env.host.concat("/contract-info");
 
 /**
  * @param {import("./inject").MetaMaskRequest} params
@@ -456,33 +456,26 @@ function populateFinancialAlertWithData(alertInfo) {
 	drainedAccountsValueElement.dataset["priority"] =
 		alertInfo.drainedAccountsValue.toLowerCase();
 
-	if (!(feedbackContainerElement instanceof HTMLDetailsElement)) {
-		return;
-	}
-	feedbackContainerElement.addEventListener("toggle", () => {
-		if (!feedbackContainerElement.open) {
+	// hide feedback-icon if feedback is empty
+	feedbackIconElement.classList.toggle(
+		"hidden",
+		alertInfo.feedback.length == 0
+	);
+	feedbackIconElement.addEventListener("click", () => {
+		if (!(feedbackContainerElement instanceof HTMLDetailsElement)) {
 			return;
 		}
 
 		sendEvent({
 			eventName: "Contract Alert Risk Expanded",
 		});
-	});
 
+		feedbackContainerElement.open = !feedbackContainerElement.open;
+	});
 	feedbackContainerElement.classList.toggle(
 		"hidden",
 		alertInfo.feedback.length == 0
 	);
-
-	// hide feedback-icon if feedback is empty
-	feedbackIconElement.classList.toggle(
-		"hidden",
-		alertInfo.feedback.length == 0
-	);
-
-	feedbackIconElement.addEventListener("click", () => {
-		feedbackContainerElement.open = !feedbackContainerElement.open;
-	});
 
 	if (alertInfo.feedback.length != 0) {
 		feedbackListElement.innerHTML = alertInfo.feedback
@@ -494,9 +487,6 @@ function populateFinancialAlertWithData(alertInfo) {
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
 	reportButton.addEventListener("click", () => {
 		formElement.classList.toggle("hidden");
-		sendEvent({
-			eventName: "Contract Alert Report Button Clicked",
-		});
 	});
 
 	if (!(formElement instanceof HTMLFormElement)) {
