@@ -496,6 +496,9 @@ function populateFinancialAlertWithData(alertInfo) {
 	closeButton.addEventListener("click", alertInfo.cancelButtonClickListener);
 	reportButton.addEventListener("click", () => {
 		formElement.classList.toggle("hidden");
+		sendEvent({
+			eventName: "Contract Alert Report Button Clicked",
+		});
 	});
 
 	if (!(formElement instanceof HTMLFormElement)) {
