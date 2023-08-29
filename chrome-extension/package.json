@@ -8,10 +8,10 @@
     "dev:other": "node bundle-config.mjs --watch",
     "build": "concurrently npm:build:content npm:build:other npm:build:inject",
     "dev": "concurrently npm:dev:other npm:dev:content npm:dev:inject",
-    "build:content": "browserify src/content.js -o build/content.js",
-    "dev:content": "nodemon --exec \"browserify src/content.js -o build/content.js\" --watch src/content.js",
-    "build:inject": "browserify src/inject.js -o build/inject.js",
-    "dev:inject": "nodemon --exec \"browserify src/inject.js -o build/inject.js\" --watch src/inject.js",
+    "build:content": "browserify -p esmify src/content.js -o build/content.js",
+    "dev:content": "nodemon --exec \"browserify -p esmify src/content.js -o build/content.js\" --watch src/content.js",
+    "build:inject": "browserify -p esmify src/inject.js -o build/inject.js",
+    "dev:inject": "nodemon --exec \"browserify -p esmify src/inject.js -o build/inject.js\" --watch src/inject.js",
     "copy:assets": "cp -r assets/ build/static/",
     "release": "yarn build && yarn build:content && yarn build:inject && yarn copy:assets"
   },
@@ -58,6 +58,7 @@
     "@types/mixpanel-browser": "^2.47.0",
     "concurrently": "^8.2.0",
     "esbuild-envfile-plugin": "^1.0.5",
+    "esmify": "^2.1.1",
     "mkdirp": "^3.0.0",
     "nodemon": "^2.0.22"
   }

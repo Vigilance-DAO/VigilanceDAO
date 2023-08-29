@@ -20,3 +20,6 @@ code {
 
 #dropdownMenu {
 }
+body {
+  min-height: 100vh;
+}

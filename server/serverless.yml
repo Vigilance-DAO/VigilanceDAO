@@ -78,6 +78,14 @@ functions:
           method: POST
           cors: true
 
+  event-track:
+    handler: src/handler.handler
+    events:
+      - http:
+          path: '/event'
+          method: POST
+          cors: true
+
 package:
   individually: true
 

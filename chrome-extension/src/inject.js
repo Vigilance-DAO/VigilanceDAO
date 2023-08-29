@@ -2,6 +2,8 @@
 const mixpanel = require("mixpanel-browser");
 const { MIXPANEL_PROJECT_ID } = require("../privateenv");
 const { chromeRuntimeGetUrlWrapped } = require("./fonts");
+const { sendEvent } = require("./utils");
+const { API_ENDPOINT } = require("../constants");
 
 // ! For production uncomment these lines
 console.log = function(){};
@@ -12,7 +14,7 @@ console.warn = function(){};
 const FortaAPIUrl = "https://api.forta.network/graphql";
 
 const env = {
-	host: "https://api.vigilancedao.org"
+	host: API_ENDPOINT
 	// For developement
 	// host: "http://localhost:4000",
 };
@@ -27,12 +29,18 @@ function isSendTransactionRequest(params) {
 	return params.method == "eth_sendTransaction";
 }
 
+
+
 /**
  * @param {import("./inject").BasicContractInfo} basicInfo
  * @returns {Promise<import("./inject").ContractInfo | null>}
  */
 function fetchContractInfo(basicInfo) {
 	console.log("fetchContractInfo", basicInfo);
+
+	sendEvent({
+		eventName: "Fetch /contract-info",
+	});
 
 	const contractInfoApiFetch = fetch(ContractInfoAPIURL, {
 		method: "POST",
@@ -161,6 +169,8 @@ function fetchContractInfo(basicInfo) {
  * @returns {Promise<string | undefined>} string --> error message, undefined --> successful
  */
 function submitContractReport(report) {
+	sendEvent({ eventName: "Submit Contract Report", eventData: report });
+
 	return fetch(env.host.concat("/submit-contract-report"), {
 		method: "POST",
 		headers: {
@@ -456,6 +466,10 @@ function populateFinancialAlertWithData(alertInfo) {
 			return;
 		}
 
+		sendEvent({
+			eventName: "Contract Alert Risk Expanded",
+		});
+
 		feedbackContainerElement.open = !feedbackContainerElement.open;
 	});
 	feedbackContainerElement.classList.toggle(
@@ -585,6 +599,12 @@ function populateFinancialAlertWithData(alertInfo) {
 	});
 
 	containerElement.dataset[FINANCIAL_ALERT_IS_LOADING] = `${false}`;
+	sendEvent({
+		eventName: "Contract Alert Shown",
+		eventData: {
+			contract: alertInfo.contract,
+		},
+	});
 }
 
 /**
@@ -612,6 +632,13 @@ function truncateText(text) {
 	return text.slice(0, 4).concat("...", text.slice(-4));
 }
 
+function removeFinancialAlert() {
+	financialAlertDialog.close();
+	financialAlertDialog.remove();
+	toggleOtherDialogs("enable");
+	toggleBodyScrollY("reverse-auto");
+}
+
 const SUPPORTED_CHAINS = ["1", "137"];
 const ERROR_MSG = "Transaction cancelled by user.";
 
@@ -628,8 +655,10 @@ const ERROR_MSG = "Transaction cancelled by user.";
 	 */
 	// @ts-expect-error
 	window.ethereum.request = (params) => {
-		return /** @type {Promise<bool>} */ (
+		return /** @type {Promise<boolean>} */ (
 			new Promise(async (continueRequest, reject) => {
+				// continueRequest(true) ==> removes the alert
+
 				if (window.ethereum == undefined || !isSendTransactionRequest(params)) {
 					continueRequest(false);
 					return;
@@ -647,7 +676,7 @@ const ERROR_MSG = "Transaction cancelled by user.";
 					"data": data,
 					chainId,
 				});
-				
+
 				if (!SUPPORTED_CHAINS.includes(chainId)) {
 					continueRequest(false);
 					return;
@@ -670,8 +699,8 @@ const ERROR_MSG = "Transaction cancelled by user.";
 					});
 
 					if (contractInfo == null) {
-						// TODO decide what to do at this point
-						continueRequest(false);
+						// request failed
+						continueRequest(true);
 						return;
 					}
 
@@ -693,13 +722,24 @@ const ERROR_MSG = "Transaction cancelled by user.";
 						transactionsIn24hours: contractInfo.userCount24hours || 0,
 						transactionsIn30days: contractInfo.userCount30days || 0,
 						proceedButtonClickListener: () => {
+							sendEvent({
+								eventName: "Contract Alert Action",
+								eventData: {
+									contract: contractDisplay,
+									action: "Proceed",
+								},
+							});
 							continueRequest(true);
 						},
 						cancelButtonClickListener: () => {
-							financialAlertDialog.close();
-							financialAlertDialog.remove();
-							toggleOtherDialogs("enable");
-							toggleBodyScrollY("reverse-auto");
+							sendEvent({
+								eventName: "Contract Alert Action",
+								eventData: {
+									contract: contractDisplay,
+									action: "Cancel",
+								},
+							});
+							removeFinancialAlert();
 							reject(new Error(ERROR_MSG));
 						},
 						drainedAccountsValue: contractInfo.riskRating,
@@ -707,40 +747,23 @@ const ERROR_MSG = "Transaction cancelled by user.";
 						reportBasicBody: {
 							address: checksumAddress,
 							chainId,
-							name: shouldIncludeContractInfoName ? contractInfo.name : undefined,
+							name: shouldIncludeContractInfoName
+								? contractInfo.name
+								: undefined,
 						},
 					});
 				} catch (error) {
-					console.error('error processing tx', error);
-					financialAlertDialog.close();
-					financialAlertDialog.remove();
-					toggleOtherDialogs("enable");
-					toggleBodyScrollY("reverse-auto");
-					continueRequest(false);
+					console.error("error processing tx", error);
+					continueRequest(true);
 				}
 			})
-		)
-			.then(async (showPopup) => {
-				try {
-					let resp = await metamaskRequest({ ...params });
-					if (showPopup) {
-						financialAlertDialog.close();
-						financialAlertDialog.remove();
-						toggleOtherDialogs("enable");
-						toggleBodyScrollY("reverse-auto");
-					}
-					return resp;
-				} catch (error) {
-					// if popup active, still close it
-					if (showPopup) {
-						financialAlertDialog.close();
-						financialAlertDialog.remove();
-						toggleOtherDialogs("enable");
-						toggleBodyScrollY("reverse-auto");
-					}
-					throw error;
-				}
-			})
+		).then(async (shouldClosePopup) => {
+			if (shouldClosePopup) {
+				removeFinancialAlert();
+			}
+
+			return metamaskRequest({ ...params });
+		});
 	};
 })();
 
@@ -778,4 +801,3 @@ const ERROR_MSG = "Transaction cancelled by user.";
 // 		proceedButtonClickListener: () => {},
 // 	});
 // })();
-

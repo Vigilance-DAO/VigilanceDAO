@@ -23,7 +23,10 @@ export interface DomainValidationInfo {
 /**
  * Object structure of each item stored in the storage like a cache
  */
-export type DomainStorageItem = ({ validationInfo?: DomainValidationInfo } & Partial<DomainInfo>);
+export type DomainStorageItem = {
+	validationInfo?: DomainValidationInfo;
+	dontShowAgain?: boolean;
+} & Partial<DomainInfo>;
 
 export interface ComputedDomainStorageItem extends DomainStorageItem {
 	/**

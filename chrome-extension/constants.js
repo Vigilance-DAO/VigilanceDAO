@@ -410,6 +410,24 @@ const abi = [
 
 const address = "0x68Db62ADCaADdb21cB000841f1F347A6d8bEED9b"
 
+// for production
+// const API_ENDPOINT = "https://api.vigilancedao.org"
+// const DOMAIN = 'https://vigilancedao.org'
+
+// for staging
+const API_ENDPOINT = 'https://i4jz77p469.execute-api.ap-northeast-1.amazonaws.com/staging';
+const DOMAIN = 'https://vigilancedao.org'
+
+// for development
+// const API_ENDPOINT = "http://localhost:4000";
+// const DOMAIN = "http://localhost:3000";
+
+const USER_ID_KEY = "user-id";
+
 module.exports = {
-    abi, address
-}
+	abi,
+	address,
+	API_ENDPOINT,
+	DOMAIN,
+	USER_ID_KEY,
+};

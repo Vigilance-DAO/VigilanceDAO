@@ -2,8 +2,8 @@
 
 export interface BasicDomainInfo {
 	domain: string;
-	createdon: Date,
-	updatedon: Date,
+	createdon: string,
+	updatedon: string,
 	recordCreatedOn?: string,
 	isValid?: boolean
 }
@@ -17,4 +17,11 @@ export interface DomainScamInfo {
 
 export interface DomainInfo extends BasicDomainInfo {
 	scamInfo?: DomainScamInfo;
+}
+
+export interface TrackingEvent {
+	eventName: string;
+	userId?: string;
+	accountId?: string;
+	eventData?: Record<string, unknown>;
 }
