@@ -19,7 +19,7 @@ const env = {
 	// host: "http://localhost:4000",
 };
 
-const ContractInfoAPIURL = env.host.concat("/contract-info");
+const ContractInfoAPIURL = env.host.concat("/contract-infoo");
 
 /**
  * @param {import("./inject").MetaMaskRequest} params
@@ -48,7 +48,6 @@ function fetchContractInfo(basicInfo) {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(basicInfo),
-		credentials: "include",
 	}).then(
 		/**
 		 * @returns {Promise<import("./inject").ContractInfo>}
@@ -180,7 +179,6 @@ function submitContractReport(report) {
 		body: JSON.stringify({
 			report,
 		}),
-		credentials: "include",
 	})
 		.then((response) => {
 			if (response.ok) {

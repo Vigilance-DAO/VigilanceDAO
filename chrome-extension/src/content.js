@@ -582,7 +582,7 @@ async function createAlertDialog(alertInfo) {
 	descriptionElement.innerHTML = alertInfo.description;
 	statusImgElement.src = alertInfo.imageSrc;
 
-	shadowRoot.addEventListener("click", (event) => {
+	shadowRoot.addEventListener("click", async (event) => {
 		console.log("dialog clicked", event);
 
 		if (!(event.target instanceof HTMLElement)) {
@@ -593,7 +593,7 @@ async function createAlertDialog(alertInfo) {
 		const target = targetElement.id;
 
 		if (target == "close-website") {
-			trackEventInContentScript({
+			await trackEventInContentScript({
 				eventName: "Domain Alert Action",
 				eventData: {
 					action: "Close Website",
@@ -601,7 +601,7 @@ async function createAlertDialog(alertInfo) {
 			});
 			sendMessageToBackground("close-website");
 		} else if (target == "hide") {
-			trackEventInContentScript({
+			await trackEventInContentScript({
 				eventName: "Domain Alert Action",
 				eventData: {
 					action: "Hide",

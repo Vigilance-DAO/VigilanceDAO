@@ -109,7 +109,6 @@ async function getDomainRegistrationDate(storageInfo, url) {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({ domain: url }),
-				credentials: "include",
 			});
 			/**
 			 * @type {import("../../important-types").DomainInfo}
@@ -371,7 +370,6 @@ async function fetchDomainInfo(simplifiedUrl) {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({ domain: simplifiedUrl }),
-		credentials: "include",
 	});
 	/**
 	 * @type {import("../../important-types").DomainInfo}
