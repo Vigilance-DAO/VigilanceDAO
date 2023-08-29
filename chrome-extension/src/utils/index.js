@@ -53,9 +53,9 @@ export async function trackEventInContentScript(event) {
 	event.userId = userId;
 	console.log("trackEventFromContentScript", event);
 
-	mixpanel.identify(userId);
 	mixpanel.track(event.eventName, {
 		...event.eventData,
+		distinct_id: userId,
 		accountId: event.accountId,
 		userId: event.userId,
 	});
