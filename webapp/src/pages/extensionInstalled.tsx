@@ -7,7 +7,12 @@ import {
 	Link,
 	Box,
 	Grid,
+	OrderedList,
+	ListItem
 } from "@chakra-ui/react";
+
+import { useMemo } from "react";
+import { useLocation } from "react-router-dom";
 
 import logo from "../assets/icon128.png";
 
@@ -32,6 +37,12 @@ function FeatureCard(props: FeatureCardProps) {
 }
 
 export default function ExtensionInstalled() {
+	const search = useLocation().search;
+	const isOpenedOnExtensionInstallation = useMemo(() => {
+		const reason = new URLSearchParams(search).get("reason");
+		return reason == "install";
+	}, [search]);
+
 	return (
 		<>
 			<Flex
@@ -119,18 +130,46 @@ export default function ExtensionInstalled() {
 					</Text>
 				</Flex>
 			</Flex>
-			<Box
-					maxWidth={MAX_WIDTH}
-					margin= "0 auto 100px auto"
-			>
-				<Heading as="h2" marginBottom="30px">Features</Heading>
-				
-				<Grid as="ul" listStyleType="none" gridTemplateColumns="repeat(auto-fit, minmax(250px, 1fr) )" gap="20px">
-					<FeatureCard  imageSrc={featureAlerts} description="Get notified when you land on suspicious domains" />
-					<FeatureCard  imageSrc={featureTransactionAnalysis} description="Get transaction analysis before you do a transaction" />
-					<FeatureCard  imageSrc={featureReportAndEarn} description="Report scam sites and contracts and earn rewards for protecting the community." />
-				</Grid>
-			</Box>
+			{isOpenedOnExtensionInstallation ? (
+				<Box
+					position="absolute"
+					top="10px"
+					right="10px"
+					backgroundColor="hsl(265 100% 26% / 1)"
+					borderRadius="4px"
+					padding="10px 18px"
+				>
+					<Heading
+						as="h3"
+						fontSize="1.6rem"
+						maxWidth="20ch"
+						marginBottom="12px"
+					>
+						Pin our extension
+					</Heading>
+					<Text maxWidth="38ch" lineHeight="1.1em">
+						And get instant feedback —including Domain Alerts & Contract
+						Information— on various sites you visit.
+					</Text>
+
+					<OrderedList marginTop="10px" maxWidth="32ch" lineHeight="1.3em">
+						<ListItem>
+							Click{" "}
+							<strong>
+								<i>Extensions</i>{" "}
+							</strong>{" "}
+							icon
+						</ListItem>
+						<ListItem>
+							Find{" "}
+							<strong>
+								<i>Web3 Vigilance - Browser Security</i>
+							</strong>{" "}
+							& Click pin icon
+						</ListItem>
+					</OrderedList>
+				</Box>
+			) : null}
 		</>
 	);
 }
