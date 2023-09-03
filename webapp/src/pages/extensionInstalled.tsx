@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 
 import { useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link as RouterLink } from "react-router-dom";
 
 import logo from "../assets/icon128.png";
 
@@ -34,6 +34,29 @@ function FeatureCard(props: FeatureCardProps) {
 		</Box>
 		<Text padding="10px">{props.description}</Text>
 	</Flex>)
+}
+
+function CloseIcon() {
+	return (
+		<svg
+			className="icon icon-tabler icon-tabler-x"
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			strokeWidth="2"
+			stroke="currentColor"
+			fill="none"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			style={{
+				marginTop: "6px"
+			}}
+		>
+			<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+			<path d="M18 6l-12 12"></path>
+			<path d="M6 6l12 12"></path>
+		</svg>
+	);
 }
 
 export default function ExtensionInstalled() {
@@ -135,22 +158,32 @@ export default function ExtensionInstalled() {
 					position="absolute"
 					top="10px"
 					right="10px"
-					backgroundColor="hsl(265 100% 26% / 1)"
+					backgroundColor="hsl(240 71% 29% / 1)"
 					borderRadius="4px"
 					padding="10px 18px"
 				>
-					<Heading
-						as="h3"
-						fontSize="1.6rem"
-						maxWidth="20ch"
-						marginBottom="12px"
-					>
-						Pin our extension
-					</Heading>
+					<Flex justifyContent="space-between">
+						<Heading
+							as="h3"
+							fontSize="1.6rem"
+							maxWidth="20ch"
+							marginBottom="18px"
+						>
+							Pin our extension
+						</Heading>
+
+						<RouterLink to="/extension-installed">
+							<CloseIcon />
+						</RouterLink>
+					</Flex>
 					<Text maxWidth="38ch" lineHeight="1.1em">
 						And get instant feedback —including Domain Alerts & Contract
 						Information— on various sites you visit.
 					</Text>
+					<Flex gap="4px" margin="10px 0 18px">
+						<img src="/alert.png" />
+						<img src="/verified.png" />
+					</Flex>
 
 					<OrderedList marginTop="10px" maxWidth="32ch" lineHeight="1.3em">
 						<ListItem>
@@ -158,6 +191,13 @@ export default function ExtensionInstalled() {
 							<strong>
 								<i>Extensions</i>{" "}
 							</strong>{" "}
+							<img
+								src="/extensions.png"
+								style={{
+									verticalAlign: "middle",
+									display: "inline",
+								}}
+							/>
 							icon
 						</ListItem>
 						<ListItem>
@@ -166,6 +206,7 @@ export default function ExtensionInstalled() {
 								<i>Web3 Vigilance - Browser Security</i>
 							</strong>{" "}
 							& Click pin icon
+							<img src="/pin-image.png" />
 						</ListItem>
 					</OrderedList>
 				</Box>
