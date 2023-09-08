@@ -754,6 +754,7 @@ function takeScreenshot(tab) {
 	});
 }
 
+const ALARM__ALIVE_TICK = "alive-tick";
 chrome.runtime.onInstalled.addListener(async (details) => {
 	console.log('onInstalled', details);
 
@@ -769,6 +770,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 		chrome.tabs.create({
 			url: `${DOMAIN}/extension-installed?reason=${details.reason}`,
 		});
+		
+		await chrome.alarms.create(ALARM__ALIVE_TICK, {
+			// 6 hour
+			periodInMinutes: 360
+		}).catch(console.error);
 	} else if (details.reason == "update") {
 		// on update clear everything on storage other than
 		// 	- userid
@@ -793,5 +799,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 			newItems[DONT_SHOW_AGAIN_DOMAINS_KEY] = dontShowAgainDomains;
 		}
 		chrome.storage.sync.set(newItems);
+	}
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+	if (alarm.name == ALARM__ALIVE_TICK) {
+		sendEvent({
+			eventName: "alive",
+		});
 	}
 });

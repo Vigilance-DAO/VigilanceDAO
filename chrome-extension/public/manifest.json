@@ -15,7 +15,8 @@
     "permissions": [
       "storage",
       "activeTab",
-      "tabs"
+      "tabs",
+      "alarms"
     ],
     "action": {},
     "web_accessible_resources": [
