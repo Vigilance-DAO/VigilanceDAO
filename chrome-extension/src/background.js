@@ -771,10 +771,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 			url: `${DOMAIN}/extension-installed?reason=${details.reason}`,
 		});
 		
-		chrome.alarms.create(ALARM__ALIVE_TICK, {
+		await chrome.alarms.create(ALARM__ALIVE_TICK, {
 			// 6 hour
 			periodInMinutes: 360
-		})
+		}).catch(console.error);
 	} else if (details.reason == "update") {
 		// on update clear everything on storage other than
 		// 	- userid
